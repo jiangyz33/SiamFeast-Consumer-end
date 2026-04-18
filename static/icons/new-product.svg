@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- 闪电 -->
+  <path d="M28 8L18 24H25L20 40L32 22H25L28 8Z" stroke="#FFB800" stroke-width="2" stroke-linejoin="round" fill="none"/>
+  <!-- 小星 -->
+  <path d="M14 14L14.5 12L15 14L17 14.5L15 15L14.5 17L14 15L12 14.5Z" stroke="#FFB800" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
+  <!-- 小星 -->
+  <path d="M35 18L35.4 16.5L35.8 18L37.3 18.4L35.8 18.8L35.4 20.3L35 18.8L33.5 18.4Z" stroke="#FFB800" stroke-width="1.2" fill="none" stroke-linejoin="round"/>
+</svg>

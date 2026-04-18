@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- 火焰 -->
+  <path d="M24 10C24 10 16 18 16 25C16 29.4 19.6 33 24 33C28.4 33 32 29.4 32 25C32 18 24 10 24 10Z" stroke="#FFB800" stroke-width="2" fill="none"/>
+  <!-- 内焰 -->
+  <path d="M24 20C24 20 20 24 20 27C20 29.2 21.8 31 24 31C26.2 31 28 29.2 28 27C28 24 24 20 24 20Z" stroke="#FFB800" stroke-width="1.5" fill="none"/>
+  <!-- 榜单横线 -->
+  <line x1="15" y1="37" x2="33" y2="37" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+  <line x1="18" y1="41" x2="30" y2="41" stroke="#FFB800" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

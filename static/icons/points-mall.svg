@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- 硬币外圈 -->
+  <circle cx="24" cy="22" r="12" stroke="#FFB800" stroke-width="2" fill="none"/>
+  <!-- 硬币内圈 -->
+  <circle cx="24" cy="22" r="8" stroke="#FFB800" stroke-width="1.5" fill="none"/>
+  <!-- P字母 -->
+  <path d="M22 18V26M22 18H25C26.7 18 28 19 28 20.5C28 22 26.7 22 25 22H22" stroke="#FFB800" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- 底座 -->
+  <line x1="18" y1="37" x2="30" y2="37" stroke="#FFB800" stroke-width="2" stroke-linecap="round"/>
+  <!-- 支撑线 -->
+  <line x1="24" y1="34" x2="24" y2="37" stroke="#FFB800" stroke-width="2"/>
+</svg>
