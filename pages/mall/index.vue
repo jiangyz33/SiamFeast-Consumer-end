@@ -134,39 +134,6 @@
 
 			<!-- 商家列表 -->
 			<view class="store-list">
-				<!-- 民宿入口 -->
-				<view class="store-card" @click="handleHostelClick({id:'hostel_demo',name:'暹罗民宿·曼谷店'})">
-					<view class="store-card-main">
-						<image class="store-card-logo" src="/static/logo.png" mode="aspectFill"></image>
-						<view class="store-card-info">
-							<view class="store-card-header">
-								<text class="store-card-name">暹罗民宿·曼谷店</text>
-								<view class="store-card-status status-open">
-									<text class="store-card-status-text">营业中</text>
-								</view>
-							</view>
-							<view class="store-card-info-row">
-								<text class="store-card-hours">24小时</text>
-							</view>
-							<view class="store-card-tags">
-								<text class="store-card-tag">客房</text>
-								<text class="store-card-tag">火锅</text>
-								<text class="store-card-tag">咖啡</text>
-							</view>
-						</view>
-					</view>
-					<view class="store-card-footer">
-						<view class="store-card-distance">
-							<image class="store-card-distance-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-							<text class="store-card-distance-text">123 Sukhumvit Rd, Bangkok</text>
-						</view>
-						<view class="store-card-actions">
-							<view class="store-card-enter">
-								<text class="store-card-enter-text">进店</text>
-							</view>
-						</view>
-					</view>
-				</view>
 
 				<view
 					v-for="(store, index) in stores"
@@ -431,14 +398,6 @@ export default {
 
 
 	handleStoreClick(store) {
-		// Hotel/hostel type: go directly to hostel page
-		const hostelTypes = ["HOTEL", "HOSTEL_ROOM", "HOSTEL_HOTPOT", "HOSTEL_COFFEE"]
-		if (store.business_types && store.business_types.some(t => hostelTypes.includes(t))) {
-			uni.navigateTo({
-				url: "/pages/hostel/index?shopId=" + store.id + "&shopName=" + encodeURIComponent(store.name)
-			})
-			return
-		}
 		uni.navigateTo({
 			url: `/pages/dinein/index?shopId=${store.id}`
 		})
@@ -461,15 +420,6 @@ export default {
 			}).filter(Boolean)
 		},
 
-			isHostelStore(store) {
-				const types = store.business_types || []
-				return types.some(t => ["HOSTEL_ROOM", "HOSTEL_HOTPOT", "HOSTEL_COFFEE"].includes(t))
-			},
-		handleHostelClick(store) {
-			uni.navigateTo({
-				url: "/pages/hostel/index?shopId=" + store.id + "&shopName=" + encodeURIComponent(store.name)
-			})
-		}
 	}
 }
 </script>
