@@ -587,6 +587,7 @@ export default {
 					}
 
 					// Build category objects
+					console.log('[DEBUG] allProducts count:', this.allProducts.length, 'catIds:', this.allProducts.map(p => p.category_id))
 					this.categories = [...catGroups.entries()].map(([cid, prods]) => {
 						const catInfo = catNameMap.get(cid)
 						const name = catInfo?.name || prods[0]?.category_name || ''
