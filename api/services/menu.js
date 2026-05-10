@@ -30,7 +30,7 @@ export function getCategories(storeId) {
  * @returns {Promise}
  */
 export function getConsumerCategories(businessType) {
-	return get('/categories', businessType ? { business_type: businessType } : {})
+	return get('/public/categories', businessType ? { business_type: businessType } : {})
 }
 
 /**
@@ -155,7 +155,7 @@ export function getMenuItems(params) {
  * @returns {Promise}
  */
 export function getConsumerMenuItems(storeId, params = {}) {
-	return get('/menu-items', { store_id: storeId, ...params })
+	return get('/public/menu-items', { store_id: storeId, ...params })
 }
 
 /**

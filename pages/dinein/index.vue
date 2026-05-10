@@ -537,7 +537,7 @@ export default {
 
 				// Step 2: Load all products for this store first
 				try {
-					const allItemsRes = await getConsumerMenuItems(this.shopInfo.id)
+					const allItemsRes = await getConsumerMenuItems(this.shopInfo.id, { page_size: 200 })
 					if (allItemsRes.code === 0 && allItemsRes.data) {
 						const items = Array.isArray(allItemsRes.data) ? allItemsRes.data : (allItemsRes.data.items || [])
 						this.allProducts = items.map(item => this.normalizeProduct(item))
@@ -560,33 +560,49 @@ export default {
 		},
 
 		async loadFallbackCategories() {
-				// Fallback to global categories when store menu categories are not available
-				try {
-					const catRes = await getConsumerCategories()
-					if (catRes.code === 0 && catRes.data) {
-						const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.items || [])
-						const usedCatIds = new Set(this.allProducts.map(p => p.category_id))
-						const filtered = catData.filter(c => usedCatIds.has(c.id))
-						const nameGroups = new Map()
-						for (const c of filtered) {
-							const key = (c.name_en || c.name || '').toLowerCase()
-							if (!nameGroups.has(key)) nameGroups.set(key, { cat: c, ids: [] })
-							nameGroups.get(key).ids.push(c.id)
+					// Build categories directly from product data (no external API dependency)
+					if (this.allProducts.length === 0) return
+
+					// Try to get category names from /categories API first
+					let catNameMap = new Map()
+					try {
+						const catRes = await getConsumerCategories()
+						if (catRes.code === 0 && catRes.data) {
+							const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.items || [])
+							for (const c of catData) {
+								catNameMap.set(c.id, c)
+							}
 						}
-						this.categories = [...nameGroups.values()].map(({ cat, ids }) => ({
-							id: ids[0],
-							catIds: ids,
-							nameKey: cat.name,
-							name_en: cat.name_en || '',
-							name_th: cat.name_th || '',
-							name: cat.name,
-							sortOrder: cat.sort_order
-						}))
+					} catch (e) {
+						console.warn('Categories API failed, using product data only:', e)
 					}
-				} catch (e) {
-					console.error('loadFallbackCategories error:', e)
-				}
-			},
+
+					// Group products by category_id
+					const catGroups = new Map()
+					for (const p of this.allProducts) {
+						const cid = p.category_id
+						if (!cid) continue
+						if (!catGroups.has(cid)) catGroups.set(cid, [])
+						catGroups.get(cid).push(p)
+					}
+
+					// Build category objects
+					this.categories = [...catGroups.entries()].map(([cid, prods]) => {
+						const catInfo = catNameMap.get(cid)
+						const name = catInfo?.name || prods[0]?.category_name || ''
+						const nameEn = catInfo?.name_en || prods[0]?.category_name_en || ''
+						const nameTh = catInfo?.name_th || prods[0]?.category_name_th || ''
+						return {
+							id: cid,
+							catIds: [cid],
+							nameKey: name || 'Cat ' + cid,
+							name_en: nameEn,
+							name_th: nameTh,
+							name: name || 'Cat ' + cid,
+							sortOrder: catInfo?.sort_order || 0
+						}
+					}).sort((a, b) => a.sortOrder - b.sortOrder)
+				},
 
 		// Map store business_types (JSONB array) to category business_type filter
 		mapBusinessType(businessTypes) {
@@ -632,6 +648,9 @@ export default {
 				originalPrice: item.original_price || item.originalPrice || null,
 				image: (item.image_url && !item.image_url.includes('example.com')) ? item.image_url : '/static/images/img-placeholder.svg',
 				category_id: item.category_id,
+				category_name: item.category_name || '',
+				category_name_en: item.category_name_en || '',
+				category_name_th: item.category_name_th || '',
 				store_menu_category_id: item.store_menu_category_id,
 				tags: item.tags || [],
 				stock: item.stock,
@@ -775,7 +794,7 @@ export default {
 			if (this.activeCategory === -1 || this.categories.length === 0) return
 			const catId = this.categories[this.activeCategory].id
 			try {
-				const res = await getConsumerMenuItems(this.shopInfo.id, { category_id: catId })
+				const res = await getConsumerMenuItems(this.shopInfo.id, { category_id: catId, page_size: 200 })
 				if (res.code === 0 && res.data) {
 					const items = Array.isArray(res.data) ? res.data : (res.data.items || [])
 					this.allProducts = items.map(item => this.normalizeProduct(item))
