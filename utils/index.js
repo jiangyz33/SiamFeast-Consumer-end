@@ -198,16 +198,88 @@ export function deepClone(obj) {
 }
 
 /**
- * 修正 MinIO URL（本地开发时后端返回 localhost:9000）
+ * 修正 MinIO URL
+ * 1. 相对路径 /minio-files/sf-uploads/... → http://106.12.91.224:9000/sf-uploads/...
+ * 2. localhost:9000 → 106.12.91.224:9000
  * @param {string} url 原始 URL
  * @returns {string} 修正后的 URL
  */
 export function fixMinioUrl(url) {
 	if (!url) return url
-	const from = "localhost:9000"
-	const to = "106.12.91.224:9000"
-	if (url.includes(from)) {
-		return url.replace(from, to)
+	if (url.startsWith('/minio-files/')) {
+		return 'http://106.12.91.224:9000/' + url.replace('/minio-files/', '')
+	}
+	if (url.startsWith('/') && !url.startsWith('/static')) {
+		return 'http://106.12.91.224:9000' + url
+	}
+	if (url.includes('localhost:9000')) {
+		return url.replace('localhost:9000', '106.12.91.224:9000')
 	}
 	return url
+}
+
+/**
+ * Get localized name from an object with name/name_en/name_th fields
+ * @param {Object} obj - object with name, name_en, name_th fields
+ * @param {string} lang - language code (zh/en/th)
+ * @returns {string}
+ */
+export function getLocalName(obj, lang) {
+	if (!obj) return ''
+	const l = lang || 'zh'
+	if (l === 'en') return obj.name_en || obj.name || obj.name_th || ''
+	if (l === 'th') return obj.name_th || obj.name || obj.name_en || ''
+	return obj.name || obj.name_en || obj.name_th || ''
+}
+
+/**
+ * Get localized description from an object with description/description_en/description_th fields
+ * @param {Object} obj - object with description fields
+ * @param {string} lang - language code (zh/en/th)
+ * @returns {string}
+ */
+export function getLocalDesc(obj, lang) {
+	if (!obj) return ''
+	const l = lang || 'zh'
+	if (l === 'en') return obj.description_en || obj.description || obj.description_th || ''
+	if (l === 'th') return obj.description_th || obj.description || obj.description_en || ''
+	return obj.description || obj.description_en || obj.description_th || ''
+}
+
+/**
+ * Map backend error codes to i18n-friendly messages
+ * @param {Object} error - error object with code/message fields
+ * @returns {string} user-friendly error message
+ */
+export function getErrorMessage(error) {
+	const code = error?.code || error?.data?.code || ''
+	const codeMap = {
+		'UNAUTHENTICATED': 'error.unauthenticated',
+		'TOKEN_INVALID': 'error.tokenInvalid',
+		'PERMISSION_DENIED': 'error.permissionDenied',
+		'INVALID_PARAM': 'error.invalidParam',
+		'NOT_FOUND': 'error.notFound',
+		'STATUS_CONFLICT': 'error.statusConflict',
+		'GROUP_BUY_NOT_SUPPORTED': 'error.groupBuyNotSupported',
+		'GROUP_BUY_SOLD_OUT': 'error.soldOut',
+		'GROUP_BUY_LIMIT_EXCEEDED': 'error.limitExceeded',
+		'GROUP_BUY_EXPIRED': 'error.expired',
+		'GROUP_BUY_NOT_ACTIVE': 'error.notActive',
+		'ROOM_BOOKED': 'error.roomBooked',
+		'NO_PRICING': 'error.noPricing',
+		'INVALID_PRICING': 'error.invalidPricing',
+		'INVALID_DATE_RANGE': 'error.invalidDateRange',
+		'CAPABILITY_DENIED': 'error.capabilityDenied',
+		'CAPABILITY_DISABLED': 'error.capabilityDisabled',
+	}
+	const i18nKey = codeMap[code]
+	if (i18nKey) {
+		try {
+			const i18n = require('@/i18n/index.js').default || require('@/i18n/index.js')
+			return (i18n.t ? i18n : i18n.default).t(i18nKey)
+		} catch (e) {
+			// fallback
+		}
+	}
+	return error?.message || '请求失败'
 }

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景 -->
+  <rect width="200" height="200" rx="8" fill="#F5F5F5"/>
+  <!-- 山 -->
+  <path d="M40 130 L80 80 L110 110 L140 70 L170 130 Z" fill="#E0E0E0"/>
+  <!-- 太阳 -->
+  <circle cx="60" cy="60" r="18" fill="#E8E8E8"/>
+  <!-- 图片图标 -->
+  <rect x="65" y="55" width="70" height="55" rx="5" fill="white" stroke="#CCCCCC" stroke-width="2"/>
+  <circle cx="85" cy="72" r="6" fill="#F2B131" opacity="0.3"/>
+  <path d="M70 100 L90 82 L105 95 L115 87 L130 100" stroke="#CCCCCC" stroke-width="1.5" fill="none"/>
+</svg>

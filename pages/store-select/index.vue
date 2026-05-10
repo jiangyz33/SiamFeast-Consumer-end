@@ -101,19 +101,19 @@
 				>
 					<view class="store-main">
 						<view class="store-left">
-							<image class="store-logo" :src="store.logo_url || store.logo || '/static/logo.png'" mode="aspectFill"></image>
+							<image class="store-logo" :src="store.logo_url || store.logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
 						</view>
 						<view class="store-info">
 							<view class="store-header">
-								<text class="store-name">{{ store.store_name }}</text>
+								<text class="store-name">{{ store['name_' + i18n.getLanguage()] || store.store_name }}</text>
 								<view class="store-status" :class="store.is_open ? 'status-open' : 'status-closed'">
 									<text class="status-text">{{ store.is_open ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
 								</view>
 							</view>
 							<view class="store-rating">
-								<image class="star-icon" src="/static/icons/star.svg" mode="aspectFit"></image>
-								<text class="rating-text">{{ store.rating }}</text>
-								<text class="divider">|</text>
+								
+
+
 								<text class="business-hours">{{ store.business_hours }}</text>
 							</view>
 							<view class="store-tags">
@@ -140,8 +140,9 @@
 
 				<!-- 空状态 -->
 				<view class="empty-state" v-if="stores.length === 0 && !isLoading">
-					<image class="empty-icon" src="/static/logo.png" mode="aspectFit"></image>
-					<text class="empty-text">{{ i18n.t('storeSelect.noStores') }}</text>
+					<image class="empty-icon" src="/static/images/empty-store.svg" mode="aspectFit"></image>
+					<text class="empty-title">{{ i18n.t('common.empty.store') }}</text>
+					<text class="empty-desc">{{ i18n.t('common.empty.storeDesc') }}</text>
 				</view>
 
 				<!-- 加载状态 -->
@@ -510,14 +511,14 @@ export default {
 					name_en: s.name_en || '',
 					name_th: s.name_th || '',
 					logo_url: s.logo_url || '',
-					logo: s.logo || '/static/logo.png',
+					logo: s.logo || '/static/images/store-placeholder.svg',
 					phone: s.phone || '',
 					formatted_address: s.formatted_address || '',
 					is_deliverable: s.is_deliverable || s.delivery_enabled || false,
 					is_open: s.is_open || (s.status === 'OPEN'),
 					business_hours: s.business_hours || '',
 					business_types: s.business_types || [],
-					rating: s.rating || 4.5,
+
 					distance_text: s.distance_text || '',
 					distance_m: s.distance_m || null,
 					eta_min: s.eta_min || null,
@@ -569,7 +570,7 @@ export default {
 				latitude: store.store_latitude,
 				longitude: store.store_longitude,
 				title: store.store_name,
-				iconPath: store.logo_url || '/static/logo.png',
+				iconPath: store.logo_url || '/static/images/store-placeholder.svg',
 				width: 28,
 				height: 28,
 				callout: {
@@ -640,7 +641,7 @@ export default {
 					latitude: selectedStore.store_latitude,
 					longitude: selectedStore.store_longitude,
 					logo_url: selectedStore.logo_url || '',
-					logo: selectedStore.logo || '/static/logo.png',
+					logo: selectedStore.logo || '/static/images/store-placeholder.svg',
 					phone: selectedStore.phone || '',
 					formatted_address: selectedStore.formatted_address || '',
 					delivery_enabled: selectedStore.is_deliverable || false,

@@ -8,13 +8,13 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">订单详情</text>
+			<text class="nav-title">{{ i18n.t("orderDetail.title") }}</text>
 			<view class="nav-right"></view>
 		</view>
 
 		<!-- 加载状态 -->
 		<view class="loading-state" v-if="loading">
-			<text class="loading-text">加载中...</text>
+			<text class="loading-text">{{ i18n.t("orderDetail.loading") }}</text>
 		</view>
 
 		<!-- 内容区域 -->
@@ -23,21 +23,29 @@
 			<view class="status-section">
 				<view class="status-card">
 					<view class="status-icon-wrapper">
-						<image class="status-icon" src="/static/logo.png" mode="aspectFit"></image>
+						<image class="status-icon" src="/static/images/payment-success.svg" mode="aspectFit"></image>
 					</view>
 					<view class="status-info">
 						<text class="status-title">{{ statusText }}</text>
 						<text class="status-desc" v-if="deliveryInfo && deliveryInfo.estimated_time">
-							预计{{ deliveryInfo.estimated_time }}分钟送达
+							{{ i18n.t("orderDetail.estDelivery", { time: deliveryInfo.estimated_time }) }}
 						</text>
 						<text class="status-desc" v-else-if="orderData.table_number">
-							桌号：{{ orderData.table_number }}
+							{{ i18n.t("orderDetail.tableNo", { no: orderData.table_number }) }}
 						</text>
 					</view>
 				</view>
 			</view>
 
-			<!-- 配送信息 -->
+			
+				<!-- 取餐码 -->
+				<view class="pickup-code-section" v-if="pickupCode">
+					<view class="section-card pickup-card">
+						<text class="pickup-label">{{ i18n.t("orderDetail.pickupCode") }}</text>
+						<text class="pickup-code">{{ pickupCode }}</text>
+					</view>
+				</view>
+				<!-- 配送信息 -->
 			<view class="delivery-section" v-if="deliveryInfo && deliveryInfo.delivery_type === 'delivery' && deliveryInfo.address">
 				<view class="section-card">
 					<view class="delivery-header">
@@ -74,8 +82,8 @@
 					<view class="shop-header">
 						<image class="shop-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 						<view class="shop-info">
-							<text class="shop-name">{{ orderData.extra_data.store_name }}</text>
-							<text class="shop-address" v-if="orderData.extra_data.store_address">{{ orderData.extra_data.store_address }}</text>
+							<text class="shop-name">{{ orderData.extra_data["store_name_" + i18n.getLanguage()] || orderData.extra_data.store_name }}</text>
+							<text class="shop-address" v-if="orderData.extra_data.store_address">{{ orderData.extra_data["store_address_" + i18n.getLanguage()] || orderData.extra_data.store_address }}</text>
 						</view>
 					</view>
 				</view>
@@ -85,7 +93,7 @@
 			<view class="order-type-section" v-if="orderData.order_type">
 				<view class="section-card">
 					<view class="order-type-row">
-						<text class="order-type-label">订单类型</text>
+						<text class="order-type-label">{{ i18n.t("orderDetail.orderTypeLabel") }}</text>
 						<text class="order-type-value">{{ formatOrderType(orderData.order_type) }}</text>
 					</view>
 				</view>
@@ -98,11 +106,11 @@
 			<view class="products-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">商品信息</text>
+						<text class="title-text">{{ i18n.t("orderDetail.productInfo") }}</text>
 					</view>
 					<view class="products-list">
 						<view class="product-item" v-for="(item, index) in orderData.items" :key="index">
-							<image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
+							<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 							<view class="product-info">
 							<text class="product-name">{{ getItemName(item) }}</text>
 						<view class="product-specs" v-if="hasSpecs(item)">
@@ -126,31 +134,31 @@
 			<view class="info-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">费用明细</text>
+						<text class="title-text">{{ i18n.t("orderDetail.feeDetail") }}</text>
 					</view>
 					<view class="info-list">
 						<view class="info-row">
-							<text class="info-label">商品小计</text>
+							<text class="info-label">{{ i18n.t("orderDetail.subtotal") }}</text>
 							<text class="info-value">฿{{ orderData.subtotal || 0 }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.discount_amount > 0">
-							<text class="info-label">优惠减免</text>
+							<text class="info-label">{{ i18n.t("orderDetail.discount") }}</text>
 							<text class="info-value discount">-฿{{ orderData.discount_amount }}</text>
 						</view>
 							<view class="info-row" v-if="orderData.coin_deduct_amount > 0">
-								<text class="info-label">金币抵扣</text>
-								<text class="info-value discount">-฿{{ orderData.coin_deduct_amount }}<text v-if="orderData.coins_used"> ({{ orderData.coins_used }}个金币)</text></text>
+								<text class="info-label">{{ i18n.t("orderDetail.coinDeduct") }}</text>
+								<text class="info-value discount">-฿{{ orderData.coin_deduct_amount }}<text v-if="orderData.coins_used"> ({{ i18n.t("orderDetail.coinsCount", { n: orderData.coins_used }) }})</text></text>
 							</view>
 							<view class="info-row" v-if="memberSettlement && memberSettlement.coins_earned > 0">
-								<text class="info-label">获得金币</text>
-								<text class="info-value">+{{ memberSettlement.coins_earned }}个</text>
+								<text class="info-label">{{ i18n.t("orderDetail.coinsEarned") }}</text>
+								<text class="info-value">{{ i18n.t("orderDetail.coinsUnit", { n: memberSettlement.coins_earned }) }}</text>
 							</view>
 							<view class="info-row" v-if="memberSettlement && memberSettlement.points_earned > 0">
-								<text class="info-label">获得积分</text>
-								<text class="info-value">+{{ memberSettlement.points_earned }}分</text>
+								<text class="info-label">{{ i18n.t("orderDetail.pointsEarned") }}</text>
+								<text class="info-value">{{ i18n.t("orderDetail.pointsUnit", { n: memberSettlement.points_earned }) }}</text>
 							</view>
 						<view class="info-row total-row">
-							<text class="info-label">实付金额</text>
+							<text class="info-label">{{ i18n.t("orderDetail.actualPay") }}</text>
 							<text class="info-value total">฿{{ orderData.total_amount || 0 }}</text>
 						</view>
 					</view>
@@ -164,31 +172,31 @@
 			<view class="info-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">订单信息</text>
+						<text class="title-text">{{ i18n.t("orderDetail.orderInfo") }}</text>
 					</view>
 					<view class="info-list">
 						<view class="info-row">
-							<text class="info-label">订单编号</text>
+							<text class="info-label">{{ i18n.t("orderDetail.orderNo") }}</text>
 							<text class="info-value">{{ orderData.order_no }}</text>
 						</view>
 						<view class="info-row">
-							<text class="info-label">下单时间</text>
+							<text class="info-label">{{ i18n.t("orderDetail.orderTime") }}</text>
 							<text class="info-value">{{ formatTime(orderData.created_at) }}</text>
 						</view>
 						<view class="info-row">
-							<text class="info-label">订单类型</text>
+							<text class="info-label">{{ i18n.t("orderDetail.orderSource") }}</text>
 							<text class="info-value">{{ formatOrderSource(orderData.order_source) }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.remark">
-							<text class="info-label">备注</text>
+							<text class="info-label">{{ i18n.t("orderDetail.remark") }}</text>
 							<text class="info-value">{{ orderData.remark }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.payment_method">
-							<text class="info-label">支付方式</text>
+							<text class="info-label">{{ i18n.t("orderDetail.payMethod") }}</text>
 							<text class="info-value">{{ formatPaymentMethod(orderData.payment_method) }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.paid_at">
-							<text class="info-label">支付时间</text>
+							<text class="info-label">{{ i18n.t("orderDetail.payTime") }}</text>
 							<text class="info-value">{{ formatTime(orderData.paid_at) }}</text>
 						</view>
 					</view>
@@ -202,10 +210,10 @@
 		<!-- 底部操作栏 -->
 		<view class="bottom-bar">
 			<view class="action-btn contact-btn" @click="handleContact">
-				<text class="action-btn-text">联系商家</text>
+				<text class="action-btn-text">{{ i18n.t("orderDetail.contactStore") }}</text>
 			</view>
 			<view class="action-btn reorder-btn" @click="handleReorder">
-				<text class="action-btn-text">再来一单</text>
+				<text class="action-btn-text">{{ i18n.t("orderDetail.reorder") }}</text>
 			</view>
 		</view>
 	</view>
@@ -213,43 +221,43 @@
 
 <script>
 import { getOrderDetail } from '@/api/services/order.js'
-import { getOrderDelivery } from '@/api/services/delivery.js'
+
 import { showToast } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 
-const STATUS_MAP = {
-	'PENDING_PAYMENT': '待支付',
-	'PAID': '已支付',
-	'PREPARING': '制作中',
-	'READY': '待取餐',
-	'COMPLETED': '已完成',
-	'CANCELLED': '已取消'
+const STATUS_I18N_KEYS = {
+	'PENDING_PAYMENT': 'order.pending',
+	'PAID': 'order.paid',
+	'PREPARING': 'order.preparing',
+	'READY': 'order.ready',
+	'COMPLETED': 'order.completed',
+	'CANCELLED': 'order.cancelled'
 }
 
-const PAYMENT_METHOD_MAP = {
-	'cash_pos': '现金支付',
-	'visa': '信用卡支付',
-	'paypal': 'PayPal',
-	'coin_deduct': '金币抵扣',
-	'coupon': '优惠券支付'
+const PAYMENT_METHOD_I18N = {
+	'cash_pos': 'orderDetail.payCash',
+	'visa': 'orderDetail.payVisa',
+	'paypal': 'orderDetail.payPaypal',
+	'coin_deduct': 'orderDetail.payCoin',
+	'coupon': 'orderDetail.payCoupon'
 }
 
-const ORDER_TYPE_MAP = {
-	'SINEFOOD_NOODLE': '泰式海鲜面',
-	'HOTPOT': '火锅',
-	'MALATANG': '麻辣烫',
-	'BBQ': '烧烤',
-	'SEAFOOD_NOODLE': '泰式海鲜面',
-	'DINE_IN': '堂食',
-	'TAKEAWAY': '外卖',
-	'DELIVERY': '配送'
+const ORDER_TYPE_I18N = {
+	'SINEFOOD_NOODLE': 'order.seafoodNoodle',
+	'HOTPOT': 'order.hotpot',
+	'MALATANG': 'order.malatang',
+	'BBQ': 'order.hotpot',
+	'SEAFOOD_NOODLE': 'order.seafoodNoodle',
+	'DINE_IN': 'order.dineIn',
+	'TAKEAWAY': 'order.takeaway',
+	'DELIVERY': 'order.delivery'
 }
 
-const ORDER_SOURCE_MAP = {
-	'DINE_IN_SCAN': '扫码点餐',
-	'DINE_IN_CASHIER': '柜台点餐',
-	'TAKEAWAY': '自提',
-	'DELIVERY': '外卖配送'
+const ORDER_SOURCE_I18N = {
+	'DINE_IN_SCAN': 'orderDetail.sourceDineInScan',
+	'DINE_IN_CASHIER': 'orderDetail.sourceDineInCashier',
+	'TAKEAWAY': 'orderDetail.sourceTakeaway',
+	'DELIVERY': 'orderDetail.sourceDelivery'
 }
 
 export default {
@@ -261,12 +269,13 @@ export default {
 			orderId: '',
 			loading: true,
 			orderData: {},
-			deliveryInfo: null
+			deliveryInfo: null,
+				pickupCode: ""
 		}
 	},
 	computed: {
 		statusText() {
-			return STATUS_MAP[this.orderData.status] || this.orderData.status || '未知'
+			return i18n.t(STATUS_I18N_KEYS[this.orderData.status] || '') || this.orderData.status || i18n.t('orderDetail.unknown')
 		},
 		memberSettlement() {
 			const extra = this.orderData.extra_data
@@ -297,21 +306,22 @@ export default {
 		async loadOrderDetail() {
 			this.loading = true
 			try {
-				const [orderRes, deliveryRes] = await Promise.allSettled([
-					getOrderDetail(this.orderId),
-					getOrderDelivery(this.orderId).catch(() => null)
+				const [orderRes] = await Promise.allSettled([
+					getOrderDetail(this.orderId)
 				])
 
 				if (orderRes.status === 'fulfilled' && orderRes.value.code === 0 && orderRes.value.data) {
-					this.orderData = orderRes.value.data
+					const dd = orderRes.value.data; if (dd.order && dd.items) { this.orderData = { ...dd.order, items: dd.items } } else { this.orderData = dd }
+
+					// Read pickup code from localStorage
+					try { this.pickupCode = uni.getStorageSync("pickup_code_" + this.orderId) || "" } catch(e) {}
+					// Parse extra_data if it is a JSON string
+					if (this.orderData.extra_data && typeof this.orderData.extra_data === "string") { try { this.orderData.extra_data = JSON.parse(this.orderData.extra_data) } catch(e) {} }
 				}
 
-				if (deliveryRes.status === 'fulfilled' && deliveryRes.value.code === 0 && deliveryRes.value.data) {
-					this.deliveryInfo = deliveryRes.value.data
-				}
 			} catch (e) {
-				console.error('加载订单详情失败:', e)
-				showToast('加载失败')
+				console.error('Load order detail failed:', e)
+				showToast(this.i18n.t('orderDetail.loadFailed'))
 			} finally {
 				this.loading = false
 			}
@@ -336,11 +346,11 @@ export default {
 		},
 
 		formatOrderSource(source) {
-			return ORDER_SOURCE_MAP[source] || source || '未知'
+			return i18n.t(ORDER_SOURCE_I18N[source] || '') || source || i18n.t('orderDetail.unknown')
 		},
 
 		formatPaymentMethod(method) {
-			return PAYMENT_METHOD_MAP[method] || method || '未知'
+			return i18n.t(PAYMENT_METHOD_I18N[method] || '') || method || i18n.t('orderDetail.unknown')
 		},
 
 		getItemName(item) {
@@ -357,7 +367,7 @@ export default {
 		},
 
 		formatOrderType(type) {
-			return ORDER_TYPE_MAP[type] || type || ''
+			return i18n.t(ORDER_TYPE_I18N[type] || '') || type || ''
 		},
 
 		goBack() {
@@ -369,11 +379,11 @@ export default {
 				uni.makePhoneCall({
 					phoneNumber: this.deliveryInfo.shop.phone,
 					fail: () => {
-						showToast('拨打失败')
+						showToast(this.i18n.t('orderDetail.callFailed'))
 					}
 				})
 			} else {
-				showToast('暂无商家联系方式')
+				showToast(this.i18n.t('orderDetail.noStoreContact'))
 			}
 		},
 
@@ -383,7 +393,7 @@ export default {
 					id: item.id,
 					name: item.item_name,
 					price: item.unit_price,
-					image: item.image_url || '/static/logo.png',
+					image: item.image_url || '/static/images/img-placeholder.svg',
 					quantity: item.quantity,
 					store_id: this.orderData.store_id || this.orderData.shop_id || ''
 				}))

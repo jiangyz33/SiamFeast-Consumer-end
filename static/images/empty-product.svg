@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="100" cy="90" r="70" fill="#FFF8E1"/>
+  <!-- 购物袋 -->
+  <path d="M65 65 L65 140 C65 144 68 147 72 147 L128 147 C132 147 135 144 135 140 L135 65 Z" fill="white" stroke="#F2B131" stroke-width="2.5"/>
+  <!-- 袋子手提 -->
+  <path d="M80 65 L80 50 C80 40 89 32 100 32 C111 32 120 40 120 50 L120 65" fill="none" stroke="#F2B131" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 袋内商品 -->
+  <rect x="82" y="85" width="36" height="8" rx="4" fill="#F2B131" opacity="0.15"/>
+  <rect x="82" y="100" width="28" height="8" rx="4" fill="#F2B131" opacity="0.1"/>
+  <!-- 星星装饰 -->
+  <path d="M150 45 L152 51 L158 51 L153 55 L155 61 L150 57 L145 61 L147 55 L142 51 L148 51 Z" fill="#F2B131" opacity="0.2"/>
+</svg>

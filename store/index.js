@@ -6,6 +6,7 @@ const TOKEN_KEY = 'siamfeast_token'
 const USER_INFO_KEY = 'siamfeast_userInfo'
 const LOGIN_TYPE_KEY = 'siamfeast_loginType'
 const CURRENT_STORE_KEY = 'siamfeast_currentStore'
+const CART_KEY = 'siamfeast_cart'
 
 const store = {
 	state: {
@@ -185,7 +186,54 @@ const store = {
 		} catch (e) {
 			console.error('clearCurrentStore error:', e)
 		}
-	}
-}
+		},
+		isPureHostelStore() {
+			const s = this.getCurrentStore()
+			if (!s) return false
+			const types = s.business_types || []
+			if (!types.includes('HOSTEL_ROOM')) return false
+			const nonHostelTypes = ['HOTPOT_BUFFET', 'HOTPOT_PER_ITEM', 'MALA_TANG', 'SEAFOOD_NOODLE', 'HOSTEL_HOTPOT', 'HOSTEL_COFFEE', 'STANDARD_FOOD']
+			return !types.some(t => nonHostelTypes.includes(t))
+		},
 
+		getCart(storeId) {
+			try {
+				const raw = uni.getStorageSync(CART_KEY)
+				const all = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : {}
+				if (storeId) return all[storeId] || []
+				return all
+			} catch (e) {
+				return storeId ? [] : {}
+			}
+		},
+
+		addToCart(storeId, item) {
+			if (!storeId) { console.error("addToCart: storeId is null"); return }
+			try {
+				const all = this.getCart()
+				const cart = all[storeId] || []
+				const specsKey = item.specs ? JSON.stringify(item.specs) : ''
+				const existIdx = cart.findIndex(ci => ci.id === item.id && JSON.stringify(ci.specs || {}) === specsKey)
+				if (existIdx >= 0) {
+					cart[existIdx].quantity += (item.quantity || 1)
+				} else {
+					cart.push({ ...item, quantity: item.quantity || 1 })
+				}
+				all[storeId] = cart
+				uni.setStorageSync(CART_KEY, JSON.stringify(all))
+			} catch (e) {
+				console.error('addToCart error:', e)
+			}
+		},
+
+		clearCart(storeId) {
+			try {
+				const all = this.getCart()
+				delete all[storeId]
+				uni.setStorageSync(CART_KEY, JSON.stringify(all))
+			} catch (e) {
+				console.error('clearCart error:', e)
+			}
+		}
+	}
 export default store

@@ -33,20 +33,21 @@
 			</view>
 		</view>
 
-		<!-- 分类筛选 -->
-		<scroll-view class="category-scroll" scroll-x>
-			<view class="category-list">
-				<view
-					v-for="(item, index) in categories"
-					:key="item.id || index"
-					class="category-tab"
-					:class="{ 'category-tab-active': activeCategoryIndex === index }"
-					@click="selectCategory(index)"
-				>
-					<text class="category-tab-text">{{ item.name }}</text>
+			<!-- 分类筛选 -->
+			<scroll-view class="category-scroll" scroll-x>
+				<view class="category-list">
+					<view
+						v-for="(item, index) in categories"
+						:key="item.id || index"
+						class="category-item"
+						:class="{ 'category-active': activeCategoryIndex === index }"
+						@click="selectCategory(index)"
+					>
+						<image class="category-icon" :src="item.icon || '/static/images/img-placeholder.svg'" mode="aspectFit"></image>
+						<text class="category-name">{{ item['name_' + i18n.getLanguage()] || item.name || item.name_en }}</text>
+					</view>
 				</view>
-			</view>
-		</scroll-view>
+			</scroll-view>
 
 		<!-- 内容区域 -->
 		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }" @scrolltolower="loadMore">
@@ -62,12 +63,12 @@
 					<view class="rank-badge" v-if="index < 3">
 						<text class="rank-text">{{ index + 1 }}</text>
 					</view>
-					<image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
+					<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					<view class="product-info">
 						<view class="product-content">
-							<text class="product-name">{{ item.name }}</text>
+							<text class="product-name">{{ item.name || item.name_en }}</text>
 							<view class="product-sales">
-								<text class="sales-text">已售{{ item.sales_count || 0 }}份</text>
+								<text class="sales-text">{{ i18n.t("mine.monthlySales") }}{{ item.sales_count || 0 }}</text>
 							</view>
 						</view>
 						<view class="product-footer">
@@ -86,12 +87,14 @@
 			<!-- 加载状态 -->
 			<view class="loading-tip">
 				<text v-if="loading" class="tip-text">加载中...</text>
-				<text v-else-if="noMore && products.length > 0" class="tip-text">没有更多了</text>
+				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t("order.noMore") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view v-if="!loading && products.length === 0" class="empty-state">
-				<text class="empty-text">暂无热销商品</text>
+				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
+				<text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -107,8 +110,8 @@
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
-import { showToast } from '@/utils/index.js'
-import { getHotProducts, searchProducts } from '@/api/services/products.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
+import { getHotProducts } from '@/api/services/products.js'
 import { getConsumerCategories } from '@/api/services/menu.js'
 
 export default {
@@ -128,25 +131,41 @@ export default {
 			activeCategoryIndex: 0,
 			showSearch: false,
 			searchKeyword: '',
-			isSearchMode: false
 		}
-	},
-	computed: {
-		products() {
-			if (this.activeCategoryIndex === 0) return this.allProducts
-			const selectedCat = this.categories[this.activeCategoryIndex]
-			if (!selectedCat || !selectedCat.id) return this.allProducts
-			return this.allProducts.filter(p => p.category_id === selectedCat.id)
-		}
-	},
-	onLoad() {
-		this.initPage()
-		const currentStore = appStore.getCurrentStore()
-		if (currentStore) {
-			this.shopId = currentStore.id
-		}
-		this.loadCategories()
-		this.loadProducts()
+		},
+		computed: {
+			products() {
+				let result = this.allProducts
+				// Filter by category
+				if (this.activeCategoryIndex > 0) {
+					const selectedCat = this.categories[this.activeCategoryIndex]
+					if (selectedCat && selectedCat.id) {
+						result = result.filter(p => p.category_id === selectedCat.id)
+					}
+				}
+				// Filter by search keyword
+				if (this.searchKeyword.trim()) {
+					const kw = this.searchKeyword.trim().toLowerCase()
+					result = result.filter(p => {
+						const name = (p.name || '').toLowerCase()
+						const nameEn = (p.name_en || '').toLowerCase()
+						const nameTh = (p.name_th || '').toLowerCase()
+						return name.includes(kw) || nameEn.includes(kw) || nameTh.includes(kw)
+					})
+				}
+				return result
+			}
+		},
+	onLoad(options) {
+			this.initPage()
+			if (options && options.shopId) {
+				this.shopId = options.shopId
+			} else {
+				const currentStore = appStore.getCurrentStore()
+				if (currentStore) this.shopId = currentStore.id
+			}
+			this.loadCategories()
+			this.loadProducts()
 	},
 	methods: {
 		initPage() {
@@ -158,21 +177,27 @@ export default {
 			this.contentHeight = systemInfo.windowHeight - navBarHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
 		},
 
-		async loadCategories() {
-			try {
-				const storeId = this.shopId || 1
-				const res = await getConsumerCategories(storeId)
-				if (res.code === 0 && res.data) {
-					const cats = (res.data || []).map(c => ({
-						id: c.id,
-						name: c.name
-					}))
-					this.categories = [{ id: null, name: '全部' }, ...cats]
+			async loadCategories() {
+				try {
+					const res = await getConsumerCategories()
+					if (res.code === 0 && res.data) {
+						const catData = Array.isArray(res.data) ? res.data : (res.data.items || [])
+						const apiCats = catData.map(c => {
+							const rawIcon = c.icon || c.icon_url || '' 
+							const icon = rawIcon ? fixMinioUrl(rawIcon) : '/static/images/store-placeholder.svg'
+							return { id: c.id, name: c.name, name_en: c.name_en || '', name_th: c.name_th || '', icon: icon }
+						})
+						const seen = new Map()
+						for (const cat of apiCats) {
+							const key = (cat.name_en || cat.name || '').toLowerCase()
+							if (!seen.has(key)) seen.set(key, cat)
+						}
+						this.categories = [{ id: null, name: '全部', name_en: 'All', name_th: 'ทั้งหมด', icon: '/static/images/store-placeholder.svg' }, ...seen.values()]
+					}
+				} catch (e) {
+					console.error('加载分类失败:', e)
 				}
-			} catch (e) {
-				console.error('加载分类失败:', e)
-			}
-		},
+			},
 
 		async loadProducts() {
 			if (this.loading) return
@@ -192,42 +217,20 @@ export default {
 			}
 		},
 
-		async handleSearch() {
-			if (!this.searchKeyword.trim()) {
-				this.isSearchMode = false
-				this.loadProducts()
-				return
-			}
-			this.loading = true
-			this.isSearchMode = true
-			try {
-				const params = { keyword: this.searchKeyword.trim(), limit: 20 }
-				if (this.shopId) params.store_id = this.shopId
-				const res = await searchProducts(params)
-				const items = res.data?.items || []
-				this.allProducts = items
-				this.noMore = true
-			} catch (e) {
-				console.error('搜索失败:', e)
-			} finally {
-				this.loading = false
-			}
-		},
+			handleSearch() {
+				// Local filter, no API call needed - computed handles it
+			},
 
-		clearSearch() {
-			this.searchKeyword = ''
-			this.isSearchMode = false
-			this.loadProducts()
-		},
-
-		handleSearchClick() {
-			this.showSearch = !this.showSearch
-			if (!this.showSearch && this.isSearchMode) {
+			clearSearch() {
 				this.searchKeyword = ''
-				this.isSearchMode = false
-				this.loadProducts()
-			}
-		},
+			},
+
+			handleSearchClick() {
+				this.showSearch = !this.showSearch
+				if (!this.showSearch) {
+					this.searchKeyword = '' 
+				}
+			},
 
 		selectCategory(index) {
 			if (this.activeCategoryIndex === index) return
@@ -250,14 +253,14 @@ export default {
 
 		handleBuy(item) {
 			if (item.is_sold_out) {
-				showToast('商品已售罄')
+				showToast(i18n.t('dinein.soldOut'))
 				return
 			}
 			const productData = {
 				id: item.id,
-				name: item.name,
+				name: item["name_" + i18n.getLanguage()] || item.name || item.name_en,
 				price: item.price,
-				image: item.image_url || '/static/logo.png',
+				image: item.image_url || '/static/images/img-placeholder.svg',
 				quantity: 1,
 				store_id: this.shopId
 			}
@@ -376,33 +379,49 @@ export default {
 
 /* 分类筛选 */
 .category-scroll {
-	background-color: #FFFFFF;
-	padding: 0 16px 10px;
+	padding: 14px 16px;
 	white-space: nowrap;
+	background-color: #FFFFFF;
 }
 
 .category-list {
 	display: inline-flex;
+	background-color: #FFFFFF;
+	border-radius: 12px;
+	padding: 8px;
+	gap: 0;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.category-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 6px 12px;
 	gap: 6px;
+	min-width: 60px;
+	border-radius: 8px;
+	transition: background-color 0.2s;
 }
 
-.category-tab {
-	padding: 6px 16px;
-	background-color: #F5F5F5;
-	border-radius: 16px;
+.category-item:active {
+	background-color: #FFF8E1;
 }
 
-.category-tab-text {
-	font-size: 13px;
-	color: #666666;
+.category-icon {
+	width: 38px;
+	height: 38px;
+	border-radius: 10px;
 }
 
-.category-tab-active {
-	background-color: #F2B131;
+.category-name {
+	font-size: 11px;
+	font-weight: 500;
+	color: rgba(0, 0, 0, 0.6);
 }
 
-.category-tab-active .category-tab-text {
-	color: #FFFFFF;
+.category-active .category-name {
+	color: #F2B131;
 	font-weight: 600;
 }
 
@@ -544,9 +563,16 @@ export default {
 	justify-content: center;
 }
 
-.empty-text {
-	font-size: 14px;
-	color: #949494;
+.empty-title {
+	font-size: 15px;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 6px;
+}
+
+	.empty-desc {
+	font-size: 13px;
+	color: #999;
 }
 
 /* 底部占位 */

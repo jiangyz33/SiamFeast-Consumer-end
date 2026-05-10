@@ -83,71 +83,69 @@
 				</view>
 			</view>
 
-			<!-- ========== 客房列表 ========== -->
-			<view v-if="activeTab === 0" class="room-list">
-				<view
-					v-for="room in rooms"
-					:key="room.id"
-					class="room-card"
-				>
-					<!-- 房间图片 -->
-					<view class="room-img-box">
-						<image class="room-img" :src="room.image || '/static/logo.png'" mode="aspectFill"></image>
-						<view class="room-status-tag" v-if="!room.is_available">
-							<text class="room-status-text">已满</text>
+				<!-- ========== 客房列表 ========== -->
+				<view v-if="activeTab === 0" class="room-list">
+					<view
+						v-for="room in rooms"
+						:key="room.id"
+						class="room-card"
+					>
+						<!-- 房间图片 -->
+						<view class="room-img-wrapper">
+							<image class="room-img" :src="room.image || '/static/images/empty-room.svg'" mode="aspectFill"></image>
+							<view class="room-status-mask" v-if="!room.is_available">
+								<text class="room-status-text">已满</text>
+							</view>
 						</view>
-					</view>
-					<!-- 房间信息 -->
-					<view class="room-body">
-						<view class="room-top">
+						<!-- 房间信息 -->
+						<view class="room-content">
+						<view class="room-name-row">
 							<text class="room-name">{{ room.name }}</text>
-							<view class="room-tags" v-if="room.tags && room.tags.length">
-								<text class="room-tag" v-for="(t, ti) in room.tags.slice(0, 3)" :key="ti">{{ t }}</text>
+							<view class="spec-chip" v-if="room.capacity">
+								<text class="spec-chip-text">{{ room.capacity }}人</text>
 							</view>
 						</view>
-						<text class="room-desc" v-if="room.description">{{ room.description }}</text>
-						<view class="room-specs">
-							<text class="spec-item" v-if="room.capacity">{{ room.capacity }}人</text>
-							<text class="spec-dot" v-if="room.capacity && room.bed_count">·</text>
-							<text class="spec-item" v-if="room.bed_count">{{ room.bed_count }}床</text>
-							<text class="spec-dot" v-if="room.bed_count && room.room_size">·</text>
-							<text class="spec-item" v-if="room.room_size">{{ room.room_size }}m²</text>
-						</view>
-						<!-- 价格 & 预订 -->
-						<view class="room-bottom">
-							<view class="room-price-row">
-								<text class="price-sym">฿</text>
-								<text class="price-val">{{ room.base_price }}</text>
-								<text class="price-unit">/晚</text>
-								<text class="price-total" v-if="nights > 0 && room.is_available">
-									{{ nights }}晚 ฿{{ room.base_price * nights }}
-								</text>
+						<view class="room-spec-chips">
+							<view class="spec-chip" v-if="room.bed_count">
+								<text class="spec-chip-text">{{ room.bed_count }}床</text>
 							</view>
-							<view
-								class="book-btn"
-								:class="{ 'book-btn-off': !room.is_available || !isDateReady }"
-								@click.stop="handleBook(room)"
-							>
-								<text class="book-btn-text">
-									{{ !room.is_available ? '已满' : (!isDateReady ? '选日期' : '预订') }}
-								</text>
+							<view class="spec-chip" v-if="room.room_size">
+								<text class="spec-chip-text">{{ room.room_size }}m²</text>
+							</view>
+						</view>
+							<text class="room-desc" v-if="room.description">{{ room.description }}</text>
+							<!-- 价格 & 预订 -->
+							<view class="room-footer">
+								<view class="room-price-box">
+									<text class="price-val">฿{{ room.base_price }}</text>
+									<text class="price-unit">/晚</text>
+									<text class="price-total" v-if="nights > 0 && room.is_available">{{ nights }}晚 ฿{{ room.base_price * nights }}</text>
+								</view>
+								<view
+									class="book-btn"
+									:class="{ 'book-btn-off': !room.is_available || !isDateReady }"
+									@click.stop="handleBook(room)"
+								>
+									<text class="book-btn-text">
+										{{ !room.is_available ? '已满' : (!isDateReady ? '选日期' : '预订') }}
+									</text>
+								</view>
 							</view>
 						</view>
 					</view>
-				</view>
 
-				<view class="empty-box" v-if="rooms.length === 0 && !loading">
-					<image class="empty-img" src="/static/logo.png" mode="aspectFit"></image>
-					<text class="empty-msg">暂无可用客房</text>
+					<view class="empty-box" v-if="rooms.length === 0 && !loading">
+						<image class="empty-img" src="/static/images/empty-room.svg" mode="aspectFit"></image>
+						<text class="empty-msg">{{ i18n.t("common.empty.room") }}</text>
+						<text class="empty-msg-desc">{{ i18n.t("common.empty.roomDesc") }}</text>
+					</view>
 				</view>
-			</view>
-
 			<!-- ========== 商品列表（动态分类） ========== -->
 			<view v-if="activeTab > 0" class="product-list">
 				<view v-for="item in currentProducts" :key="item.id" class="prod-card" @click="handleProductClick(item)">
 					<image class="prod-img" :src="item.image" mode="aspectFill"></image>
 					<view class="prod-body">
-						<text class="prod-name">{{ item.name }}</text>
+						<text class="prod-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
 						<text class="prod-desc" v-if="item.description">{{ item.description }}</text>
 						<view class="prod-bottom">
 							<view class="prod-price">
@@ -263,7 +261,7 @@ import appStore from '@/store/index.js'
 import { getRooms, getAvailableRooms } from '@/api/services/hostel.js'
 import { getStore } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
-import { getConsumerCategories, getConsumerMenuItems } from '@/api/services/menu.js'
+import { getConsumerCategories, getConsumerMenuItems, getStoreMenuCategories } from '@/api/services/menu.js'
 import { showToast } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 
@@ -279,7 +277,7 @@ export default {
 			shopInfo: {
 				name: '暹罗民宿',
 				fullName: '暹罗民宿·曼谷店',
-				banner: '/static/logo.png',
+				banner: '/static/images/banner-placeholder.svg',
 				rating: 4.8,
 				businessHours: '24小时',
 				address: '123 Sukhumvit Rd, Bangkok'
@@ -306,11 +304,8 @@ export default {
 	},
 	computed: {
 		currentProducts() {
-			if (this.activeTab === 0 || this.categories.length === 0) return []
-			const catIndex = this.activeTab - 1
-			if (catIndex >= this.categories.length) return []
-			const catId = this.categories[catIndex].id
-			return this.allProducts.filter(p => p.category_id === catId)
+			if (this.activeTab === 0) return []
+			return this.allProducts
 		},
 		nights() {
 			if (!this.checkInDate || !this.checkOutDate) return 0
@@ -428,12 +423,40 @@ export default {
 					check_out_date: checkOut
 				})
 				if (res.code === 0 && res.data) {
-					this.rooms = res.data.available_rooms || []
+					const d = res.data
+					const rawRooms = Array.isArray(d) ? d : (d.data || d.available_rooms || d.rooms || [])
+					this.rooms = rawRooms.map(r => ({
+						id: r.id,
+						name: r.room_type_name || r.name || ('Room ' + r.room_number),
+						room_number: r.room_number,
+						floor: r.floor,
+						base_price: r.base_price,
+						capacity: r.max_guests || r.capacity || 0,
+						bed_count: r.bed_count || 0,
+						room_size: r.area_sqm || r.room_size || 0,
+						description: r.description || '',
+						is_available: r.status === 'AVAILABLE' || r.is_available === true,
+						image: r.cover_image || r.image || '/static/images/img-placeholder.svg',
+						tags: r.amenities || r.tags || []
+					}))
 				}
 				if (this.rooms.length === 0) {
 					try {
 						const fallbackRes = await getRooms(this.storeId)
-						if (fallbackRes.code === 0 && fallbackRes.data) this.rooms = fallbackRes.data
+						if (fallbackRes.code === 0 && fallbackRes.data) {
+						const fd = fallbackRes.data
+						const rawFd = Array.isArray(fd) ? fd : (fd.data || fd.rooms || fd.available_rooms || [])
+						this.rooms = rawFd.map(r => ({
+							id: r.id,
+							name: r.room_type_name || r.name || ('Room ' + r.room_number),
+							room_number: r.room_number,
+							base_price: r.base_price || r.price_per_night || 0,
+							capacity: r.max_guests || r.capacity || 0,
+							is_available: r.status === 'AVAILABLE' || r.is_available === true,
+							image: r.cover_image || r.image || '/static/images/img-placeholder.svg',
+							description: r.description || ''
+						}))
+					}
 					} catch (e2) {
 						this.loadDemoData()
 					}
@@ -451,65 +474,118 @@ export default {
 			return d.toISOString().slice(0, 10)
 		},
 		async loadMenuData() {
-			if (!this.storeId) return
-			try {
-				const [storeRes, catRes, itemsRes] = await Promise.allSettled([
-					getStore(this.storeId),
-					getConsumerCategories(this.storeId),
-					getConsumerMenuItems(this.storeId)
-				])
+				if (!this.storeId) return
+				try {
+					// Step 1: Load store first to get business_types
+					const storeRes = await getStore(this.storeId)
+					let storeBusinessTypes = []
 
-				if (storeRes.status === 'fulfilled' && storeRes.value.code === 0 && storeRes.value.data) {
-					const s = storeRes.value.data
-					this.shopInfo = {
-						...this.shopInfo,
-						name: s.name,
-						fullName: s.name,
-						banner: s.banner_image || s.background_image_url || '/static/logo.png',
-						phone: s.phone || '',
-						address: s.formatted_address || s.address || this.shopInfo.address,
-						businessHours: s.config
-							? `${(s.config.opening_time||'').slice(0,5)}-${(s.config.closing_time||'').slice(0,5)}`
-							: this.shopInfo.businessHours
+					if (storeRes.code === 0 && storeRes.data) {
+						const s = storeRes.data
+						storeBusinessTypes = s.business_types || []
+						this.shopInfo = {
+							...this.shopInfo,
+							name: s.name,
+							fullName: s.name,
+							banner: s.banner_image || s.background_image_url || '/static/images/banner-placeholder.svg',
+							phone: s.phone || '',
+							address: s.formatted_address || s.address || this.shopInfo.address,
+							businessHours: s.config
+								? `${(s.config.opening_time||'').slice(0,5)}-${(s.config.closing_time||'').slice(0,5)}`
+								: this.shopInfo.businessHours
+						}
 					}
-				}
 
-				// 记录民宿门店浏览足迹
-				if (this.shopInfo && this.shopInfo.id) {
-					footprintManager.addStoreFootprint({
-						id: this.shopInfo.id,
-						name: this.shopInfo.name,
-						logo: this.shopInfo.logo,
-						address: this.shopInfo.address,
-						rating: this.shopInfo.rating || 4.5,
-						status: this.shopInfo.status || 'OPEN',
-						businessHours: this.shopInfo.businessHours
-					})
-				}
+					// 记录民宿门店浏览足迹
+					if (this.shopInfo && this.shopInfo.id) {
+						footprintManager.addStoreFootprint({
+							id: this.shopInfo.id,
+							name: this.shopInfo.name,
+							logo: this.shopInfo.logo,
+							address: this.shopInfo.address,
+							rating: this.shopInfo.rating || 4.5,
+							status: this.shopInfo.status || 'OPEN',
+							businessHours: this.shopInfo.businessHours
+						})
+					}
 
-				if (catRes.status === 'fulfilled' && catRes.value.code === 0 && catRes.value.data) {
-					this.categories = (catRes.value.data || []).map(c => ({
-						id: c.id,
-						name: c.name,
-						name_en: c.name_en || '',
-						name_th: c.name_th || ''
-					}))
+					// Step 2: Load store menu categories (门店自定义菜单分组)
+					try {
+						const smcRes = await getStoreMenuCategories(this.shopInfo.id)
+						if (smcRes.code === 0 && smcRes.data) {
+							const smcData = Array.isArray(smcRes.data) ? smcRes.data : (smcRes.data.items || [])
+							if (smcData.length > 0) {
+								this.categories = smcData.map(c => ({
+									id: c.id,
+									name: c.name,
+									name_en: c.name_en || '',
+									name_th: c.name_th || ''
+								}))
+							} else {
+								// Fallback to global categories
+								await this.loadFallbackCategories(storeBusinessTypes)
+							}
+						} else {
+							await this.loadFallbackCategories(storeBusinessTypes)
+						}
+					} catch (e) {
+						console.error('loadStoreMenuCategories error:', e)
+						await this.loadFallbackCategories(storeBusinessTypes)
+					}
 					// 动态构建 tabs: 客房 + 各分类
 					this.tabs = [
 						{ name: '客房', key: 'room' },
 						...this.categories.map(c => ({ name: c.name, key: 'cat_' + c.id }))
 					]
-				}
 
-				if (itemsRes.status === 'fulfilled' && itemsRes.value.code === 0 && itemsRes.value.data) {
-					const items = Array.isArray(itemsRes.value.data) ? itemsRes.value.data : (itemsRes.value.data.items || [])
+					// Load products for first category tab after categories are ready
+					if (this.categories.length > 0) {
+						this.loadCategoryProducts()
+					}
+				} catch (e) {
+					console.error('loadMenuData error:', e)
+				}
+			},
+
+			async loadFallbackCategories(storeBusinessTypes) {
+				const categoryBusinessType = this.mapBusinessType(storeBusinessTypes)
+				const catRes = await getConsumerCategories(categoryBusinessType)
+				if (catRes.code === 0 && catRes.data) {
+					const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.items || [])
+					this.categories = catData.map(c => ({
+						id: c.id,
+						name: c.name,
+						name_en: c.name_en || '',
+						name_th: c.name_th || ''
+					}))
+				}
+			},
+
+			// Map store business_types to category business_type filter
+			mapBusinessType(businessTypes) {
+				if (!businessTypes || !businessTypes.length) return null
+				if (businessTypes.some(t => t.includes('HOTPOT'))) return 'hotpot'
+				if (businessTypes.some(t => t.includes('MALATANG'))) return 'malatang'
+				return 'standard'
+			},
+
+		async loadCategoryProducts() {
+			if (this.activeTab === 0 || this.categories.length === 0) return
+			const catIndex = this.activeTab - 1
+			if (catIndex >= this.categories.length) return
+			const catId = this.categories[catIndex].id
+			try {
+				const res = await getConsumerMenuItems(this.storeId, { store_menu_category_id: catId })
+				if (res.code === 0 && res.data) {
+					const items = Array.isArray(res.data) ? res.data : (res.data.items || [])
 					this.allProducts = items.map(item => ({
 						id: item.id,
-						name: item.name,
+						name: item["name_" + i18n.getLanguage()] || item.name || item.name_en,
 						description: item.description || '',
 						price: item.price,
-						image: item.image_url || '/static/logo.png',
+						image: item.image_url || '/static/images/img-placeholder.svg',
 						category_id: item.category_id,
+						store_menu_category_id: item.store_menu_category_id,
 						business_type: item.business_type || '',
 						tags: item.tags || [],
 						is_sold_out: item.is_sold_out || false,
@@ -517,20 +593,20 @@ export default {
 					}))
 				}
 			} catch (e) {
-				console.error('loadMenuData error:', e)
+				console.error("loadCategoryProducts error:", e)
 			}
 		},
 
 		loadDemoData() {
 			this.rooms = [
-				{ id: 1, name: '豪华大床房', description: '舒适宽敞，配备独立卫浴，城市景观', base_price: 899, capacity: 2, bed_count: 1, room_size: 35, is_available: true, image: '/static/logo.png', tags: ['独立卫浴', 'WiFi', '城景'] },
-				{ id: 2, name: '标准双床房', description: '两张单人床，适合朋友出行', base_price: 699, capacity: 2, bed_count: 2, room_size: 30, is_available: true, image: '/static/logo.png', tags: ['双床', 'WiFi'] },
-				{ id: 3, name: '家庭套房', description: '宽敞舒适，独立客厅，适合家庭', base_price: 1299, capacity: 4, bed_count: 2, room_size: 55, is_available: false, image: '/static/logo.png', tags: ['独立卫浴', '客厅', '家庭'] }
+				{ id: 1, name: '豪华大床房', description: '舒适宽敞，配备独立卫浴，城市景观', base_price: 899, capacity: 2, bed_count: 1, room_size: 35, is_available: true, image: '/static/images/img-placeholder.svg', tags: ['独立卫浴', 'WiFi', '城景'] },
+				{ id: 2, name: '标准双床房', description: '两张单人床，适合朋友出行', base_price: 699, capacity: 2, bed_count: 2, room_size: 30, is_available: true, image: '/static/images/img-placeholder.svg', tags: ['双床', 'WiFi'] },
+				{ id: 3, name: '家庭套房', description: '宽敞舒适，独立客厅，适合家庭', base_price: 1299, capacity: 4, bed_count: 2, room_size: 55, is_available: false, image: '/static/images/img-placeholder.svg', tags: ['独立卫浴', '客厅', '家庭'] }
 			]
 		},
 
 		// ===== 交互 =====
-		switchTab(i) { this.activeTab = i },
+		switchTab(i) { this.activeTab = i; this.loadCategoryProducts() },
 		scrollToRooms() { this.activeTab = 0 },
 		goBack() { uni.navigateBack() },
 		handleMyBookings() { uni.showToast({ title: '开发中', icon: 'none' }) },
@@ -563,7 +639,7 @@ export default {
 				return
 			}
 			uni.navigateTo({
-				url: `/pages/hostel/booking?roomId=${room.id}&roomName=${encodeURIComponent(room.name)}&roomPrice=${room.base_price}&roomImage=${encodeURIComponent(room.image || '')}&checkIn=${this.checkInDate}&checkOut=${this.checkOutDate}&nights=${this.nights}&storeId=${this.storeId || ''}&storeName=${encodeURIComponent(this.shopInfo.fullName)}&capacity=${room.capacity || 0}`
+				url: `/pages/hostel/booking?roomId=${room.id}&roomName=${encodeURIComponent(room["name_" + i18n.getLanguage()] || room.name)}&roomPrice=${room.base_price}&roomImage=${encodeURIComponent(room.image || '')}&checkIn=${this.checkInDate}&checkOut=${this.checkOutDate}&nights=${this.nights}&storeId=${this.storeId || ''}&storeName=${encodeURIComponent(this.shopInfo["name_" + i18n.getLanguage()] || this.shopInfo.fullName)}&capacity=${room.capacity || 0}`
 			})
 		}
 	}
@@ -677,46 +753,70 @@ export default {
 	margin-top: 6px;
 }
 
-/* ===== 客房卡片 ===== */
-.room-list { padding: 8px 12px 0; }
-.room-card {
-	display: flex;
-	background: #fff;
-	border-radius: 12px;
-	overflow: hidden;
-	margin-bottom: 10px;
-}
-.room-img-box { position: relative; width: 120px; flex-shrink: 0; }
-.room-img { width: 100%; height: 100%; min-height: 150px; }
-.room-status-tag {
-	position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-	background: rgba(0,0,0,0.45);
-	display: flex; align-items: center; justify-content: center;
-}
-.room-status-text { font-size: 14px; color: #fff; font-weight: 600; }
-.room-body { flex: 1; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; }
-.room-top { display: flex; flex-direction: column; gap: 4px; }
-.room-name { font-size: 15px; font-weight: 700; color: #1A1A1A; }
-.room-tags { display: flex; gap: 4px; flex-wrap: wrap; }
-.room-tag { font-size: 10px; color: #FFB800; background: #FFF8E1; padding: 1px 6px; border-radius: 3px; }
-.room-desc { font-size: 12px; color: #999; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.room-specs { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
-.spec-item { font-size: 11px; color: #999; }
-.spec-dot { font-size: 10px; color: #ddd; }
-.room-bottom { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 8px; }
-.room-price-row { display: flex; align-items: baseline; gap: 1px; flex-wrap: wrap; }
-.price-sym { font-size: 12px; color: #FFB800; font-weight: 600; }
-.price-val { font-size: 20px; color: #FFB800; font-weight: 700; }
-.price-unit { font-size: 11px; color: #999; }
-.price-total { font-size: 11px; color: #999; margin-left: 4px; }
-.book-btn {
-	background: #FFB800;
-	border-radius: 16px;
-	padding: 6px 16px;
-	flex-shrink: 0;
-}
-.book-btn-off { background: #ccc; }
-.book-btn-text { font-size: 12px; color: #fff; font-weight: 500; }
+	/* ===== 客房卡片 ===== */
+	.room-list { padding: 8px 16px 0; }
+	.room-card {
+		background: #fff;
+		border-radius: 12px;
+		overflow: hidden;
+		margin-bottom: 12px;
+		box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+	}
+	.room-img-wrapper {
+		width: 100%;
+		height: 180px;
+		position: relative;
+	}
+	.room-img { width: 100%; height: 100%; }
+	.room-status-mask {
+		position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+		background: rgba(0,0,0,0.45);
+		display: flex; align-items: center; justify-content: center;
+		border-radius: 12px 12px 0 0;
+	}
+	.room-status-text { font-size: 15px; color: #fff; font-weight: 600; letter-spacing: 2px; }
+	.room-content { padding: 12px 14px 14px; }
+	.room-name-row { display: flex; align-items: center; gap: 8px; }
+	.room-name { font-size: 16px; font-weight: 700; color: #1A1A1A; }
+	.room-spec-chips {
+		display: flex;
+		gap: 8px;
+		margin-top: 8px;
+	}
+	.spec-chip {
+		background: #F5F5F5;
+		border-radius: 4px;
+		padding: 3px 8px;
+	}
+	.spec-chip-text { font-size: 11px; color: #666; font-weight: 500; }
+	.room-desc {
+		font-size: 12px;
+		color: #999;
+		margin-top: 8px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.room-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 12px;
+		padding-top: 10px;
+		border-top: 1rpx solid #F0F0F0;
+	}
+	.room-price-box { display: flex; align-items: baseline; gap: 2px; flex-wrap: wrap; }
+	.price-val { font-size: 20px; color: #FFB800; font-weight: 700; }
+	.price-unit { font-size: 11px; color: #999; }
+	.price-total { font-size: 11px; color: #999; margin-left: 6px; }
+	.book-btn {
+		background: #FFB800;
+		border-radius: 18px;
+		padding: 7px 20px;
+		flex-shrink: 0;
+	}
+	.book-btn-off { background: #ccc; }
+	.book-btn-text { font-size: 13px; color: #fff; font-weight: 600; }
 
 /* ===== 商品列表 ===== */
 .product-list { padding: 8px 12px 0; }
@@ -744,7 +844,8 @@ export default {
 /* ===== 空状态 ===== */
 .empty-box { display: flex; flex-direction: column; align-items: center; padding: 40px 0; }
 .empty-img { width: 60px; height: 60px; margin-bottom: 8px; }
-.empty-msg { font-size: 14px; color: #999; }
+.empty-msg { font-size: 14px; color: #333; font-weight: 500; margin-bottom: 6px; }
+.empty-msg-desc { font-size: 12px; color: #999; }
 
 /* ===== 购物车浮窗 ===== */
 .cart-float {

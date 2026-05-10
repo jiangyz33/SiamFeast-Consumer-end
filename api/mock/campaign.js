@@ -11,14 +11,14 @@ const mockCampaigns = [
 		description: '全场满30减20',
 		description_en: '$20 off every $30',
 		type: 'discount',
-		banner_url: '/static/logo.png',
+		banner_url: '/static/images/avatar-placeholder.svg',
 		status: 'active',
 		start_time: '2024-01-01T00:00:00',
 		end_time: '2025-12-31T23:59:59',
 		rules: { min_spend: 30, discount_amount: 20 },
 		products: [
-			{ id: 1, name: '招牌茉莉奶白', price: 18.00, original_price: 25.00, image_url: '/static/logo.png', sales_count: 1520 },
-			{ id: 2, name: '经典泰式奶茶', price: 16.00, original_price: 22.00, image_url: '/static/logo.png', sales_count: 980 }
+			{ id: 1, name: '招牌茉莉奶白', price: 18.00, original_price: 25.00, image_url: '/static/images/img-placeholder.svg', sales_count: 1520 },
+			{ id: 2, name: '经典泰式奶茶', price: 16.00, original_price: 22.00, image_url: '/static/images/img-placeholder.svg', sales_count: 980 }
 		],
 		created_at: '2024-01-01T00:00:00'
 	},
@@ -29,14 +29,14 @@ const mockCampaigns = [
 		description: '邀请好友一起下单享折扣',
 		description_en: 'Order with friends for discounts',
 		type: 'group',
-		banner_url: '/static/logo.png',
+		banner_url: '/static/images/avatar-placeholder.svg',
 		status: 'active',
 		start_time: '2024-01-01T00:00:00',
 		end_time: '2025-12-31T23:59:59',
 		rules: { min_members: 2, discount_rate: 0.85 },
 		products: [
-			{ id: 7, name: '泰式柠檬茶', price: 12.00, original_price: null, image_url: '/static/logo.png', sales_count: 680 },
-			{ id: 8, name: '菠萝炒饭', price: 26.00, original_price: null, image_url: '/static/logo.png', sales_count: 520 }
+			{ id: 7, name: '泰式柠檬茶', price: 12.00, original_price: null, image_url: '/static/images/img-placeholder.svg', sales_count: 680 },
+			{ id: 8, name: '菠萝炒饭', price: 26.00, original_price: null, image_url: '/static/images/img-placeholder.svg', sales_count: 520 }
 		],
 		created_at: '2024-01-01T00:00:00'
 	},
@@ -47,13 +47,13 @@ const mockCampaigns = [
 		description: '新品上市限时9折',
 		description_en: '10% off new items',
 		type: 'new_product',
-		banner_url: '/static/logo.png',
+		banner_url: '/static/images/avatar-placeholder.svg',
 		status: 'active',
 		start_time: '2024-03-01T00:00:00',
 		end_time: '2025-06-30T23:59:59',
 		rules: { discount_rate: 0.9 },
 		products: [
-			{ id: 4, name: '芒果糯米饭', price: 22.00, original_price: 28.00, image_url: '/static/logo.png', sales_count: 650 }
+			{ id: 4, name: '芒果糯米饭', price: 22.00, original_price: 28.00, image_url: '/static/images/img-placeholder.svg', sales_count: 650 }
 		],
 		created_at: '2024-03-01T00:00:00'
 	}

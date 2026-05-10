@@ -17,7 +17,7 @@
 				<input
 					class="search-input"
 					v-model="searchKeyword"
-					placeholder="输入关键词搜索"
+					:placeholder="i18n.t('common.pleaseSelect') || '搜索'"
 					confirm-type="search"
 					@confirm="handleSearch"
 				/>
@@ -36,8 +36,8 @@
 						:class="{ 'tab-active': activeTab === index }"
 						@click="switchTab(index)"
 					>
-						<image class="tab-icon" :src="tab.icon || '/static/logo.png'" mode="aspectFit"></image>
-						<text class="tab-text">{{ tab.name }}</text>
+						<image class="tab-icon" :src="tab.icon || '/static/images/store-placeholder.svg'" mode="aspectFit"></image>
+						<text class="tab-text">{{ tab["name_" + i18n.getLanguage()] || tab.name }}</text>
 					</view>
 				</view>
 			</scroll-view>
@@ -54,25 +54,25 @@
 				>
 					<!-- 商品图片 -->
 					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					</view>
 
 					<!-- 商品信息 -->
 					<view class="product-info">
 						<view class="product-header">
 							<text class="shop-name">{{ item.shopName || currentStoreName }}</text>
-							<text class="product-name">{{ item.name }}</text>
+							<text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
 						</view>
 
 						<view class="product-footer">
 							<view class="price-info">
-								<text class="price-label">优惠价</text>
+								<text class="price-label">{{ i18n.t("checkout.discount") }}</text>
 								<text class="price-symbol">฿</text>
 								<text class="price-num">{{ item.price }}</text>
 								<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
 							</view>
 							<view class="sales-info">
-								<text class="sales-text">已售{{ item.sales_count || 0 }}+份</text>
+								<text class="sales-text">{{ i18n.t("mine.monthlySales") }}{{ item.sales_count || 0 }}</text>
 							</view>
 						</view>
 					</view>
@@ -81,13 +81,15 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">加载中...</text>
-				<text v-else-if="noMore && products.length > 0" class="tip-text">没有更多了</text>
+				<text v-if="loading" class="tip-text">{{ i18n.t("common.loading") }}</text>
+				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t("order.noMore") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="!loading && products.length === 0">
-				<text class="empty-text">暂无优惠商品</text>
+				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
+				<text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -102,7 +104,8 @@
 <script>
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import appStore from '@/store/index.js'
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
+	import i18n from '@/i18n/index.js'
 import { getActiveCampaigns } from '@/api/services/campaign.js'
 import { searchProducts } from '@/api/services/products.js'
 import { getConsumerCategories } from '@/api/services/menu.js'
@@ -113,10 +116,11 @@ export default {
 	},
 	data() {
 		return {
+			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			activeTab: 0,
-			tabs: [{ name: '全部', id: null, icon: '/static/logo.png' }],
+			tabs: [{ name: '全部', id: null, icon: '/static/images/store-placeholder.svg' }],
 			products: [],
 			loading: false,
 			noMore: false,
@@ -146,22 +150,38 @@ export default {
 			this.contentHeight = systemInfo.windowHeight - headerHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
 		},
 
-		async loadCategories() {
-			try {
-				const storeId = this.shopId || 1
-				const res = await getConsumerCategories(storeId)
-				if (res.code === 0 && res.data) {
-					const cats = (res.data || []).map(c => ({
-						id: c.id,
-						name: c.name,
-						icon: c.icon || '/static/logo.png'
-					}))
-					this.tabs = [{ name: '全部', id: null, icon: '/static/logo.png' }, ...cats]
+			async loadCategories() {
+				try {
+					const res = await getConsumerCategories()
+					if (res.code === 0 && res.data) {
+						const catRaw = res.data
+						const catItems = Array.isArray(catRaw) ? catRaw : (catRaw.items || [])
+						const cats = catItems.map(c => {
+							const rawIcon = c.icon || c.icon_url || ''
+							const icon = rawIcon ? fixMinioUrl(rawIcon) : '/static/images/store-placeholder.svg'
+							return {
+								id: c.id,
+								name: c.name,
+								name_en: c.name_en || '',
+								name_th: c.name_th || '',
+								icon: icon
+							}
+						})
+						// Deduplicate
+						const seen = new Map()
+						for (const cat of cats) {
+							const key = (cat.name_en || cat.name || '').toLowerCase()
+							if (!seen.has(key)) seen.set(key, cat)
+						}
+						this.tabs = [
+							{ name: '全部', name_en: 'All', name_th: 'ทั้งหมด', id: null, icon: '/static/images/store-placeholder.svg' },
+							...seen.values()
+						]
+					}
+				} catch (e) {
+					console.error('加载分类失败:', e)
 				}
-			} catch (e) {
-				console.error('加载分类失败:', e)
-			}
-		},
+			},
 
 		async loadProducts() {
 			if (this.loading) return
@@ -181,7 +201,8 @@ export default {
 					const campaignRes = await getActiveCampaigns(params)
 					let discountProducts = []
 					if (campaignRes.code === 0 && campaignRes.data) {
-						const campaigns = campaignRes.data
+						const campaignData = campaignRes.data
+					const campaigns = Array.isArray(campaignData) ? campaignData : (campaignData.items || [])
 						campaigns.forEach(c => {
 							if (c.products && c.products.length > 0) {
 								discountProducts = discountProducts.concat(c.products)
@@ -496,6 +517,16 @@ export default {
 .empty-text {
 	font-size: 14px;
 	color: #00000099;
+}
+.empty-title {
+	font-size: 15px;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 6px;
+}
+.empty-desc {
+	font-size: 13px;
+	color: #999;
 }
 
 /* 底部占位 */

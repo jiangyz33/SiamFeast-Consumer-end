@@ -137,7 +137,7 @@ export function deleteStore(storeId) {
 
 /**
  * 获取附近的门店
- * POST /stores/nearby
+ * GET /stores/nearby
  * @param {Object} params 参数
  * @param {string} params.location_source 定位来源 (CURRENT_GPS|MANUAL_PLACE|MAP_PICKER)
  * @param {number} params.latitude 纬度
@@ -152,11 +152,40 @@ export function getNearbyStores(params) {
 	if (USE_MOCK) {
 		return mockGetStores(params)
 	}
-	return post('/stores/nearby', params)
+	return get('/stores/nearby', params)
+}
+
+
+
+/**
+ * 统一搜索（门店+菜品）
+ * @param {Object} params
+ * @param {string} params.keyword 搜索关键词
+ * @param {string} [params.type] 搜索类型 all|store|menu
+ * @param {number} [params.page] 页码
+ * @param {number} [params.page_size] 每页数量
+ * @returns {Promise}
+ */
+export function searchAll(params) {
+	return get('/search', params)
+}
+
+/**
+ * 获取门店列表（C端，支持关键词搜索）
+ * @param {Object} params
+ * @param {string} [params.keyword] 搜索关键词
+ * @param {number} [params.page] 页码
+ * @param {number} [params.page_size] 每页数量
+ * @returns {Promise}
+ */
+export function searchStores(params = {}) {
+	return get('/stores', params)
 }
 
 // 导出模块对象
 export const storeApi = {
+	searchAll,
+	searchStores,
 	getStores,
 	getStore,
 	createStore,

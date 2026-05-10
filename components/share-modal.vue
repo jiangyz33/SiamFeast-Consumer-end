@@ -84,7 +84,7 @@ export default {
 	},
 	data() {
 		return {
-			defaultImage: '/static/logo.png'
+			defaultImage: '/static/images/img-placeholder.svg'
 		}
 	},
 	methods: {

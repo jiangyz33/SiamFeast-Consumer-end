@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="100" cy="90" r="70" fill="#FFF8E1"/>
+  <!-- 地图标记 -->
+  <path d="M100 35 C78 35 60 53 60 75 C60 110 100 145 100 145 C100 145 140 110 140 75 C140 53 122 35 100 35Z" fill="white" stroke="#F2B131" stroke-width="2.5"/>
+  <!-- 内圆 -->
+  <circle cx="100" cy="72" r="16" fill="#FFF3CC" stroke="#F2B131" stroke-width="2"/>
+  <!-- 小圆点 -->
+  <circle cx="100" cy="72" r="6" fill="#F2B131" opacity="0.5"/>
+  <!-- 底部虚线 -->
+  <line x1="65" y1="165" x2="135" y2="165" stroke="#F2B131" stroke-width="2" stroke-dasharray="6 4" opacity="0.4"/>
+</svg>

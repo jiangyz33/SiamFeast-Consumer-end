@@ -16,7 +16,7 @@
 		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<!-- 支付成功图标 -->
 			<view class="success-icon-section">
-				<image class="success-icon" src="/static/logo.png" mode="aspectFit"></image>
+				<image class="success-icon" src="/static/images/payment-success.svg" mode="aspectFit"></image>
 			</view>
 
 			<!-- 支付成功信息 -->
@@ -50,11 +50,11 @@
 							<view class="recommend-content">
 								<image class="shop-logo" :src="item.logo" mode="aspectFill"></image>
 								<view class="shop-info">
-									<text class="shop-name">{{ item.name }}</text>
+									<text class="shop-name">{{ item["name_" + i18n.getLanguage()] || item.name }}</text>
 									<view class="shop-stats">
-										<text class="stat-text">{{ item.rating }}分</text>
+										<text class="stat-text shop-status" :class="item.status === 'OPEN' ? 'status-open' : 'status-closed'">{{ item.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
 										<text class="stat-divider">|</text>
-										<text class="stat-text">月售{{ item.monthlySales }}+</text>
+										<text class="stat-text" v-if="item.businessHours">{{ item.businessHours }}</text>
 									</view>
 									<view class="shop-tags">
 										<text class="tag" v-for="(tag, tagIndex) in item.tags" :key="tagIndex">{{ tag }}</text>
@@ -92,6 +92,7 @@
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import { showToast } from '@/utils/index.js'
 import { getStores } from '@/api/services/store.js'
+	import i18n from '@/i18n/index.js'
 
 export default {
 	components: {
@@ -105,7 +106,8 @@ export default {
 			orderType: 'delivery', // delivery, dinein
 			deliveryType: 'delivery', // delivery, pickup
 			pickupCode: '',
-			recommendations: []
+			recommendations: [],
+			i18n: i18n
 		}
 	},
 	onLoad(options) {
@@ -161,10 +163,10 @@ export default {
 					const stores = Array.isArray(res.data) ? res.data : (res.data.items || [])
 					this.recommendations = stores.slice(0, 3).map(s => ({
 						id: s.id,
-						name: s.name,
-						logo: s.logo || '/static/logo.png',
-						rating: s.rating || '4.7',
-						monthlySales: s.monthly_sales || 1000,
+						name: s["name_" + i18n.getLanguage()] || s.name || s.name_en,
+						logo: s.logo || '/static/images/store-placeholder.svg',
+						status: s.status || 'OPEN',
+						businessHours: s.business_hours || '',
 						tags: s.business_types || [s.name]
 					}))
 				}

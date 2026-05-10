@@ -8,24 +8,41 @@ import { get, post } from '../request.js'
  * 获取支付方式列表
  * @returns {Promise}
  */
-export function getPaymentMethods() {
+export function getPaymentMethods(storeId) {
 	if (USE_MOCK) {
 		return new Promise((resolve) => {
 			resolve({
 				code: 0,
 				data: {
 					methods: [
-						{ code: 'visa', name: '信用卡支付', description: '支持 Visa/MasterCard' },
-						{ code: 'paypal', name: 'PayPal', description: 'PayPal 支付' },
-						{ code: 'cash_pos', name: '现金支付', description: 'POS 机现金收款' },
-						{ code: 'coin_deduct', name: '金币抵扣', description: '使用会员金币抵扣' },
-						{ code: 'coupon', name: '优惠券', description: '使用优惠券支付' }
+						{ code: 'cash_pos', name: '现金支付' },
 					]
 				}
 			})
 		})
 	}
-	return get('/payments/methods')
+	return get('/payments/methods', { store_id: storeId }, { silent: true }).then(res => {
+		// 后端返回 [{method, is_enabled}]，前端需要 [{code, name}]
+		const rawMethods = Array.isArray(res.data) ? res.data : []
+		const nameMap = {
+			cash_pos: '现金支付', visa: '信用卡', promptpay: 'PromptPay',
+		}
+		return {
+			code: 0,
+			data: {
+				methods: rawMethods
+					.filter(m => m.is_enabled)
+					.map(m => ({ code: m.method, name: nameMap[m.method] || m.method }))
+			}
+		}
+	}).catch(() => ({
+		code: 0,
+		data: {
+			methods: [
+				{ code: 'cash_pos', name: '现金支付' },
+			]
+		}
+	}))
 }
 
 /**
@@ -46,7 +63,6 @@ export function createPayment(data) {
 					message: 'success',
 					data: {
 						payment_id: Date.now(),
-						amount: data.amount,
 						status: 'SUCCESS',
 						paid_at: new Date().toISOString()
 					}
@@ -54,7 +70,7 @@ export function createPayment(data) {
 			}, 500)
 		})
 	}
-	return post('/payments', data)
+	return post('/payments', { order_id: data.order_id, method: data.payment_method || data.method })
 }
 
 /**
@@ -65,24 +81,6 @@ export function createPayment(data) {
  * @param {string} data.remark 备注
  * @returns {Promise}
  */
-export function coinPayment(data) {
-	if (USE_MOCK) {
-		return new Promise((resolve) => {
-			setTimeout(() => {
-				resolve({
-					code: 0,
-					message: 'success',
-					data: {
-						payment_id: Date.now(),
-						amount: data.amount,
-						status: 'SUCCESS'
-					}
-				})
-			}, 500)
-		})
-	}
-	return post('/payments/coin', data)
-}
 
 /**
  * 获取支付详情
@@ -114,23 +112,6 @@ export function getPaymentDetail(paymentId) {
  * @param {number} paymentId 支付ID
  * @returns {Promise}
  */
-export function confirmPayment(paymentId) {
-	if (USE_MOCK) {
-		return new Promise((resolve) => {
-			setTimeout(() => {
-				resolve({
-					code: 0,
-					message: '支付成功',
-					data: {
-						payment_id: paymentId,
-						status: 'SUCCESS'
-					}
-				})
-			}, 500)
-		})
-	}
-	return post(`/payments/${paymentId}/confirm`)
-}
 
 /**
  * 退款
@@ -138,59 +119,30 @@ export function confirmPayment(paymentId) {
  * @param {string} reason 退款原因
  * @returns {Promise}
  */
-export function refundPayment(paymentId, reason = '') {
-	if (USE_MOCK) {
-		return new Promise((resolve) => {
-			setTimeout(() => {
-				resolve({
-					code: 0,
-					message: '退款成功',
-					data: {
-						payment_id: paymentId,
-						status: 'REFUNDED'
-					}
-				})
-			}, 500)
-		})
-	}
-	return post(`/payments/${paymentId}/refund?reason=${encodeURIComponent(reason)}`)
-}
 
 /**
  * 获取订单支付记录
  * @param {number} orderId 订单ID
  * @returns {Promise}
  */
-export function getOrderPayments(orderId) {
-	if (USE_MOCK) {
-		return new Promise((resolve) => {
-			resolve({
-				code: 0,
-				data: [
-					{
-						id: 1,
-						order_id: orderId,
-						amount: 83.00,
-						payment_method: 'cash_pos',
-						status: 'SUCCESS',
-						paid_at: new Date().toISOString()
-					}
-				]
-			})
-		})
-	}
-	return get(`/payments/order/${orderId}`)
+
+/**
+ * 获取支付记录列表
+ * @param {Object} params
+ * @param {number} [params.page] 页码
+ * @param {number} [params.page_size] 每页数量
+ * @returns {Promise}
+ */
+export function getPayments(params = {}) {
+	return get('/payments', params)
 }
 
 // 导出模块对象
 export const paymentApi = {
 	getPaymentMethods,
 	createPayment,
-	coinPayment,
 	getPaymentDetail,
-	confirmPayment,
-	refundPayment,
-	getOrderPayments
+	getPayments
 }
 
 export default paymentApi

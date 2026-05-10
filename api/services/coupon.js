@@ -22,11 +22,12 @@ export function getMyCoupons(params = {}) {
 	if (USE_MOCK) {
 		return mockGetMyCoupons(params)
 	}
-	return get('/coupons/my', params)
+	return get('/coupons', params)
 }
 
 /**
  * 获取可用优惠券（下单时使用）
+ * 从我的优惠券中筛选 status=ACTIVE 且满足门槛的
  * @param {Object} params 查询参数
  * @param {Number} params.store_id 门店ID
  * @param {Number} params.amount 订单金额
@@ -37,19 +38,19 @@ export function getAvailableCoupons(params) {
 	if (USE_MOCK) {
 		return mockGetAvailableCoupons(params)
 	}
-	return get('/coupons/available', params)
+	return get('/coupons', { status: 'ACTIVE', page_size: 100 })
 }
 
 /**
  * 领取优惠券
- * @param {Number} couponId 优惠券模板ID (template_id)
+ * @param {Number} couponId 优惠券模板ID (coupon_id)
  * @returns {Promise}
  */
 export function receiveCoupon(couponId) {
 	if (USE_MOCK) {
 		return mockReceiveCoupon(couponId)
 	}
-	return post('/coupons/receive', { template_id: couponId })
+	return post('/coupons/claim', { coupon_id: couponId })
 }
 
 /**
@@ -74,13 +75,13 @@ export function receiveNewbiePack() {
 	}
 	// 后端无单独的领取接口，先获取新人券包信息再逐一领取
 	return get('/coupons/newbie-pack').then(res => {
-		const coupons = res.data?.coupons || res.data?.items || []
+		const d = res.data || res; const coupons = d.coupons || d.items || []
 		if (coupons.length === 0) {
 			return { code: 0, message: '没有可领取的新人券', data: { received: [] } }
 		}
 		// 批量领取所有新人券
 		return Promise.all(
-			coupons.map(c => post('/coupons/receive', { template_id: c.id || c.template_id }))
+			coupons.map(c => post('/coupons/claim', { coupon_id: c.id || c.coupon_id }))
 		).then(() => ({
 			code: 0,
 			message: '新人券包领取成功',
@@ -116,13 +117,31 @@ export function getReceivableCoupons(params = {}) {
 	return get('/campaigns/coupons', params)
 }
 
+
+/**
+ * 计算优惠券折扣
+ * @param {Object} params
+ * @param {number} params.coupon_id 优惠券ID
+ * @param {number} params.order_amount 订单金额
+ * @param {number} [params.store_id] 门店ID
+ * @param {string} [params.order_type] 订单类型
+ * @returns {Promise}
+ */
+export function calculateDiscount(params) {
+	if (USE_MOCK) {
+		return mockCalculateDiscount(params)
+	}
+	return post('/coupons/calculate', params)
+}
+
 export const couponApi = {
 	getMyCoupons,
 	getAvailableCoupons,
 	receiveCoupon,
 	getNewbiePack,
 	receiveNewbiePack,
-	getReceivableCoupons
+	getReceivableCoupons,
+	calculateDiscount
 }
 
 export default couponApi

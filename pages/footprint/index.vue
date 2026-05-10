@@ -46,10 +46,10 @@
 					@click="handleProductClick(item)"
 				>
 					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="product-image" :src="item.image || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					</view>
 					<view class="product-info">
-						<text class="product-name">{{ item.name }}</text>
+						<text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
 						<view class="product-tags" v-if="item.tags && item.tags.length > 0">
 							<text class="tag" v-for="(tag, tagIndex) in item.tags" :key="tagIndex">{{ tag }}</text>
 						</view>
@@ -69,8 +69,9 @@
 
 				<!-- 空状态 -->
 				<view class="empty-state" v-if="productFootprints.length === 0">
-					<image class="empty-icon" src="/static/logo.png" mode="aspectFit"></image>
-					<text class="empty-text">{{ i18n.t('footprint.noProducts') }}</text>
+					<image class="empty-icon" src="/static/images/empty-footprint.svg" mode="aspectFit"></image>
+					<text class="empty-title">{{ i18n.t('common.empty.footprint') }}</text>
+					<text class="empty-desc">{{ i18n.t('common.empty.footprintDesc') }}</text>
 					<view class="empty-btn" @click="goToMall">
 						<text class="empty-btn-text">{{ i18n.t('footprint.goBrowse') }}</text>
 					</view>
@@ -86,11 +87,11 @@
 					@click="handleStoreClick(item)"
 				>
 					<view class="store-logo-wrapper">
-						<image class="store-logo" :src="item.logo || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="store-logo" :src="item.logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
 					</view>
 					<view class="store-info">
 						<view class="store-header">
-							<text class="store-name">{{ item.name }}</text>
+							<text class="store-name">{{ item.name || item.name_en }}</text>
 							<view class="store-status" :class="item.status === 'OPEN' ? 'status-open' : 'status-closed'">
 								<text class="status-text">{{ item.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
 							</view>
@@ -112,8 +113,9 @@
 
 				<!-- 空状态 -->
 				<view class="empty-state" v-if="storeFootprints.length === 0">
-					<image class="empty-icon" src="/static/logo.png" mode="aspectFit"></image>
-					<text class="empty-text">{{ i18n.t('footprint.noStores') }}</text>
+					<image class="empty-icon" src="/static/images/empty-store.svg" mode="aspectFit"></image>
+					<text class="empty-title">{{ i18n.t('common.empty.store') }}</text>
+					<text class="empty-desc">{{ i18n.t('common.empty.storeDesc') }}</text>
 					<view class="empty-btn" @click="goToStoreSelect">
 						<text class="empty-btn-text">{{ i18n.t('footprint.goBrowse') }}</text>
 					</view>

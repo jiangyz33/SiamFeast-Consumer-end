@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ shopInfo.name }}</text>
+			<text class="nav-title">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.name }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -22,12 +22,12 @@
 			<!-- 店铺详细信息 -->
 			<view class="shop-info-card">
 				<view class="shop-info-left">
-					<text class="shop-full-name">{{ shopInfo.fullName }}</text>
+					<text class="shop-full-name">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.fullName }}</text>
 					<view class="shop-rating">
 						<text class="rating-text" v-if="shopInfo.phone">{{ shopInfo.phone }}</text>
 					</view>
 					<text class="shop-time">{{ i18n.t('dinein.businessHours') }}：{{ shopInfo.businessHours }}</text>
-						<text class="delivery-badge" v-if="shopInfo.delivery_enabled">支持外送</text>
+						<text class="delivery-badge" v-if="shopInfo.delivery_enabled">{{ i18n.t('dinein.deliverySupported') }}</text>
 					<view class="shop-distance">
 						<text class="distance-item">{{ i18n.t('dinein.distance') }}{{ shopInfo.distance }}</text>
 						<text class="distance-divider">|</text>
@@ -46,7 +46,7 @@
 			</view>
 
 				<!-- category tabs -->
-				<view class="category-tabs">
+				<scroll-view class="category-tabs" scroll-x :show-scrollbar="false">
 					<view
 						v-if="isHostel"
 						class="category-tab"
@@ -64,7 +64,7 @@
 					>
 						<text class="category-tab-text">{{ item['name_' + i18n.getLanguage()] || item.nameKey }}</text>
 					</view>
-				</view>
+				</scroll-view>
 
 
 				<!-- room list (hostel mode, room tab selected) -->
@@ -87,35 +87,35 @@
 					</view>
 					<view v-for="room in hostelRooms" :key="room.id" class="room-card" @click="handleBookRoom(room)">
 						<view class="room-card-img">
-							<image class='room-card-image' :src="room.image || '/static/logo.png'" mode='aspectFill'></image>
+							<image class='room-card-image' :src="room.image || '/static/images/empty-room.svg'" mode='aspectFill'></image>
 							<view class="room-card-badge" v-if="!room.is_available">
 								<text class='room-card-badge-text'>{{ i18n.t('hostel.full') }}</text>
 							</view>
 						</view>
 						<view class="room-card-content">
-							<text class='room-card-name'>{{ room.name }}</text>
-							<text class='room-card-desc' v-if='room.description'>{{ room.description }}</text>
+							<view class="room-name-row">
+								<text class="room-card-name">{{ room["name_" + i18n.getLanguage()] || room.name }}</text>
+								<view class="room-spec-chip" v-if="room.capacity">
+									<text class="room-spec-chip-text">{{ room.capacity }}{{ i18n.t("hostel.person") }}</text>
+								</view>
+							</view>
+							<text class="room-card-desc" v-if="room.description">{{ room["description_" + i18n.getLanguage()] || room.description }}</text>
 							<view class="room-card-specs">
-								<view class='room-spec-chip' v-if='room.capacity'>
-									<text class='room-spec-chip-text'>{{ room.capacity }}{{ i18n.t('hostel.person') }}</text>
+								<view class="room-spec-chip" v-if="room.bed_count">
+									<text class="room-spec-chip-text">{{ room.bed_count }}{{ i18n.t("hostel.beds") }}</text>
 								</view>
-								<view class='room-spec-chip' v-if='room.bed_count'>
-									<text class='room-spec-chip-text'>{{ room.bed_count }}{{ i18n.t('hostel.beds') }}</text>
-								</view>
-								<view class='room-spec-chip' v-if='room.room_size'>
-									<text class='room-spec-chip-text'>{{ room.room_size }}m²</text>
+								<view class="room-spec-chip" v-if="room.room_size">
+									<text class="room-spec-chip-text">{{ room.room_size }}m²</text>
 								</view>
 							</view>
 							<view class="room-card-footer">
 								<view class="room-card-price">
-									<text class='room-price-from'>{{ i18n.t('hostel.perNight') }}</text>
-									<view class="room-price-row">
-										<text class='room-price-symbol'>฿</text>
-										<text class='room-price-num'>{{ room.base_price }}</text>
-									</view>
+									<text class="room-price-symbol">฿</text>
+									<text class="room-price-num">{{ room.base_price }}</text>
+									<text class="room-price-unit">/{{ i18n.t("hostel.perNight") }}</text>
 								</view>
-								<view class='room-book-btn' :class="{ 'room-book-btn-disabled': !room.is_available }">
-									<text class='room-book-btn-text'>{{ room.is_available ? i18n.t('hostel.book') : i18n.t('hostel.full') }}</text>
+								<view class="room-book-btn" :class='{ "room-book-btn-disabled": !room.is_available }'>
+									<text class="room-book-btn-text">{{ room.is_available ? i18n.t("hostel.book") : i18n.t("hostel.full") }}</text>
 								</view>
 							</view>
 						</view>
@@ -159,24 +159,59 @@
 			<view class="bottom-placeholder"></view>
 		</scroll-view>
 
-		<!-- 购物车浮窗 -->
-		<view class="cart-float" v-if="cartCount > 0" @click="handleCartClick">
-			<view class="cart-icon-wrapper">
-				<image class="cart-icon" src="/static/icons/cart.svg" mode="aspectFit"></image>
-				<view class="cart-badge">
-					<text class="badge-text">{{ cartCount }}</text>
+			<!-- 购物车底栏 -->
+			<view class="cart-bar" v-if="cartCount > 0">
+				<view class="cart-bar-left" @click="toggleCartPopup">
+					<view class="cart-icon-wrapper">
+						<image class="cart-icon" src="/static/icons/cart.svg" mode="aspectFit"></image>
+						<view class="cart-badge">
+							<text class="badge-text">{{ cartCount }}</text>
+						</view>
+					</view>
+					<view class="cart-bar-price">
+						<text class="cart-bar-symbol">฿</text>
+						<text class="cart-bar-num">{{ cartTotal }}</text>
+					</view>
 				</view>
+				<view class="cart-bar-checkout" @click="handleCartClick">
+					<text class="cart-bar-checkout-text">{{ i18n.t('dinein.checkout') }}</text>
+					</view>
 			</view>
-			<view class="cart-info">
-				<view class="cart-price">
-					<text class="price-symbol">฿</text>
-					<text class="price-num">{{ cartTotal }}</text>
+
+			<!-- 购物车弹窗 -->
+			<view class="cart-popup-mask" v-if="showCartPopup" @click="toggleCartPopup"></view>
+			<view class="cart-popup" :class="{ 'cart-popup-show': showCartPopup }" v-if="cartCount > 0">
+				<view class="cart-popup-header">
+					<text class="cart-popup-title">{{ i18n.t('dinein.cartTitle') }}</text>
+					<view class="cart-popup-clear" @click="handleClearCart">
+						<text class="cart-popup-clear-text">{{ i18n.t('dinein.clearCart') }}</text>
+					</view>
 				</view>
+				<scroll-view class="cart-popup-list" scroll-y>
+					<view class="cart-popup-item" v-for="(item, idx) in cartItems" :key="idx">
+						<image class="cart-popup-item-img" :src="item.image" mode="aspectFill"></image>
+						<view class="cart-popup-item-info">
+							<text class="cart-popup-item-name">{{ item.name }}</text>
+							<text class="cart-popup-item-spec" v-if="item.specs && Object.keys(item.specs).length > 0">{{ formatSpecs(item.specs) }}</text>
+						</view>
+						<view class="cart-popup-item-right">
+							<text class="cart-popup-item-price">฿{{ (item.price * item.quantity).toFixed(2) }}</text>
+							<view class="cart-popup-qty">
+								<view class="cart-popup-qty-btn" @click="changeCartQty(idx, -1)">
+									<text class="cart-popup-qty-text">-</text>
+								</view>
+								<text class="cart-popup-qty-num">{{ item.quantity }}</text>
+								<view class="cart-popup-qty-btn" @click="changeCartQty(idx, 1)">
+									<text class="cart-popup-qty-text">+</text>
+								</view>
+							</view>
+						</view>
+					</view>
+					<view class="cart-popup-empty" v-if="cartItems.length === 0">
+						<text class="cart-popup-empty-text">{{ i18n.t('dinein.cartEmpty') }}</text>
+					</view>
+				</scroll-view>
 			</view>
-			<view class="cart-btn cart-btn-active">
-				<text class="cart-btn-text">{{ i18n.t('dinein.checkout') }}</text>
-			</view>
-		</view>
 
 		<!-- 自定义底部导航栏 -->
 		<custom-tabbar :current="0"></custom-tabbar>
@@ -232,58 +267,54 @@
 					</view>
 				</view>
 			</view>
-		<!-- 规格选择弹窗 -->
-		<view class="spec-mask" v-if="showSpecPopup" @click="closeSpecPopup"></view>
-		<view class="spec-popup" :class="{ 'spec-popup-show': showSpecPopup }" v-if="specProduct">
-			<view class="spec-popup-inner">
-				<view class="spec-header">
-					<image class="spec-product-image" :src="specProduct.image" mode="aspectFill"></image>
-					<view class="spec-product-info">
-						<view class="spec-product-price">
-							<text class="spec-price-symbol">฿</text>
-							<text class="spec-price-num">{{ (specProduct.price * specQuantity).toFixed(2) }}</text>
-						</view>
-						<text class="spec-product-name">{{ specProduct.name }}</text>
-					</view>
-					<view class="spec-close" @click="closeSpecPopup">
-						<image class="spec-close-icon" src="/static/icons/close.svg" mode="aspectFit"></image>
-					</view>
-				</view>
-				<scroll-view class="spec-body" scroll-y>
-					<view class="spec-group" v-for="(group, gIdx) in specGroups" :key="gIdx">
-						<text class="spec-group-label">{{ group.label }}</text>
-						<view class="spec-options">
-							<view
-								class="spec-option"
-								v-for="(opt, oIdx) in group.options"
-								:key="oIdx"
-								:class="{ 'spec-option-active': selectedSpecs[group.key] === opt.value }"
-								@click="selectSpec(group.key, opt.value)"
-							>
-								<text class="spec-option-text">{{ opt.label }}</text>
+			<!-- 规格选择弹窗 -->
+			<view class="spec-mask" v-if="showSpecPopup" @click="closeSpecPopup"></view>
+			<view class="spec-popup" :class="{ 'spec-popup-show': showSpecPopup }" v-if="specProduct">
+				<view class="spec-popup-inner">
+					<view class="spec-header">
+						<image class="spec-product-image" :src="specProduct.image" mode="aspectFill"></image>
+						<view class="spec-product-info">
+							<view class="spec-product-price">
+								<text class="spec-price-symbol">฿</text>
+								<text class="spec-price-num">{{ (specProduct.price * specQuantity).toFixed(2) }}</text>
 							</view>
+							<text class="spec-product-name">{{ specProduct.name }}</text>
+						</view>
+						<view class="spec-close" @click="closeSpecPopup">
+							<text class="spec-close-text">×</text>
 						</view>
 					</view>
-					<view class="spec-qty-row">
-						<text class="spec-qty-label">{{ i18n.t('productDetail.quantity') }}</text>
-						<view class="spec-qty-control">
-							<view class="qty-btn" @click="changeSpecQuantity(-1)">
-								<text class="qty-btn-text">-</text>
-							</view>
-							<text class="qty-num">{{ specQuantity }}</text>
-							<view class="qty-btn" @click="changeSpecQuantity(1)">
-								<text class="qty-btn-text">+</text>
+					<scroll-view class="spec-body" scroll-y>
+						<view class="spec-group" v-for="(group, gIdx) in specGroups" :key="gIdx">
+							<text class="spec-group-label">{{ group.label }}</text>
+							<view class="spec-options">
+								<view
+									class="spec-option"
+									v-for="(opt, oIdx) in group.options"
+									:key="oIdx"
+									:class="{ 'spec-option-active': selectedSpecs[group.key] === opt.value }"
+									@click="selectSpec(group.key, opt.value)"
+								>
+									<text class="spec-option-text">{{ opt.label }}</text>
+								</view>
 							</view>
 						</view>
-					</view>
-				</scroll-view>
-				<view class="spec-footer">
-					<view class="spec-confirm-btn" @click="confirmSpec">
-						<text class="spec-confirm-text">{{ i18n.t('common.confirm') }}</text>
+						<view class="spec-qty-row">
+							<text class="spec-qty-label">{{ i18n.t('productDetail.quantity') }}</text>
+							<view class="spec-qty-control">
+								<view class="spec-qty-btn" @click="changeSpecQuantity(-1)"><text class="spec-qty-btn-text">−</text></view>
+								<text class="spec-qty-num">{{ specQuantity }}</text>
+								<view class="spec-qty-btn" @click="changeSpecQuantity(1)"><text class="spec-qty-btn-text">+</text></view>
+							</view>
+						</view>
+					</scroll-view>
+					<view class="spec-footer">
+						<view class="spec-confirm-btn" @click="confirmSpec">
+							<text class="spec-confirm-text">{{ i18n.t('common.confirm') }}</text>
+						</view>
 					</view>
 				</view>
 			</view>
-		</view>
 	</view>
 </template>
 
@@ -296,7 +327,7 @@ import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 import { getStore } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
-import { getConsumerCategories, getConsumerMenuItems } from '@/api/services/menu.js'
+import { getConsumerCategories, getConsumerMenuItems, getStoreMenuCategories } from '@/api/services/menu.js'
 import { getAvailableRooms } from '@/api/services/hostel.js'
 
 export default {
@@ -314,6 +345,7 @@ export default {
 			cartTotal: 0,
 			cartItems: [],
 			showShareModal: false,
+			showCartPopup: false,
 			loading: false,
 			isHostel: false,
 			shareInfo: {
@@ -326,8 +358,8 @@ export default {
 				id: null,
 				name: '',
 				fullName: '',
-				banner: '/static/logo.png',
-				logo: '/static/logo.png',
+				banner: '/static/images/banner-placeholder.svg',
+				logo: '/static/images/store-placeholder.svg',
 				phone: '',
 				businessHours: '11:00-22:00',
 				distance: '',
@@ -354,13 +386,17 @@ export default {
 	},
 	computed: {
 			currentProducts() {
-				if (this.categories.length === 0) return []
 				if (this.activeCategory === -1) return []
+				if (this.categories.length === 0) return this.allProducts
 				const catId = this.categories[this.activeCategory].id
-				return this.allProducts.filter(p => p.category_id === catId)
+				const cat = this.categories[this.activeCategory]
+				if (cat.catIds) {
+					return this.allProducts.filter(p => cat.catIds.includes(p.category_id))
+				}
+				return this.allProducts.filter(p => p.store_menu_category_id === catId || p.category_id === catId)
 			},
 			weekDays() {
-				return ['日', '一', '二', '三', '四', '五', '六']
+				return i18n.t('common.weekDays')
 			},
 			calendarDays() {
 				const firstDay = new Date(this.calendarYear, this.calendarMonth - 1, 1).getDay()
@@ -378,6 +414,9 @@ export default {
 			this.loadStoreData()
 		}
 	},
+	onShow() {
+		this.restoreCart()
+	},
 	methods: {
 		/**
 		 * 初始化门店信息
@@ -392,8 +431,8 @@ export default {
 					name_en: currentStore.name_en || '',
 					name_th: currentStore.name_th || '',
 					fullName: currentStore.name,
-					banner: currentStore.banner || '/static/logo.png',
-					logo: currentStore.logo_url || currentStore.logo || '/static/logo.png',
+					banner: currentStore.banner || '/static/images/banner-placeholder.svg',
+					logo: currentStore.logo_url || currentStore.logo || '/static/images/store-placeholder.svg',
 					phone: currentStore.phone || '',
 					formatted_address: currentStore.formatted_address || '',
 					latitude: currentStore.latitude,
@@ -410,11 +449,22 @@ export default {
 				this.shopInfo.fullName = decodeURIComponent(options.shopName)
 			}
 
-			if (options.shopId) {
-				this.shopInfo.id = parseInt(options.shopId)
-			}
-		},
+				if (options.shopId) {
+					this.shopInfo.id = parseInt(options.shopId)
+				}
 
+				// Guard: no store selected
+				if (!this.shopInfo.id) {
+					uni.showModal({
+						title: i18n.t("dinein.selectStoreTitle") || "请选择门店",
+						content: i18n.t("dinein.selectStoreMsg") || "请先选择一个门店再开始点餐",
+						showCancel: false,
+						success: () => {
+							uni.navigateTo({ url: "/pages/store-select/index" })
+						}
+					})
+				}
+			},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -433,23 +483,21 @@ export default {
 			this.loading = true
 
 			try {
-				const [storeRes, catRes, itemsRes] = await Promise.allSettled([
-					getStore(this.shopInfo.id),
-					getConsumerCategories(this.shopInfo.id),
-					getConsumerMenuItems(this.shopInfo.id)
-				])
+				// Step 1: Load store details first (need business_types for category filtering)
+				const storeRes = await getStore(this.shopInfo.id)
+				let storeBusinessTypes = []
 
-				// 门店详情：用API返回的完整数据覆盖
-				if (storeRes.status === 'fulfilled' && storeRes.value.code === 0 && storeRes.value.data) {
-					const s = storeRes.value.data
+				if (storeRes.code === 0 && storeRes.data) {
+					const s = storeRes.data
+					storeBusinessTypes = s.business_types || []
 					this.shopInfo = {
 						id: s.id,
 						name: s.name,
 						name_en: s.name_en || '',
 						name_th: s.name_th || '',
 						fullName: s.name,
-						banner: s.background_image_url || s.banner_image || s.banner || '/static/logo.png',
-						logo: s.logo_url || s.logo || '/static/logo.png',
+						banner: s.background_image_url || s.banner_image || s.banner || '/static/images/banner-placeholder.svg',
+						logo: s.logo_url || s.logo || '/static/images/store-placeholder.svg',
 						phone: s.phone || '',
 						formatted_address: s.formatted_address || '',
 						latitude: s.latitude,
@@ -457,17 +505,17 @@ export default {
 						delivery_enabled: s.delivery_enabled || false,
 						businessHours: s.config
 							? `${s.config.opening_time?.slice(0, 5)}-${s.config.closing_time?.slice(0, 5)}`
-							: (s.businessHours || '11:00-22:00'),
+							: (s.business_hours || s.businessHours || '11:00-22:00'),
 						distance: s.distance || '',
 						bikeTime: s.bikeTime || '',
 						walkTime: s.walkTime || '',
 						address: s.address || '',
-						business_types: s.business_types || []
+						business_types: storeBusinessTypes
 					}
 
 					// Detect hotel/hostel type - enable room tab
 					const hostelTypes = ["HOTEL", "HOSTEL_ROOM", "HOSTEL_HOTPOT", "HOSTEL_COFFEE"]
-					this.isHostel = s.business_types && s.business_types.some(t => hostelTypes.includes(t))
+					this.isHostel = storeBusinessTypes.some(t => hostelTypes.includes(t))
 					if (this.isHostel) {
 						this.activeCategory = -1
 						this.loadHostelRooms()
@@ -487,23 +535,48 @@ export default {
 					})
 				}
 
-				// 分类列表
-				if (catRes.status === 'fulfilled' && catRes.value.code === 0 && catRes.value.data) {
-					this.categories = (catRes.value.data || []).map(c => ({
-						id: c.id,
-						nameKey: c.name,
-						name_en: c.name_en || '',
-						name_th: c.name_th || '',
-						name: c.name,
-						sortOrder: c.sort_order
-					}))
+				// Step 2: Load all products for this store first
+				try {
+					const allItemsRes = await getConsumerMenuItems(this.shopInfo.id)
+					if (allItemsRes.code === 0 && allItemsRes.data) {
+						const items = Array.isArray(allItemsRes.data) ? allItemsRes.data : (allItemsRes.data.items || [])
+						this.allProducts = items.map(item => this.normalizeProduct(item))
+					}
+				} catch (e) {
+					console.error('loadProducts error:', e)
 				}
 
-				// 商品列表
-				if (itemsRes.status === 'fulfilled' && itemsRes.value.code === 0 && itemsRes.value.data) {
-					const items = Array.isArray(itemsRes.value.data) ? itemsRes.value.data : (itemsRes.value.data.items || [])
-					this.allProducts = items.map(item => this.normalizeProduct(item))
-				}
+					// Step 3: Load store menu categories (门店自定义菜单分组)
+					try {
+						const smcRes = await getStoreMenuCategories(this.shopInfo.id)
+						if (smcRes.code === 0 && smcRes.data) {
+							const smcData = Array.isArray(smcRes.data) ? smcRes.data : (smcRes.data.items || [])
+							// Filter categories that have products
+							const usedCatIds = new Set(this.allProducts.map(p => p.store_menu_category_id).filter(Boolean))
+							const catsWithProducts = smcData.filter(c => usedCatIds.has(c.id))
+							if (catsWithProducts.length > 0) {
+								this.categories = catsWithProducts.map(c => ({
+									id: c.id,
+									nameKey: c.name,
+									name_en: c.name_en || '',
+									name_th: c.name_th || '',
+									name: c.name,
+									sortOrder: c.sort_order
+								}))
+							} else {
+								// Fallback: use global categories if no store menu categories
+								this.loadFallbackCategories()
+							}
+						} else {
+							this.loadFallbackCategories()
+						}
+					} catch (e) {
+						console.error('loadStoreMenuCategories error:', e)
+						this.loadFallbackCategories()
+					}
+					if (!this.isHostel && this.categories.length > 0) {
+						this.activeCategory = 0
+					}
 
 			} catch (e) {
 				console.error('loadStoreData error:', e)
@@ -512,23 +585,80 @@ export default {
 			}
 		},
 
+		async loadFallbackCategories() {
+				// Fallback to global categories when store menu categories are not available
+				try {
+					const catRes = await getConsumerCategories()
+					if (catRes.code === 0 && catRes.data) {
+						const catData = Array.isArray(catRes.data) ? catRes.data : (catRes.data.items || [])
+						const usedCatIds = new Set(this.allProducts.map(p => p.category_id))
+						const filtered = catData.filter(c => usedCatIds.has(c.id))
+						const nameGroups = new Map()
+						for (const c of filtered) {
+							const key = (c.name_en || c.name || '').toLowerCase()
+							if (!nameGroups.has(key)) nameGroups.set(key, { cat: c, ids: [] })
+							nameGroups.get(key).ids.push(c.id)
+						}
+						this.categories = [...nameGroups.values()].map(({ cat, ids }) => ({
+							id: ids[0],
+							catIds: ids,
+							nameKey: cat.name,
+							name_en: cat.name_en || '',
+							name_th: cat.name_th || '',
+							name: cat.name,
+							sortOrder: cat.sort_order
+						}))
+					}
+				} catch (e) {
+					console.error('loadFallbackCategories error:', e)
+				}
+			},
+
+		// Map store business_types (JSONB array) to category business_type filter
+		mapBusinessType(businessTypes) {
+
+			if (!businessTypes || !businessTypes.length) return null
+
+			// Match the first known food business_type (exclude hostel types)
+
+			const foodTypes = ["HOTPOT_BUFFET", "HOTPOT_PER_ITEM", "MALA_TANG", "SEAFOOD_NOODLE", "STANDARD_FOOD"]
+
+			for (const ft of foodTypes) {
+
+				if (businessTypes.includes(ft)) return ft
+
+			}
+
+			// Fallback: return first non-hostel type
+
+			const hostelTypes = ["HOSTEL_ROOM", "HOSTEL_HOTPOT", "HOSTEL_COFFEE"]
+
+			const nonHostel = businessTypes.find(t => !hostelTypes.includes(t))
+
+			return nonHostel || null
+
+		},
+
+
 		normalizeProduct(item) {
 			const lang = i18n.getLanguage()
-			const localizedName = lang === 'en' ? (item.name_en || item.name)
-				: lang === 'th' ? (item.name_th || item.name)
-				: item.name
+			const nameFallback = item.name || item.name_en || item.name_th || ''
+			const localizedName = lang === 'en' ? (item.name_en || nameFallback)
+				: lang === 'th' ? (item.name_th || nameFallback)
+				: nameFallback
 			const localizedDesc = lang === 'en' ? (item.description_en || item.description)
 				: lang === 'th' ? (item.description_th || item.description)
 				: (item.description || '')
 			return {
 				id: item.id,
 				name: localizedName,
-				name_zh: item.name,
+				name_zh: item.name || item.name_en || '',
 				description: localizedDesc || '',
 				price: item.price,
 				originalPrice: item.original_price || item.originalPrice || null,
-				image: item.image_url || '/static/logo.png',
+				image: (item.image_url && !item.image_url.includes('example.com')) ? item.image_url : '/static/images/img-placeholder.svg',
 				category_id: item.category_id,
+				store_menu_category_id: item.store_menu_category_id,
 				tags: item.tags || [],
 				stock: item.stock,
 				is_sold_out: item.is_sold_out || false,
@@ -547,7 +677,19 @@ export default {
 						check_out_date: checkOut
 					})
 					if (res.code === 0 && res.data) {
-						this.hostelRooms = res.data.available_rooms || []
+						const d = res.data
+						const rawHR = Array.isArray(d) ? d : (d.data || d.available_rooms || d.rooms || [])
+						this.hostelRooms = rawHR.map(r => ({
+							id: r.id,
+							name: r.room_type_name || r.name || ('Room ' + r.room_number),
+							room_number: r.room_number,
+							base_price: r.base_price,
+							capacity: r.max_guests || r.capacity || 0,
+							bed_count: r.bed_count || 0,
+							is_available: r.status === 'AVAILABLE' || r.is_available === true,
+							image: r.cover_image || r.image || '/static/images/img-placeholder.svg',
+							description: r.description || ''
+						}))
 					}
 				} catch (e) {
 					console.error('loadHostelRooms error:', e)
@@ -643,7 +785,7 @@ export default {
 					return
 				}
 				uni.navigateTo({
-					url: `/pages/hostel/booking?roomId=${room.id}&roomName=${encodeURIComponent(room.name)}&roomPrice=${room.base_price}&checkIn=${this.hostelCheckIn}&checkOut=${this.hostelCheckOut}&nights=${this.hostelNights}&storeId=${this.shopInfo.id}&storeName=${encodeURIComponent(this.shopInfo.name)}&capacity=${room.capacity || 0}`
+					url: `/pages/hostel/booking?roomId=${room.id}&roomName=${encodeURIComponent(room["name_" + i18n.getLanguage()] || room.name)}&roomPrice=${room.base_price}&checkIn=${this.hostelCheckIn}&checkOut=${this.hostelCheckOut}&nights=${this.hostelNights}&storeId=${this.shopInfo.id}&storeName=${encodeURIComponent(this.shopInfo["name_" + i18n.getLanguage()] || this.shopInfo.name)}&capacity=${room.capacity || 0}`
 				})
 			},
 
@@ -655,15 +797,29 @@ export default {
 			this.activeCategory = index
 		},
 
+		async loadCategoryProducts() {
+			if (this.activeCategory === -1 || this.categories.length === 0) return
+			const catId = this.categories[this.activeCategory].id
+			try {
+				const res = await getConsumerMenuItems(this.shopInfo.id, { category_id: catId })
+				if (res.code === 0 && res.data) {
+					const items = Array.isArray(res.data) ? res.data : (res.data.items || [])
+					this.allProducts = items.map(item => this.normalizeProduct(item))
+				}
+			} catch (e) {
+				console.error("loadCategoryProducts error:", e)
+			}
+		},
+
 		handleProductClick(item) {
 			uni.navigateTo({
-				url: `/pages/product-detail/index?productId=${item.id}&name=${encodeURIComponent(item.name)}&price=${item.price}&image=${encodeURIComponent(item.image)}`
+				url: `/pages/product-detail/index?productId=${item.id}&shopId=${this.shopInfo.id}&name=${encodeURIComponent(item.name)}&price=${item.price}&image=${encodeURIComponent(item.image)}`
 			})
 		},
 
 		handleAddToCart(item) {
 			if (item.is_sold_out) {
-				showToast('商品已售罄')
+				showToast(this.i18n.t('dinein.soldOut'))
 				return
 			}
 			// 有规格则弹出选择弹窗
@@ -732,6 +888,20 @@ export default {
 			this.specProduct = null
 		},
 
+		restoreCart() {
+			if (!this.shopInfo || !this.shopInfo.id) return
+			const saved = appStore.getCart(this.shopInfo.id)
+			if (saved && saved.length > 0) {
+				this.cartItems = saved
+				this.cartCount = saved.reduce((sum, ci) => sum + ci.quantity, 0)
+				this.cartTotal = Math.round(saved.reduce((sum, ci) => sum + ci.price * ci.quantity, 0) * 100) / 100
+			} else {
+				this.cartItems = []
+				this.cartCount = 0
+				this.cartTotal = 0
+			}
+		},
+
 		doAddToCart(item, quantity, specs) {
 			quantity = quantity || 1
 			this.cartCount += quantity
@@ -757,6 +927,7 @@ export default {
 					})
 				}
 			showToast(this.i18n.t('dinein.addToCart'))
+			this.syncCartToStore()
 		},
 
 		handleCartClick() {
@@ -766,6 +937,58 @@ export default {
 			})
 		},
 
+		toggleCartPopup() {
+			this.showCartPopup = !this.showCartPopup
+		},
+
+		handleClearCart() {
+			this.cartItems = []
+			this.cartCount = 0
+			this.cartTotal = 0
+			this.showCartPopup = false
+			if (this.shopInfo && this.shopInfo.id) {
+				appStore.clearCart(this.shopInfo.id)
+			}
+		},
+
+		changeCartQty(idx, delta) {
+			const item = this.cartItems[idx]
+			if (!item) return
+			const newQty = item.quantity + delta
+			if (newQty <= 0) {
+				this.cartItems.splice(idx, 1)
+			} else {
+				item.quantity = newQty
+			}
+			this.recalcCart()
+			this.syncCartToStore()
+			if (this.cartItems.length === 0) {
+				this.showCartPopup = false
+			}
+		},
+
+		recalcCart() {
+			this.cartCount = this.cartItems.reduce((s, i) => s + i.quantity, 0)
+			this.cartTotal = Math.round(this.cartItems.reduce((s, i) => s + i.price * i.quantity, 0) * 100) / 100
+		},
+
+		syncCartToStore() {
+			if (!this.shopInfo || !this.shopInfo.id) return
+			const all = appStore.getCart()
+			all[this.shopInfo.id] = this.cartItems
+			try {
+				uni.setStorageSync('siamfeast_cart', JSON.stringify(all))
+			} catch (e) {
+				console.error('syncCartToStore error:', e)
+			}
+		},
+
+		formatSpecs(specs) {
+			const lang = i18n.state.language
+			const messages = i18n.state.messages[lang] || {}
+			const options = (messages.productDetail && messages.productDetail.specOptions) || {}
+			return Object.values(specs).map(v => options[v] || v).join('/')
+		},
 		// 分享门店
 		async handleShareShop() {
 			try {
@@ -789,7 +1012,7 @@ export default {
 					showToast(this.i18n.t('dinein.shareFail'))
 				}
 			} catch (e) {
-				console.error('分享失败:', e)
+				console.error('Share failed:', e)
 				showToast(this.i18n.t('dinein.shareFailed'))
 			}
 		},
@@ -821,13 +1044,13 @@ export default {
 						shopName: this.shopInfo.fullName || this.shopInfo.name
 					}
 					this.showShareModal = true
-					showToast('链接已复制')
+					showToast(this.i18n.t('dinein.shareSuccess'))
 				} else {
-					showToast('复制失败，请重试')
+					showToast(this.i18n.t('dinein.shareFail'))
 				}
 			} catch (e) {
-				console.error('分享失败:', e)
-				showToast('分享失败，请重试')
+				console.error('Share failed:', e)
+				showToast(this.i18n.t('dinein.shareFailed'))
 			}
 		},
 
@@ -837,7 +1060,7 @@ export default {
 
 		handleShareConfirm(shareInfo) {
 			this.showShareModal = false
-			showToast('欢迎光临！')
+			showToast(this.i18n.t('dinein.welcome'))
 		}
 	}
 }
@@ -1019,6 +1242,9 @@ export default {
 /* 分类标签 */
 .category-tabs {
 	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	white-space: nowrap;
 	align-items: center;
 	padding: 0 16px;
 	gap: 0;
@@ -1031,6 +1257,7 @@ export default {
 	padding: 10px 14px;
 	position: relative;
 	transition: opacity 0.2s;
+	flex-shrink: 0;
 }
 
 .category-tab:active {
@@ -1148,12 +1375,16 @@ export default {
 .room-card-content {
 	padding: 14px 16px 16px;
 }
+.room-name-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 4px;
+}
 .room-card-name {
 	font-size: 16px;
 	font-weight: 700;
 	color: rgba(0, 0, 0, 0.88);
-	display: block;
-	margin-bottom: 4px;
 }
 .room-card-desc {
 	font-size: 12px;
@@ -1186,16 +1417,8 @@ export default {
 }
 .room-card-price {
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-.room-price-from {
-	font-size: 11px;
-	color: #949494;
-}
-.room-price-row {
-	display: flex;
 	align-items: baseline;
+	gap: 2px;
 }
 .room-price-symbol {
 	font-size: 14px;
@@ -1206,6 +1429,10 @@ export default {
 	font-size: 24px;
 	font-weight: 700;
 	color: #F2B131;
+}
+.room-price-unit {
+	font-size: 12px;
+	color: #949494;
 }
 .room-book-btn {
 	background-color: #F2B131;
@@ -1355,20 +1582,29 @@ export default {
 	font-weight: 500;
 }
 
-/* 购物车浮窗 */
-.cart-float {
+/* 购物车底栏 */
+.cart-bar {
 	position: fixed;
-	bottom: 60px;
-	left: 16px;
-	right: 16px;
-	height: 50px;
+	bottom: 56px;
+	left: 12px;
+	right: 12px;
+	height: 52px;
 	background-color: #4B4B4B;
-	border-radius: 25px;
+	border-radius: 26px;
 	display: flex;
 	align-items: center;
-	padding: 0 8px;
+	justify-content: space-between;
+	padding: 0 6px 0 6px;
 	z-index: 100;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+}
+
+.cart-bar-left {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 0 8px;
+	flex: 1;
 }
 
 .cart-icon-wrapper {
@@ -1408,52 +1644,210 @@ export default {
 	font-weight: 600;
 }
 
-.cart-info {
-	flex: 1;
-	margin-left: 12px;
-}
-
-.cart-price {
+.cart-bar-price {
 	display: flex;
 	align-items: baseline;
 }
 
-.cart-price .price-symbol {
-	font-size: 12px;
-	color: #FFFFFF;
-}
-
-.cart-price .price-num {
-	font-size: 18px;
-	font-weight: 700;
-	color: #FFFFFF;
-}
-
-.cart-btn {
-	background-color: rgba(255, 255, 255, 0.15);
-	padding: 12px 20px;
-	border-radius: 20px;
-	transition: opacity 0.2s;
-}
-
-.cart-btn:active {
-	opacity: 0.8;
-}
-
-.cart-btn-active {
-	background-color: #F2B131;
-}
-
-.cart-btn-text {
+.cart-bar-symbol {
 	font-size: 12px;
 	font-weight: 600;
 	color: #FFFFFF;
 }
 
+.cart-bar-num {
+	font-size: 20px;
+	font-weight: 700;
+	color: #FFFFFF;
+}
+
+.cart-bar-checkout {
+	background-color: #F2B131;
+	padding: 12px 22px;
+	border-radius: 20px;
+	transition: opacity 0.2s;
+}
+
+.cart-bar-checkout:active {
+	opacity: 0.85;
+}
+
+.cart-bar-checkout-text {
+	font-size: 13px;
+	font-weight: 600;
+	color: #FFFFFF;
+}
+
+/* 购物车弹窗遮罩 */
+.cart-popup-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 199;
+}
+
+/* 购物车弹窗 */
+.cart-popup {
+	position: fixed;
+	bottom: 116px;
+	left: 12px;
+	right: 12px;
+	max-height: 50vh;
+	background-color: #FFFFFF;
+	border-radius: 14px;
+	z-index: 200;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+	transform: translateY(20px);
+	opacity: 0;
+	transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.cart-popup-show {
+	transform: translateY(0);
+	opacity: 1;
+}
+
+.cart-popup-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 16px 10px;
+	border-bottom: 1px solid #F5F5F5;
+}
+
+.cart-popup-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: rgba(0, 0, 0, 0.88);
+}
+
+.cart-popup-clear {
+	padding: 4px 8px;
+	border-radius: 4px;
+	transition: background-color 0.15s;
+}
+
+.cart-popup-clear:active {
+	background-color: #F5F5F5;
+}
+
+.cart-popup-clear-text {
+	font-size: 12px;
+	color: #949494;
+}
+
+.cart-popup-list {
+	max-height: 40vh;
+	padding: 4px 0;
+}
+
+.cart-popup-item {
+	display: flex;
+	align-items: center;
+	padding: 10px 16px;
+	gap: 10px;
+}
+
+.cart-popup-item-img {
+	width: 44px;
+	height: 44px;
+	border-radius: 8px;
+	flex-shrink: 0;
+}
+
+.cart-popup-item-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	overflow: hidden;
+}
+
+.cart-popup-item-name {
+	font-size: 13px;
+	font-weight: 600;
+	color: rgba(0, 0, 0, 0.85);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cart-popup-item-spec {
+	font-size: 11px;
+	color: #949494;
+}
+
+.cart-popup-item-right {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+}
+
+.cart-popup-item-price {
+	font-size: 13px;
+	font-weight: 600;
+	color: #F2B131;
+}
+
+.cart-popup-qty {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.cart-popup-qty-btn {
+	width: 22px;
+	height: 22px;
+	background-color: #F5F5F5;
+	border-radius: 11px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: background-color 0.15s;
+}
+
+.cart-popup-qty-btn:active {
+	background-color: #E8E8E8;
+}
+
+.cart-popup-qty-text {
+	font-size: 14px;
+	font-weight: 600;
+	color: rgba(0, 0, 0, 0.6);
+}
+
+.cart-popup-qty-num {
+	font-size: 13px;
+	font-weight: 600;
+	color: rgba(0, 0, 0, 0.8);
+	min-width: 18px;
+	text-align: center;
+}
+
+.cart-popup-empty {
+	padding: 40px 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.cart-popup-empty-text {
+	font-size: 13px;
+	color: #949494;
+}
+
 /* 底部占位 */
 .bottom-placeholder {
-	height: 70px;
+	height: 120px;
 }
+
 
 
 /* date picker popup */
@@ -1663,18 +2057,19 @@ export default {
 	opacity: 1;
 }
 
+/* 头部：商品图+价格+关闭 */
 .spec-header {
 	display: flex;
 	align-items: flex-start;
-	padding: 20px 16px 12px;
+	padding: 16px;
 	gap: 12px;
-	border-bottom: 1px solid #F5F5F5;
+	border-bottom: 1px solid #F0F0F0;
 }
 
 .spec-product-image {
-	width: 80px;
-	height: 80px;
-	border-radius: 10px;
+	width: 72px;
+	height: 72px;
+	border-radius: 8px;
 	flex-shrink: 0;
 }
 
@@ -1683,7 +2078,8 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	padding-top: 4px;
+	padding-top: 2px;
+	overflow: hidden;
 }
 
 .spec-product-price {
@@ -1692,42 +2088,46 @@ export default {
 }
 
 .spec-price-symbol {
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 600;
 	color: #DA3300;
 }
 
 .spec-price-num {
-	font-size: 24px;
+	font-size: 22px;
 	font-weight: 700;
 	color: #DA3300;
 }
 
 .spec-product-name {
-	font-size: 13px;
+	font-size: 12px;
 	color: #949494;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .spec-close {
-	width: 32px;
-	height: 32px;
+	width: 28px;
+	height: 28px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
-	border-radius: 16px;
-	transition: background-color 0.2s;
+	border-radius: 14px;
 }
 
 .spec-close:active {
-	background-color: #F5F5F5;
+	background-color: #F0F0F0;
 }
 
-.spec-close-icon {
-	width: 20px;
-	height: 20px;
+.spec-close-text {
+	font-size: 20px;
+	color: #949494;
+	line-height: 1;
 }
 
+/* 规格主体 */
 .spec-body {
 	flex: 1;
 	padding: 16px;
@@ -1735,28 +2135,28 @@ export default {
 }
 
 .spec-group {
-	margin-bottom: 20px;
+	margin-bottom: 16px;
 }
 
 .spec-group-label {
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 600;
-	color: rgba(0, 0, 0, 0.8);
-	margin-bottom: 12px;
+	color: rgba(0, 0, 0, 0.75);
+	margin-bottom: 10px;
 	display: block;
 }
 
 .spec-options {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 10px;
+	gap: 8px;
 }
 
 .spec-option {
-	padding: 8px 20px;
-	border-radius: 20px;
+	padding: 6px 14px;
+	border-radius: 16px;
 	background-color: #F5F5F5;
-	border: 1px solid transparent;
+	border: 1.5px solid transparent;
 	transition: all 0.2s;
 }
 
@@ -1770,8 +2170,8 @@ export default {
 }
 
 .spec-option-text {
-	font-size: 13px;
-	color: rgba(0, 0, 0, 0.8);
+	font-size: 12px;
+	color: rgba(0, 0, 0, 0.75);
 }
 
 .spec-option-active .spec-option-text {
@@ -1779,69 +2179,70 @@ export default {
 	font-weight: 600;
 }
 
-.spec-qty-row {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	padding: 12px 0;
-	border-top: 1px solid #F5F5F5;
-	margin-top: 8px;
-}
+/* 数量行 */
+	.spec-qty-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 14px 20px 0 0;
+		margin-top: 12px;
+		border-top: 1px solid #F0F0F0;
+	}
 
-.spec-qty-label {
-	font-size: 14px;
-	font-weight: 600;
-	color: rgba(0, 0, 0, 0.8);
-}
+	.spec-qty-label {
+		font-size: 13px;
+		font-weight: 600;
+		color: rgba(0, 0, 0, 0.75);
+	}
 
-.spec-qty-control {
-	display: flex;
-	align-items: center;
-	gap: 16px;
-}
+	.spec-qty-control {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+	}
 
-.spec-qty-control .qty-btn {
-	width: 32px;
-	height: 32px;
-	border-radius: 16px;
-	background-color: #F5F5F5;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: background-color 0.2s;
-}
+	.spec-qty-btn {
+		width: 26px;
+		height: 26px;
+		border-radius: 13px;
+		background-color: #F5F5F5;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
 
-.spec-qty-control .qty-btn:active {
-	background-color: #E8E8E8;
-}
+	.spec-qty-btn:active {
+		background-color: #E8E8E8;
+	}
 
-.spec-qty-control .qty-btn-text {
-	font-size: 18px;
-	color: rgba(0, 0, 0, 0.8);
-}
+	.spec-qty-btn-text {
+		font-size: 15px;
+		font-weight: 500;
+		color: rgba(0, 0, 0, 0.7);
+		line-height: 1;
+	}
 
-.spec-qty-control .qty-num {
-	font-size: 16px;
-	font-weight: 600;
-	color: rgba(0, 0, 0, 0.9);
-	min-width: 24px;
-	text-align: center;
-}
+	.spec-qty-num {
+		font-size: 15px;
+		font-weight: 600;
+		color: rgba(0, 0, 0, 0.85);
+		min-width: 20px;
+		text-align: center;
+	}
 
 .spec-footer {
 	padding: 12px 16px;
 	padding-bottom: calc(12px + env(safe-area-inset-bottom));
-	border-top: 1px solid #F5F5F5;
+	border-top: 1px solid #F0F0F0;
 }
 
 .spec-confirm-btn {
-	height: 44px;
+	height: 42px;
 	background-color: #F2B131;
-	border-radius: 22px;
+	border-radius: 21px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	transition: opacity 0.2s;
 }
 
 .spec-confirm-btn:active {

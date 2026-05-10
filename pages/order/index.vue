@@ -5,7 +5,7 @@
 
 		<!-- 页面标题 -->
 		<view class="page-header">
-			<text class="page-title">我的订单</text>
+			<text class="page-title">{{ i18n.t("order.title") }}</text>
 		</view>
 
 		<!-- 订单状态Tab -->
@@ -33,8 +33,8 @@
 					<!-- 订单头部 -->
 					<view class="order-header">
 						<view class="shop-info">
-							<image class="shop-icon" src="/static/logo.png" mode="aspectFill"></image>
-							<text class="shop-name">{{ order.store_name || order.order_type_text }}</text>
+							<image class="shop-icon" :src="order.store_logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
+							<text class="shop-name">{{ order.store_name_loc || order.store_name || order.order_type_text }}</text>
 							<text class="order-type-tag" v-if="order.order_type && order.order_type !== 'DINE_IN'">{{ formatOrderType(order.order_type) }}</text>
 						</view>
 						<text class="order-status" :style="{ color: getStatusColor(order.status) }">{{ statusText(order.status) }}</text>
@@ -42,26 +42,26 @@
 
 					<!-- 订单摘要 -->
 					<view class="order-summary">
-						<text class="summary-text">订单号：{{ order.order_no }}</text>
+						<text class="summary-text">{{ i18n.t("order.orderNoLabel") }}：{{ order.order_no }}</text>
 						<text class="summary-text">{{ formatTime(order.created_at) }}</text>
-					<text class="summary-text coins" v-if="order.coins_used">使用{{ order.coins_used }}个金币</text>
+					<text class="summary-text coins" v-if="order.coins_used">{{ i18n.t("order.coinsUsed", { n: order.coins_used }) }}</text>
 					</view>
 
 					<!-- 订单底部 -->
 					<view class="order-footer">
 						<view class="order-total">
-							<text class="total-label">实付</text>
+							<text class="total-label">{{ i18n.t("order.actualPay") }}</text>
 							<text class="total-price">฿{{ order.total_amount }}</text>
 						</view>
 						<view class="order-actions">
 							<view class="action-btn" v-if="order.status === 'PENDING_PAYMENT'" @click.stop="handlePay(order)">
-								<text class="action-text primary">去支付</text>
+								<text class="action-text primary">{{ i18n.t("order.goPay") }}</text>
 							</view>
 							<view class="action-btn" v-if="order.status === 'COMPLETED'" @click.stop="handleReorder(order)">
-								<text class="action-text">再来一单</text>
+								<text class="action-text">{{ i18n.t("order.reorder") }}</text>
 							</view>
 							<view class="action-btn" @click.stop="handleOrderClick(order)">
-								<text class="action-text">查看详情</text>
+								<text class="action-text">{{ i18n.t("order.viewDetail") }}</text>
 							</view>
 						</view>
 					</view>
@@ -70,14 +70,15 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip" v-if="filteredOrders.length > 0">
-				<text v-if="loading" class="tip-text">加载中...</text>
-				<text v-else-if="noMore" class="tip-text">没有更多了</text>
+				<text v-if="loading" class="tip-text">{{ i18n.t("common.loading") }}</text>
+				<text v-else-if="noMore" class="tip-text">{{ i18n.t("order.noMore") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="!loading && filteredOrders.length === 0">
-				<image class="empty-icon" src="/static/logo.png" mode="aspectFit"></image>
-				<text class="empty-text">暂无订单</text>
+				<image class="empty-icon" src="/static/images/empty-order.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t("common.empty.order") }}</text>
+				<text class="empty-desc">{{ i18n.t("common.empty.orderDesc") }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -93,29 +94,39 @@
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import { showToast } from '@/utils/index.js'
 import { getUserOrders, getOrderDetail } from '@/api/services/order.js'
+import { getStore } from '@/api/services/store.js'
 import { createPayment } from '@/api/services/payment.js'
 
 import i18n from '@/i18n/index.js'
 
-const STATUS_MAP = {
-	'PENDING_PAYMENT': { text: '待支付', color: '#F2B131' },
-	'PAID': { text: '已支付', color: '#1890FF' },
-	'PREPARING': { text: '制作中', color: '#1890FF' },
-	'READY': { text: '待取餐', color: '#52C41A' },
-	'COMPLETED': { text: '已完成', color: '#52C41A' },
-	'CANCELLED': { text: '已取消', color: '#999999' }
-}
+const STATUS_COLORS = {
+		'PENDING_PAYMENT': '#F2B131',
+		'PAID': '#1890FF',
+		'PREPARING': '#1890FF',
+		'READY': '#52C41A',
+		'COMPLETED': '#52C41A',
+		'CANCELLED': '#999999'
+	}
 
-const ORDER_TYPE_MAP = {
-	'SINEFOOD_NOODLE': '泰式海鲜面',
-	'HOTPOT': '火锅',
-	'MALATANG': '麻辣烫',
-	'BBQ': '烧烤',
-	'SEAFOOD_NOODLE': '泰式海鲜面',
-	'DINE_IN': '堂食',
-	'TAKEAWAY': '外卖',
-	'DELIVERY': '配送'
-}
+	const STATUS_I18N_KEYS = {
+		'PENDING_PAYMENT': 'order.pending',
+		'PAID': 'order.paid',
+		'PREPARING': 'order.preparing',
+		'READY': 'order.ready',
+		'COMPLETED': 'order.completed',
+		'CANCELLED': 'order.cancelled'
+	}
+
+const ORDER_TYPE_I18N = {
+		'SINEFOOD_NOODLE': 'order.seafoodNoodle',
+		'HOTPOT': 'order.hotpot',
+		'MALATANG': 'order.malatang',
+		'BBQ': 'order.hotpot',
+		'SEAFOOD_NOODLE': 'order.seafoodNoodle',
+		'DINE_IN': 'order.dineIn',
+		'TAKEAWAY': 'order.takeaway',
+		'DELIVERY': 'order.delivery'
+	}
 
 export default {
 	components: {
@@ -124,15 +135,10 @@ export default {
 	data() {
 		return {
 			i18n: i18n,
+			tabs: [],
 			statusBarHeight: 20,
 			contentHeight: 500,
 			activeTab: 0,
-			tabs: [
-				{ id: 'all', name: '全部' },
-				{ id: 'pending', name: '待支付' },
-				{ id: 'processing', name: '进行中' },
-				{ id: 'completed', name: '已完成' }
-			],
 			orders: [],
 			loading: false,
 			noMore: false,
@@ -162,11 +168,22 @@ export default {
 		this.contentHeight = systemInfo.windowHeight - headerHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
 	},
 	onShow() {
+			uni.$emit('tabbarUpdate')
+			this.initTabs()
 		this.offset = 0
 		this.loadOrders()
 	},
 	methods: {
-		async loadOrders(append = false) {
+		initTabs() {
+				this.tabs = [
+					{ id: 'all', name: this.i18n.t('order.all') },
+					{ id: 'pending', name: this.i18n.t('order.pending') },
+					{ id: 'processing', name: this.i18n.t('order.processing') },
+					{ id: 'completed', name: this.i18n.t('order.completed') }
+				]
+			},
+
+			async loadOrders(append = false) {
 			if (this.loading) return
 			this.loading = true
 			try {
@@ -182,15 +199,25 @@ export default {
 						getOrderDetail(o.id).catch(() => null)
 					)
 					const details = await Promise.allSettled(detailPromises)
+					// Collect unique store_ids
+					const storeIds = [...new Set(rawItems.map(o => o.store_id).filter(Boolean))]
+					const storeMap = {}
+					await Promise.allSettled(storeIds.map(id =>
+						getStore(id).then(r => { if (r.code === 0 && r.data) storeMap[id] = r.data })
+					))
 					const items = rawItems.map((o, idx) => {
 						const detail = details[idx]?.status === 'fulfilled' ? details[idx].value?.data : null
 						const storeName = detail?.extra_data?.store_name || ''
 						const firstItem = detail?.items?.[0]
-						const orderLabel = storeName || (firstItem ? firstItem.item_name : o.order_type || '订单')
+						const orderLabel = storeName || (firstItem ? firstItem.item_name : o.order_type || '')
+						const storeInfo = storeMap[o.store_id]
+						const lang = i18n.getLanguage()
 						return {
 							...o,
 							order_type_text: orderLabel,
-							detail_items: detail?.items || []
+							detail_items: detail?.items || [],
+							store_logo: storeInfo?.logo_url || storeInfo?.logo || '',
+							store_name_loc: storeInfo ? (storeInfo["name_" + lang] || storeInfo.name) : ''
 						}
 					})
 					if (append) {
@@ -202,22 +229,22 @@ export default {
 					this.noMore = items.length < 20
 				}
 			} catch (e) {
-				console.error('加载订单失败:', e)
+				console.error(this.i18n.t('order.loadFailed'), e)
 			} finally {
 				this.loading = false
 			}
 		},
 
 		getStatusColor(status) {
-			return STATUS_MAP[status]?.color || '#999999'
+			return STATUS_COLORS[status] || '#999999'
 		},
 
 		statusText(status) {
-			return STATUS_MAP[status]?.text || status
+			return i18n.t(STATUS_I18N_KEYS[status] || '') || status
 		},
 
 			formatOrderType(type) {
-				return ORDER_TYPE_MAP[type] || type || ''
+				return i18n.t(ORDER_TYPE_I18N[type] || '') || type || ''
 			},
 
 		formatTime(timeStr) {
@@ -250,15 +277,15 @@ export default {
 					payment_method: 'cash_pos'
 				})
 				if (res.code === 0) {
-					showToast('支付成功')
+					showToast(this.i18n.t('order.paySuccess'))
 					this.offset = 0
 					this.loadOrders()
 				} else {
-					showToast(res.message || '支付失败')
+					showToast(res.message || this.i18n.t('order.payFailed'))
 				}
 			} catch (e) {
-				console.error('支付失败:', e)
-				showToast('支付失败，请重试')
+				console.error('Payment error:', e)
+				showToast(this.i18n.t('order.payRetry'))
 			}
 		},
 
@@ -279,9 +306,9 @@ export default {
 				if (order.detail_items && order.detail_items.length > 0) {
 					const products = order.detail_items.map(item => ({
 					id: item.id,
-					name: item.item_name,
+					name: item.item_name_en && i18n.getLanguage() !== "zh" ? (i18n.getLanguage() === "th" ? (item.item_name_th || item.item_name_en || item.item_name) : (item.item_name_en || item.item_name)) : item.item_name,
 					price: item.unit_price,
-					image: item.image_url || '/static/logo.png',
+					image: item.image_url || '/static/images/img-placeholder.svg',
 					quantity: item.quantity,
 					store_id: order.store_id || order.shop_id || ''
 				}))

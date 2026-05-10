@@ -27,12 +27,12 @@
 					@click="handleMessageClick(item)"
 				>
 					<view class="message-icon-wrapper">
-						<image class="message-icon" :src="item.icon" mode="aspectFill"></image>
+						<view class="message-icon-bg" :style="{ backgroundColor: item.iconData.bg }"><image class="message-icon-inner" :src="item.iconData.icon" mode="aspectFit"></image></view>
 						<view class="unread-dot" v-if="!item.isRead"></view>
 					</view>
 					<view class="message-content">
 						<view class="message-header">
-							<text class="message-title">{{ i18n.t(`message.${item.type}`) }}</text>
+							<text class="message-title">{{ item.title }}</text>
 							<text class="message-time">{{ item.time }}</text>
 						</view>
 						<text class="message-desc">{{ item.description }}</text>
@@ -47,8 +47,9 @@
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="!loading && messages.length === 0">
-				<image class="empty-icon" src="/static/logo.png" mode="aspectFit"></image>
-				<text class="empty-text">{{ i18n.t('message.noMessages') }}</text>
+				<image class="empty-icon" src="/static/images/empty-message.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t('common.empty.message') }}</text>
+				<text class="empty-desc">{{ i18n.t('common.empty.messageDesc') }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -126,14 +127,39 @@ export default {
 		},
 
 		normalizeMessage(m) {
-			return {
-				id: m.id,
-				type: m.type,
-				icon: m.icon || '/static/logo.png',
-				description: m.description || '',
-				time: m.time || '',
-				isRead: m.is_read
-			}
+				const type = m.notification_type || m.type || 'SYSTEM'
+				const iconMap = {
+					ORDER_STATUS: { icon: '/static/icons/order.svg', bg: '#FFF3E0' },
+					ORDER: { icon: '/static/icons/order.svg', bg: '#FFF3E0' },
+					PROMOTION: { icon: '/static/icons/coupon.svg', bg: '#FCE4EC' },
+					COUPON: { icon: '/static/icons/coupon.svg', bg: '#FCE4EC' },
+					COIN: { icon: '/static/icons/coin.svg', bg: '#FFF8E1' },
+					POINT: { icon: '/static/icons/coin.svg', bg: '#FFF8E1' },
+					MEMBER: { icon: '/static/icons/member.svg', bg: '#F3E5F5' },
+					SYSTEM: { icon: '/static/icons/message.svg', bg: '#E3F2FD' }
+				}
+				let time = ''
+				if (m.sent_at) {
+					const d = new Date(m.sent_at)
+					const now = new Date()
+					const isToday = d.toDateString() === now.toDateString()
+					const hh = String(d.getHours()).padStart(2, '0')
+					const mm = String(d.getMinutes()).padStart(2, '0')
+					if (isToday) {
+						time = hh + ':' + mm
+					} else {
+						time = (d.getMonth()+1) + '/' + d.getDate() + ' ' + hh + ':' + mm
+					}
+				}
+				return {
+					id: m.id,
+					type: type,
+					title: m.title || m.title_en || '',
+					iconData: iconMap[type] || iconMap.SYSTEM,
+					description: m.body || m.description || '',
+					time: time,
+					isRead: m.is_read
+				}
 		},
 
 		goBack() {
@@ -261,10 +287,18 @@ export default {
 	margin-right: 12px;
 }
 
-.message-icon {
-	width: 40px;
-	height: 40px;
-	border-radius: 8px;
+.message-icon-bg {
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.message-icon-inner {
+	width: 24px;
+	height: 24px;
 }
 
 .unread-dot {

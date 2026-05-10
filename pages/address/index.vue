@@ -53,8 +53,9 @@
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="addressList.length === 0">
-				<image class="empty-icon" src="/static/logo.png" mode="aspectFit"></image>
-				<text class="empty-text">{{ i18n.t('address.noAddress') }}</text>
+				<image class="empty-icon" src="/static/images/empty-address.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t('common.empty.address') }}</text>
+				<text class="empty-desc">{{ i18n.t('common.empty.addressDesc') }}</text>
 				<view class="empty-btn" @click="handleAddAddress">
 					<text class="empty-btn-text">{{ i18n.t('address.add') }}</text>
 				</view>
@@ -769,6 +770,8 @@ export default {
 			uni.showModal({
 				title: this.i18n.t('common.confirm'),
 				content: this.i18n.t('address.deleteConfirm'),
+				confirmText: this.i18n.t('common.confirm'),
+				cancelText: this.i18n.t('common.cancel'),
 				success: async (res) => {
 					if (res.confirm) {
 						try {

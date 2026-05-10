@@ -2,7 +2,7 @@
  * 地址管理服务
  */
 import { USE_MOCK } from '../config.js'
-import { get, post, put, del } from '../request.js'
+import { get, post, patch, del } from '../request.js'
 import {
 	mockGetAddressList,
 	mockGetAddress,
@@ -86,7 +86,7 @@ export function updateAddress(addressId, addressData) {
 		is_default: addressData.is_default || addressData.isDefault || false,
 		remark: addressData.remark || null
 	}
-	return put(`/addresses/${addressId}`, payload)
+	return patch(`/addresses/${addressId}`, payload)
 }
 
 /**
@@ -110,7 +110,7 @@ export function setDefaultAddress(addressId) {
 	if (USE_MOCK) {
 		return mockSetDefaultAddress(addressId)
 	}
-	return put(`/addresses/${addressId}/default`)
+	return patch(`/addresses/${addressId}/default`)
 }
 
 /**

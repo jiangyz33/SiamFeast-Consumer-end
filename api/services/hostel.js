@@ -44,7 +44,30 @@ export function getRooms(storeId) {
  * @returns {Promise}
  */
 export function getAvailableRooms(storeId, params = {}) {
-	return get(`/hostels/rooms/${storeId}/available`, params)
+	const { check_in_date, check_out_date, ...rest } = params
+	return get('/hostel/rooms/available', {
+		store_id: storeId,
+		check_in: check_in_date,
+		check_out: check_out_date,
+		...rest
+	})
+}
+
+/**
+ * 搜索有空房的民宿门店（携程模式）
+ * @param {Object} params 查询参数
+ * @param {string} params.check_in 入住日期（YYYY-MM-DD）
+ * @param {string} params.check_out 退房日期（YYYY-MM-DD）
+ * @param {number} [params.lat] 用户纬度
+ * @param {number} [params.lng] 用户经度
+ * @param {number} [params.radius] 搜索半径（米），默认50000
+ * @param {string} [params.keyword] 门店名模糊搜索
+ * @param {number} [params.page] 页码
+ * @param {number} [params.page_size] 每页数量
+ * @returns {Promise} 返回 { data: [{store_id, store_name, min_price, available_room_count, distance_km}], nights, total, radius, radius_label }
+ */
+export function searchAvailableHostelStores(params) {
+	return get('/hostel/stores/available', params)
 }
 
 /**
@@ -100,7 +123,7 @@ export function setPricingCalendar(data) {
  * @returns {Promise}
  */
 export function createBooking(data) {
-	return post('/hostels/bookings', data)
+	return post('/hostel/bookings', data)
 }
 
 /**
@@ -109,7 +132,7 @@ export function createBooking(data) {
  * @returns {Promise}
  */
 export function getBookings(params = {}) {
-	return get('/hostels/bookings', params)
+	return get('/hostel/bookings', params)
 }
 
 /**
@@ -118,7 +141,7 @@ export function getBookings(params = {}) {
  * @returns {Promise}
  */
 export function getBooking(orderId) {
-	return get(`/hostels/bookings/${orderId}`)
+	return get(`/hostel/bookings/${orderId}`)
 }
 
 /**
@@ -137,7 +160,7 @@ export function confirmBooking(orderId) {
  * @returns {Promise}
  */
 export function cancelBooking(orderId, data = {}) {
-	return put(`/hostels/bookings/${orderId}/cancel`, data)
+	return post(`/hostel/bookings/${orderId}/cancel`, data)
 }
 
 /**
@@ -215,6 +238,30 @@ export function getHolidayRules(storeId) {
 	return get('/pricing/holidays', { store_id: storeId })
 }
 
+
+/**
+ * 续住
+ * @param {string} bookingId 预订ID
+ * @param {Object} data 续住数据
+ * @param {string} data.new_check_out_date 新退房日期
+ * @returns {Promise}
+ */
+export function extendBooking(bookingId, data) {
+	return post(`/hostel/bookings/${bookingId}/extensions`, data)
+}
+
+/**
+ * 创建评价
+ * @param {Object} data 评价数据
+ * @param {number} data.booking_id 预订ID
+ * @param {number} data.rating 评分
+ * @param {string} [data.comment] 评价内容
+ * @returns {Promise}
+ */
+export function createReview(data) {
+	return post('/hostel/reviews', data)
+}
+
 // 导出模块对象
 export const hostelApi = {
 	getRoomTypes,
@@ -236,7 +283,8 @@ export const hostelApi = {
 	verifyCheckInCode,
 	getRoomCharges,
 	addRoomCharge,
-	getHolidayRules
+	getHolidayRules,
+	searchAvailableHostelStores
 }
 
 export default hostelApi

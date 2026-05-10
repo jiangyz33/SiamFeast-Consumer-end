@@ -8,28 +8,37 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">新品上市</text>
+			<text class="nav-title">{{ i18n.t('newProducts.title') || '新品上市' }}</text>
 			<view class="nav-right"></view>
 		</view>
 
 		<!-- 内容区域 -->
-		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }" @scrolltolower="loadMore">
-			<!-- 新品列表 -->
-			<view class="products-list">
+		<scroll-view class="products-scroll" scroll-y :style="{ height: contentHeight + 'px' }" @scrolltolower="loadMore">
+			<!-- 商品列表 -->
+			<view class="product-list">
 				<view
-					v-for="item in newProducts"
+					v-for="item in products"
 					:key="item.id"
 					class="product-card"
 					@click="handleProductClick(item)"
 				>
-					<image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
-					<view class="product-info">
-						<text class="product-name">{{ item.name }}</text>
-						<text class="product-desc" v-if="item.description">{{ item.description }}</text>
-						<view class="product-footer">
+					<view class="product-image-wrapper">
+						<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<view class="product-shop">
+							<view class="shop-logo-wrapper">
+								<image class="shop-logo" :src="item.storeLogo || '/static/images/banner-placeholder.svg'" mode="aspectFill"></image>
+							</view>
+							<text class="shop-name">{{ item.storeName }}</text>
+						</view>
+					</view>
+					<view class="product-info-overlay">
+						<text class="product-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
+						<view class="product-price-row">
 							<text class="product-price">฿{{ item.price }}</text>
+							<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
+							<text class="sales-text">{{ i18n.t('mine.monthlySales') }}{{ item.sales_count || 0 }}</text>
 							<view class="buy-btn" @click.stop="handleBuyNow(item)">
-								<text class="buy-btn-text">立即购买</text>
+								<text class="buy-btn-text">{{ i18n.t('newProducts.buyNow') || '购买' }}</text>
 							</view>
 						</view>
 					</view>
@@ -38,16 +47,17 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">加载中...</text>
-				<text v-else-if="noMore && newProducts.length > 0" class="tip-text">没有更多了</text>
+				<text v-if="loading" class="tip-text">{{ i18n.t('common.loading') }}</text>
+				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t('order.noMore') }}</text>
 			</view>
 
 			<!-- 空状态 -->
-			<view v-if="!loading && newProducts.length === 0" class="empty-state">
-				<text class="empty-text">暂无新品</text>
+			<view v-if="!loading && products.length === 0" class="empty-state">
+				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t('common.empty.product') }}</text>
+				<text class="empty-desc">{{ i18n.t('common.empty.productDesc') }}</text>
 			</view>
 
-			<!-- 底部占位 -->
 			<view class="bottom-placeholder"></view>
 		</scroll-view>
 
@@ -60,29 +70,28 @@
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import appStore from '@/store/index.js'
 import { getNewProducts } from '@/api/services/products.js'
-import { showToast } from '@/utils/index.js'
+import { getStores } from '@/api/services/store.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
+import i18n from '@/i18n/index.js'
 
 export default {
-	components: {
-		CustomTabbar
-	},
+	components: { CustomTabbar },
 	data() {
 		return {
+			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
-			newProducts: [],
 			loading: false,
 			noMore: false,
-			shopId: null
+			products: [],
+			storeMap: {},
+			page: 1,
+			pageSize: 20
 		}
 	},
 	onLoad() {
 		this.initPage()
-		const currentStore = appStore.getCurrentStore()
-		if (currentStore) {
-			this.shopId = currentStore.id
-		}
-		this.loadProducts()
+		this.loadStores()
 	},
 	methods: {
 		initPage() {
@@ -94,25 +103,69 @@ export default {
 			this.contentHeight = systemInfo.windowHeight - navBarHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
 		},
 
-		async loadProducts() {
+		async loadStores() {
+			try {
+				const res = await getStores({}, { silent: true })
+				let stores = []
+				if (res.code === 0 && res.data) {
+					const data = res.data
+					stores = Array.isArray(data) ? data : (data.items || [])
+				}
+				const map = {}
+				for (const s of stores) {
+					map[s.id] = {
+						name: s.name || '',
+						name_en: s.name_en || '',
+						name_th: s.name_th || '',
+						logo: fixMinioUrl(s.logo_url || s.logo || '')
+					}
+				}
+				this.storeMap = map
+			} catch (e) {
+				console.error('loadStores error:', e)
+			}
+			this.loadProducts()
+		},
+
+		async loadProducts(append = false) {
 			if (this.loading) return
 			this.loading = true
 			try {
-				const params = { limit: 20 }
-				if (this.shopId) params.store_id = this.shopId
-				const res = await getNewProducts(params)
+				const res = await getNewProducts({ limit: this.pageSize, page: this.page })
 				const items = res.data?.items || []
-				this.newProducts = items
-				this.noMore = items.length < 20
+				const mapped = items.map(p => {
+					const store = this.storeMap[p.store_id] || {}
+					return {
+						id: p.id,
+						name: p.name || '',
+						name_en: p.name_en || '',
+						name_th: p.name_th || '',
+						price: p.price,
+						original_price: p.original_price || '',
+						sales_count: p.sales_count || 0,
+						image_url: fixMinioUrl(p.image_url || ''),
+						store_id: p.store_id,
+						storeName: store['name_' + i18n.getLanguage()] || store.name || '',
+						storeLogo: store.logo || '/static/images/banner-placeholder.svg'
+					}
+				})
+				if (append) {
+					this.products = [...this.products, ...mapped]
+				} else {
+					this.products = mapped
+				}
+				this.noMore = items.length < this.pageSize
+				if (!this.noMore) this.page++
 			} catch (e) {
-				console.error('加载新品失败:', e)
+				console.error('loadProducts error:', e)
 			} finally {
 				this.loading = false
 			}
 		},
 
 		loadMore() {
-			// 新品一般不多，暂不翻页
+			if (this.noMore || this.loading) return
+			this.loadProducts(true)
 		},
 
 		goBack() {
@@ -121,21 +174,21 @@ export default {
 
 		handleProductClick(item) {
 			uni.navigateTo({
-				url: `/pages/product-detail/index?productId=${item.id}&shopId=${this.shopId || ''}`
+				url: `/pages/product-detail/index?productId=${item.id}&shopId=${item.store_id || ''}`
 			})
 		},
 
 		handleBuyNow(item) {
 			const productData = {
 				id: item.id,
-				name: item.name,
+				name: item['name_' + i18n.getLanguage()] || item.name,
 				price: item.price,
-				image: item.image_url || '/static/logo.png',
+				image: item.image_url || '/static/images/img-placeholder.svg',
 				quantity: 1,
-				store_id: this.shopId
+				store_id: item.store_id
 			}
 			uni.navigateTo({
-				url: `/pages/checkout/index?orderType=dinein&shopId=${appStore.getCurrentStore()?.id || ''}&products=${encodeURIComponent(JSON.stringify([productData]))}`
+				url: `/pages/checkout/index?orderType=dinein&shopId=${item.store_id}&products=${encodeURIComponent(JSON.stringify([productData]))}`
 			})
 		}
 	}
@@ -174,89 +227,123 @@ export default {
 }
 
 .back-icon {
-	width: 24px;
-	height: 24px;
+	width: 20px;
+	height: 20px;
 }
 
 .nav-title {
 	font-size: 16px;
-	font-weight: 700;
-	color: #000000CC;
+	font-weight: 600;
+	color: #3C3C3C;
 }
 
 .nav-right {
 	width: 32px;
 }
 
-/* 内容区域 */
-.content-scroll {
+/* 商品列表 */
+.products-scroll {
 	flex: 1;
 }
 
-/* 产品列表 */
-.products-list {
-	padding: 10px 16px;
+.product-list {
+	padding: 12px 16px;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 12px;
 }
 
 .product-card {
-	display: flex;
 	background-color: #FFFFFF;
 	border-radius: 8px;
 	overflow: hidden;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.product-image-wrapper {
+	width: 100%;
+	height: 160px;
+	position: relative;
 }
 
 .product-image {
-	width: 100px;
-	height: 100px;
-	border-radius: 8px;
-	flex-shrink: 0;
+	width: 100%;
+	height: 100%;
 }
 
-.product-info {
-	flex: 1;
+.product-shop {
+	position: absolute;
+	top: 0;
+	left: 0;
 	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	background-color: rgba(0, 0, 0, 0.6);
+	padding: 6px 0 0 6px;
+	border-radius: 0 0 7px 0;
+}
+
+.shop-logo-wrapper {
+	width: 24px;
+	height: 24px;
+	background-color: #F2B131;
+	border-radius: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.shop-logo {
+	width: 18px;
+	height: 18px;
+	border-radius: 9px;
+}
+
+.shop-name {
+	font-size: 12px;
+	font-weight: 500;
+	color: #FFFFFF;
+}
+
+.product-info-overlay {
 	padding: 8px 10px;
 }
 
 .product-name {
 	font-size: 14px;
-	font-weight: 700;
-	color: #000000CC;
+	font-weight: 600;
 }
 
-.product-desc {
-	font-size: 12px;
-	color: #949494;
-	margin-top: 4px;
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 2;
-	overflow: hidden;
-}
-
-.product-footer {
+.product-price-row {
 	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-top: 6px;
+	align-items: baseline;
+	gap: 6px;
+	margin-top: 4px;
 }
 
 .product-price {
-	font-size: 16px;
-	font-weight: 700;
+	font-size: 14px;
+	font-weight: 600;
 	color: #F2B131;
 }
 
+.original-price {
+	font-size: 11px;
+	color: #949494;
+	text-decoration: line-through;
+}
+
+.sales-text {
+	font-size: 11px;
+	color: #949494;
+	margin-left: auto;
+}
+
 .buy-btn {
+	margin-left: auto;
 	background-color: #F2B131;
-	padding: 4px 12px;
+	padding: 4px 10px;
 	border-radius: 12px;
+	flex-shrink: 0;
 }
 
 .buy-btn-text {
@@ -279,17 +366,31 @@ export default {
 
 /* 空状态 */
 .empty-state {
-	padding: 60px 0;
 	display: flex;
+	flex-direction: column;
+	align-items: center;
 	justify-content: center;
+	padding: 60px 0;
 }
 
-.empty-text {
-	font-size: 14px;
-	color: #949494;
+.empty-icon {
+	width: 80px;
+	height: 80px;
+	margin-bottom: 12px;
 }
 
-/* 底部占位 */
+.empty-title {
+	font-size: 15px;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 6px;
+}
+
+.empty-desc {
+	font-size: 13px;
+	color: #999;
+}
+
 .bottom-placeholder {
 	height: 20px;
 }

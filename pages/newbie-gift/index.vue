@@ -21,7 +21,7 @@
 		<scroll-view v-else class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<!-- 顶部横幅 -->
 			<view class="banner-section">
-				<image class="banner-image" src="/static/logo.png" mode="aspectFill"></image>
+				<image class="banner-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 			</view>
 
 			<!-- 礼包说明 -->

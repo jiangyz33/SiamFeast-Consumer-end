@@ -2,7 +2,7 @@
  * 认证相关 API
  */
 import { USE_MOCK, TOKEN_KEY } from '../config.js'
-import { get, post, put, upload } from '../request.js'
+import { get, post, put, patch, upload } from '../request.js'
 
 /**
  * 格式化手机号为后端要求的格式（带+66前缀）
@@ -31,7 +31,7 @@ import {
 
 /**
  * 发送短信验证码
- * POST /auth/sms/send
+ * POST /auth/sms-code
  * @param {string} phone 手机号
  * @param {string} [purpose] 用途: register / login / reset_password
  * @returns {Promise}
@@ -41,12 +41,12 @@ export function sendCode(phone, purpose = 'register') {
 	if (USE_MOCK) {
 		return mockSendCode(phone)
 	}
-	return post('/auth/sms/send', { phone: formattedPhone, purpose })
+	return post('/auth/sms-code', { phone: formattedPhone })
 }
 
 /**
  * 验证码登录
- * POST /auth/phone-login
+ * POST /auth/sms-login
  * @param {string} phone 手机号
  * @param {string} code 验证码
  * @returns {Promise}
@@ -56,7 +56,7 @@ export function loginByCode(phone, code) {
 	if (USE_MOCK) {
 		return mockLoginByCode(phone, code)
 	}
-	return post('/auth/phone-login', {
+	return post('/auth/sms-login', {
 		phone: formattedPhone,
 		code
 	})
@@ -81,8 +81,8 @@ export function loginByPassword(phone, password) {
 }
 
 /**
- * 手机号注册
- * POST /auth/register
+ * 手机号注册（通过验证码登录自动注册）
+ * POST /auth/sms-login
  * @param {Object} data 注册信息
  * @param {string} data.phone 手机号
  * @param {string} data.password 密码
@@ -94,9 +94,11 @@ export function register(data) {
 	if (USE_MOCK) {
 		return mockRegister(data)
 	}
-	return post('/auth/register', {
-		...data,
-		phone: formatPhoneForBackend(data.phone)
+	// Backend has no separate register endpoint - sms-login auto-registers new users
+	// After login, set password via temp-login or user update
+	return post('/auth/sms-login', {
+		phone: formatPhoneForBackend(data.phone),
+		code: data.sms_code
 	})
 }
 
@@ -120,7 +122,7 @@ export function updateUserInfo(data) {
 	if (USE_MOCK) {
 		return mockUpdateUserInfo(data)
 	}
-	return put('/users/me', data)
+	return patch('/users/me', data)
 }
 
 /**
@@ -134,7 +136,7 @@ export function uploadAvatar(filePath) {
 			code: 0,
 			message: 'success',
 			data: {
-				url: '/static/logo.png'
+				url: '/static/images/avatar-placeholder.svg'
 			}
 		})
 	}

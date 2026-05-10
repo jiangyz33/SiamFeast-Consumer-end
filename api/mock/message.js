@@ -4,9 +4,9 @@
 
 // 图标映射
 const iconMap = {
-	system: '/static/logo.png',
-	promotion: '/static/logo.png',
-	order: '/static/logo.png'
+	system: '/static/images/img-placeholder.svg',
+	promotion: '/static/images/img-placeholder.svg',
+	order: '/static/images/img-placeholder.svg'
 }
 
 // 模拟消息列表

@@ -20,6 +20,10 @@ import campaignApi from './campaign.js'
 import deliveryApi from './delivery.js'
 import { locationApi } from './location.js'
 import { hostelApi } from './hostel.js'
+import referralApi from './referral.js'
+import invoiceApi from './invoice.js'
+import hotpotApi from './hotpot.js'
+import groupbuyApi from './groupbuy.js'
 
 // 导出模块化 API
 export { authApi, storeApi, menuApi, orderApi, paymentApi }
@@ -35,6 +39,10 @@ export { default as campaignApi } from './campaign.js'
 export { default as deliveryApi } from './delivery.js'
 export { locationApi } from './location.js'
 export { hostelApi } from './hostel.js'
+export { default as referralApi } from './referral.js'
+export { default as invoiceApi } from './invoice.js'
+export { default as hotpotApi } from './hotpot.js'
+export { default as groupbuyApi } from './groupbuy.js'
 
 // 导出常用方法（兼容旧代码）
 export * from './auth.js'
@@ -54,6 +62,10 @@ export * from './campaign.js'
 export * from './delivery.js'
 export * from './location.js'
 export * from './hostel.js'
+export * from './referral.js'
+export * from './invoice.js'
+export * from './hotpot.js'
+export * from './groupbuy.js'
 
 // 默认导出
 export default {
@@ -73,5 +85,9 @@ export default {
 	campaign: campaignApi,
 	delivery: deliveryApi,
 	location: locationApi,
-	hostel: hostelApi
+	hostel: hostelApi,
+	referral: referralApi,
+	invoice: invoiceApi,
+	hotpot: hotpotApi,
+	groupbuy: groupbuyApi
 }

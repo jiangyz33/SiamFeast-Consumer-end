@@ -1,257 +1,159 @@
 <template>
 	<view class="group-page">
-		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
-		<!-- 顶部渐变背景区域 -->
 		<view class="header-bg">
-			<!-- 返回按钮 -->
 			<view class="nav-row">
 				<view class="back-btn" @click="goBack">
 					<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 				</view>
 			</view>
-			<!-- 搜索栏 -->
-			<view class="search-bar">
-				<image class="search-icon" src="/static/icons/search.svg" mode="aspectFit"></image>
-				<input
-					class="search-input"
-					v-model="searchKeyword"
-					placeholder="输入关键词搜索"
-					confirm-type="search"
-					@confirm="handleSearch"
-				/>
-				<view class="search-clear" v-if="searchKeyword" @click="clearSearch">
-					<text class="clear-text">x</text>
-				</view>
+			<view class="header-info">
+				<text class="header-title">{{ i18n.t('groupBuy.title') }}</text>
 			</view>
-
-			<!-- 分类标签 -->
-			<scroll-view class="category-tabs" scroll-x>
-				<view class="tabs-container">
-					<view
-						v-for="(tab, index) in tabs"
-						:key="index"
-						class="tab-item"
-						:class="{ 'tab-active': activeTab === index }"
-						@click="switchTab(index)"
-					>
-						<image class="tab-icon" :src="tab.icon || '/static/logo.png'" mode="aspectFit"></image>
-						<text class="tab-text">{{ tab.name }}</text>
-					</view>
-				</view>
-			</scroll-view>
 		</view>
 
-		<!-- 商品列表 -->
 		<scroll-view class="product-list" scroll-y :style="{ height: contentHeight + 'px' }">
 			<view class="list-container">
 				<view
 					v-for="item in products"
 					:key="item.id"
 					class="product-card"
-					@click="handleProductClick(item)"
+					@click="goDetail(item)"
 				>
-					<!-- 商品图片 -->
 					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					</view>
 
-					<!-- 商品信息 -->
 					<view class="product-info">
 						<view class="product-header">
-							<text class="shop-name">{{ item.shopName || currentStoreName }}</text>
 							<text class="product-name">{{ item.name }}</text>
+						</view>
+
+						<view class="product-meta">
+							<view class="progress-bar">
+								<view class="progress-fill" :style="{ width: progressPercent(item) + '%' }"></view>
+							</view>
+							<text class="meta-text">{{ i18n.t('groupBuy.progressSold', { sold: item.sold_count, total: item.total_quota }) }}</text>
 						</view>
 
 						<view class="product-footer">
 							<view class="price-info">
 								<view class="group-tag">
-									<text class="group-tag-text">拼</text>
+									<text class="group-tag-text">{{ i18n.t('groupBuy.discountRate', { rate: item.discount_rate }) }}</text>
 								</view>
-								<text class="group-count">{{ item.groupCount || 2 }}人拼团</text>
 								<text class="price-symbol">฿</text>
-								<text class="price-num">{{ item.price }}</text>
+								<text class="price-num">{{ item.group_price }}</text>
 								<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
 							</view>
-							<view class="join-btn" @click.stop="handleJoinGroup(item)">
-								<text class="join-text">参与拼团</text>
+							<view class="join-btn" @click.stop="goDetail(item)">
+								<text class="join-text">{{ i18n.t('groupBuy.joinGroup') }}</text>
 							</view>
 						</view>
 					</view>
 				</view>
 			</view>
 
-			<!-- 加载状态 -->
-			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">加载中...</text>
+			<view class="loading-tip" v-if="loading">
+				<text class="tip-text">{{ i18n.t('common.loading') }}</text>
 			</view>
 
-			<!-- 空状态 -->
 			<view class="empty-state" v-if="!loading && products.length === 0">
-				<text class="empty-text">暂无拼单商品</text>
+				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t('groupBuy.noProducts') }}</text>
 			</view>
 
-			<!-- 底部占位 -->
 			<view class="bottom-placeholder"></view>
 		</scroll-view>
-
-		<!-- 自定义底部导航栏 -->
-		<custom-tabbar :current="0"></custom-tabbar>
 	</view>
 </template>
 
 <script>
-import CustomTabbar from '@/components/custom-tabbar.vue'
+import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
-import { showToast } from '@/utils/index.js'
-import { getActiveCampaigns } from '@/api/services/campaign.js'
-import { searchProducts } from '@/api/services/products.js'
-import { getConsumerCategories } from '@/api/services/menu.js'
+import { getGroupBuyProducts } from '@/api/services/groupbuy.js'
+import { fixMinioUrl } from '@/utils/index.js'
 
 export default {
-	components: {
-		CustomTabbar
-	},
 	data() {
 		return {
+			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
-			activeTab: 0,
-			tabs: [{ name: '全部', id: null, icon: '/static/logo.png' }],
 			products: [],
 			loading: false,
 			shopId: null,
-			currentStoreName: '',
-			searchKeyword: '',
-			isSearchMode: false
+			page: 1,
+			pageSize: 20
 		}
 	},
-	onLoad() {
+	onLoad(options) {
 		this.initPage()
-		const currentStore = appStore.getCurrentStore()
-		if (currentStore) {
-			this.shopId = currentStore.id
-			this.currentStoreName = currentStore.name || ''
+		if (options && options.shopId) {
+			this.shopId = parseInt(options.shopId)
+		} else {
+			const currentStore = appStore.getCurrentStore()
+			if (currentStore) this.shopId = currentStore.id
 		}
-		this.loadCategories()
 		this.loadProducts()
 	},
 	methods: {
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
-			const headerHeight = 180
-			const tabBarHeight = 63
+			const headerHeight = 120
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
-			this.contentHeight = systemInfo.windowHeight - headerHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
+			this.contentHeight = systemInfo.windowHeight - headerHeight - safeAreaBottom - this.statusBarHeight
 		},
 
-		async loadCategories() {
-			try {
-				const storeId = this.shopId || 1
-				const res = await getConsumerCategories(storeId)
-				if (res.code === 0 && res.data) {
-					const cats = (res.data || []).map(c => ({
-						id: c.id,
-						name: c.name,
-						icon: c.icon || '/static/logo.png'
-					}))
-					this.tabs = [{ name: '全部', id: null, icon: '/static/logo.png' }, ...cats]
-				}
-			} catch (e) {
-				console.error('加载分类失败:', e)
-			}
+		progressPercent(item) {
+			if (!item.total_quota) return 0
+			return Math.min(100, Math.round(item.sold_count / item.total_quota * 100))
 		},
 
 		async loadProducts() {
 			if (this.loading) return
 			this.loading = true
 			try {
-				if (this.isSearchMode && this.searchKeyword.trim()) {
-					const params = { keyword: this.searchKeyword.trim(), limit: 20 }
-					if (this.shopId) params.store_id = this.shopId
-					const res = await searchProducts(params)
-					const items = res.data?.items || []
-					this.products = items
+				const params = { page: this.page, page_size: this.pageSize }
+				if (this.shopId) params.store_id = this.shopId
+				const res = await getGroupBuyProducts(params)
+				if (res && res.code === 0 && res.data) {
+					const items = res.data.items || res.data || []
+					this.products = (Array.isArray(items) ? items : []).map(p => ({
+						id: p.id,
+						name: p.name || p.name_en || '',
+						image_url: fixMinioUrl(p.image_url || p.image || ''),
+						group_price: p.group_price || 0,
+						original_price: p.original_price || 0,
+						discount_rate: p.discount_rate || 0,
+						total_quota: p.total_quota || 0,
+						sold_count: p.sold_count || 0,
+						max_per_user: p.max_per_user || 1,
+						share_code: p.share_code || '',
+						is_active: p.is_active !== false,
+						start_time: p.start_time || '',
+						end_time: p.end_time || ''
+					}))
 				} else {
-					// 从拼团活动获取商品
-					const campaignRes = await getActiveCampaigns({ type: 'group' })
-					let groupProducts = []
-					if (campaignRes.code === 0 && campaignRes.data) {
-						const campaigns = campaignRes.data
-						campaigns.forEach(c => {
-							if (c.products && c.products.length > 0) {
-								groupProducts = groupProducts.concat(
-									c.products.map(p => ({
-										...p,
-										groupCount: c.rules?.min_members || 2
-									}))
-								)
-							}
-						})
-					}
-
-					// 按分类筛选
-					const selectedTab = this.tabs[this.activeTab]
-					if (selectedTab && selectedTab.id) {
-						groupProducts = groupProducts.filter(p => p.category_id === selectedTab.id)
-					}
-
-					this.products = groupProducts
+					this.products = []
 				}
 			} catch (e) {
-				console.error('加载拼团商品失败:', e)
+				console.error('loadProducts error:', e)
+				this.products = []
 			} finally {
 				this.loading = false
 			}
 		},
 
-		handleSearch() {
-			if (!this.searchKeyword.trim()) {
-				this.isSearchMode = false
-				this.loadProducts()
-				return
-			}
-			this.isSearchMode = true
-			this.loadProducts()
-		},
-
-		clearSearch() {
-			this.searchKeyword = ''
-			this.isSearchMode = false
-			this.loadProducts()
-		},
-
-		switchTab(index) {
-			if (this.activeTab === index) return
-			this.activeTab = index
-			this.isSearchMode = false
-			this.loadProducts()
+		goDetail(item) {
+			uni.navigateTo({
+				url: '/pages/group-detail/index?id=' + item.id
+			})
 		},
 
 		goBack() {
 			uni.navigateBack()
-		},
-
-		handleProductClick(item) {
-			uni.navigateTo({
-				url: `/pages/product-detail/index?productId=${item.id}&shopId=${this.shopId || ''}`
-			})
-		},
-
-		handleJoinGroup(item) {
-			const productData = {
-				id: item.id,
-				name: item.name,
-				price: item.price,
-				image: item.image_url || '/static/logo.png',
-				quantity: 1,
-				store_id: this.shopId
-			}
-			uni.navigateTo({
-				url: `/pages/checkout/index?orderType=dinein&shopId=${this.shopId}&products=${encodeURIComponent(JSON.stringify([productData]))}`
-			})
 		}
 	}
 }
@@ -270,13 +172,11 @@ export default {
 	background: linear-gradient(135deg, #DA0000 0%, #FF2C6F 100%);
 }
 
-/* 顶部渐变背景区域 */
 .header-bg {
 	background: linear-gradient(135deg, #DA0000 0%, #FF2C6F 100%);
 	padding: 0 16px 16px;
 }
 
-/* 返回按钮行 */
 .nav-row {
 	display: flex;
 	align-items: center;
@@ -296,87 +196,16 @@ export default {
 	height: 24px;
 }
 
-/* 搜索栏 */
-.search-bar {
-	display: flex;
-	align-items: center;
-	background-color: #FFFFFF;
-	border-radius: 22px;
-	padding: 0 16px;
-	height: 36px;
-	gap: 8px;
+.header-info {
+	margin-top: 8px;
 }
 
-.search-icon {
-	width: 16px;
-	height: 16px;
-	flex-shrink: 0;
-}
-
-.search-input {
-	flex: 1;
-	font-size: 13px;
-	height: 36px;
-}
-
-.search-clear {
-	width: 20px;
-	height: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background-color: #CCCCCC;
-	border-radius: 10px;
-	flex-shrink: 0;
-}
-
-.clear-text {
-	font-size: 12px;
+.header-title {
+	font-size: 20px;
+	font-weight: 700;
 	color: #FFFFFF;
 }
 
-/* 分类标签 */
-.category-tabs {
-	margin-top: 16px;
-	white-space: nowrap;
-}
-
-.tabs-container {
-	display: inline-flex;
-	gap: 8px;
-}
-
-.tab-item {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	background-color: #FFFFFF;
-	border-radius: 8px;
-	padding: 12px 26px 8px;
-	gap: 4px;
-}
-
-.tab-item.tab-active {
-	background-color: #FFFFFF;
-}
-
-.tab-icon {
-	width: 30px;
-	height: 30px;
-	border-radius: 4px;
-}
-
-.tab-text {
-	font-size: 12px;
-	color: #00000099;
-}
-
-.tab-active .tab-text {
-	color: #DA3300;
-	font-weight: 500;
-}
-
-/* 商品列表 */
 .product-list {
 	flex: 1;
 }
@@ -411,18 +240,13 @@ export default {
 	display: flex;
 	flex-direction: column;
 	padding: 6px 10px;
-	gap: 2px;
+	gap: 4px;
 }
 
 .product-header {
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
-}
-
-.shop-name {
-	font-size: 12px;
-	color: #00000099;
 }
 
 .product-name {
@@ -432,6 +256,30 @@ export default {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.product-meta {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.progress-bar {
+	height: 4px;
+	background-color: #F3F3F3;
+	border-radius: 2px;
+	overflow: hidden;
+}
+
+.progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #DA3300, #FF6B6B);
+	border-radius: 2px;
+}
+
+.meta-text {
+	font-size: 10px;
+	color: #949494;
 }
 
 .product-footer {
@@ -460,12 +308,6 @@ export default {
 	font-size: 10px;
 	font-weight: 500;
 	color: #FFFFFF;
-}
-
-.group-count {
-	font-size: 12px;
-	color: #00000099;
-	margin-right: 4px;
 }
 
 .price-symbol {
@@ -499,7 +341,6 @@ export default {
 	color: #FFFFFF;
 }
 
-/* 加载提示 */
 .loading-tip {
 	padding: 16px 0;
 	display: flex;
@@ -511,7 +352,6 @@ export default {
 	color: #949494;
 }
 
-/* 空状态 */
 .empty-state {
 	display: flex;
 	flex-direction: column;
@@ -520,12 +360,18 @@ export default {
 	padding: 60px 0;
 }
 
-.empty-text {
-	font-size: 14px;
-	color: #00000099;
+.empty-icon {
+	width: 80px;
+	height: 80px;
+	margin-bottom: 12px;
 }
 
-/* 底部占位 */
+.empty-title {
+	font-size: 15px;
+	color: #333;
+	font-weight: 500;
+}
+
 .bottom-placeholder {
 	height: 20px;
 }

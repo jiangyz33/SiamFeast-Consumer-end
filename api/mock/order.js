@@ -27,9 +27,9 @@ export const mockOrders = [
 		createTime: '2024-03-10 12:30:00',
 		created_at: '2024-03-10T12:00:00',
 		items: [
-			{ id: 1, item_name: '招牌茉莉奶白', image_url: '/static/logo.png', quantity: 2, unit_price: 18.00, subtotal: 36.00, specs_config: { temperature: 'ice', sugar: 'half' } },
-			{ id: 2, item_name: '泰式冬阴功锅底', image_url: '/static/logo.png', quantity: 1, unit_price: 28.00, subtotal: 28.00, specs_config: {} },
-			{ id: 3, item_name: '麻辣牛肉串', image_url: '/static/logo.png', quantity: 1, unit_price: 15.00, subtotal: 15.00, specs_config: {} }
+			{ id: 1, item_name: '招牌茉莉奶白', image_url: '/static/images/img-placeholder.svg', quantity: 2, unit_price: 18.00, subtotal: 36.00, specs_config: { temperature: 'ice', sugar: 'half' } },
+			{ id: 2, item_name: '泰式冬阴功锅底', image_url: '/static/images/img-placeholder.svg', quantity: 1, unit_price: 28.00, subtotal: 28.00, specs_config: {} },
+			{ id: 3, item_name: '麻辣牛肉串', image_url: '/static/images/img-placeholder.svg', quantity: 1, unit_price: 15.00, subtotal: 15.00, specs_config: {} }
 		],
 		totalQuantity: 4
 	},
@@ -56,7 +56,7 @@ export const mockOrders = [
 		createTime: '2024-03-09 18:20:00',
 		created_at: '2024-03-09T18:00:00',
 		items: [
-			{ id: 4, item_name: '麻辣牛肉串', image_url: '/static/logo.png', quantity: 3, unit_price: 15.00, subtotal: 45.00, specs_config: {} }
+			{ id: 4, item_name: '麻辣牛肉串', image_url: '/static/images/img-placeholder.svg', quantity: 3, unit_price: 15.00, subtotal: 45.00, specs_config: {} }
 		],
 		totalQuantity: 3
 	},
@@ -83,7 +83,7 @@ export const mockOrders = [
 		createTime: '2024-03-08 10:15:00',
 		created_at: '2024-03-08T10:00:00',
 		items: [
-			{ id: 5, item_name: '芒果糯米饭', image_url: '/static/logo.png', quantity: 1, unit_price: 22.00, subtotal: 22.00, specs_config: {} }
+			{ id: 5, item_name: '芒果糯米饭', image_url: '/static/images/img-placeholder.svg', quantity: 1, unit_price: 22.00, subtotal: 22.00, specs_config: {} }
 		],
 		totalQuantity: 1
 	},
@@ -110,7 +110,7 @@ export const mockOrders = [
 		createTime: '2024-03-07 14:00:00',
 		created_at: '2024-03-07T14:00:00',
 		items: [
-			{ id: 6, item_name: '麻辣烫（称重）', image_url: '/static/logo.png', quantity: 1, unit_price: 60.00, subtotal: 60.00, specs_config: { weight_grams: 500, soup_base: 'tom_yum', spice_level: 3 } }
+			{ id: 6, item_name: '麻辣烫（称重）', image_url: '/static/images/img-placeholder.svg', quantity: 1, unit_price: 60.00, subtotal: 60.00, specs_config: { weight_grams: 500, soup_base: 'tom_yum', spice_level: 3 } }
 		],
 		totalQuantity: 1
 	}

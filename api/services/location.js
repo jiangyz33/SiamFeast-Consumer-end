@@ -3,7 +3,7 @@
  * 附近门店、地址解析、配送范围
  */
 import { USE_MOCK } from '../config.js'
-import { get, post } from '../request.js'
+import { get } from '../request.js'
 import {
 	mockGetNearbyStores,
 	mockResolvePlace,
@@ -12,7 +12,7 @@ import {
 
 /**
  * 获取附近门店
- * POST /stores/nearby
+ * GET /stores/nearby
  * @param {Object} params
  * @param {string} params.location_source - "CURRENT_GPS" | "MANUAL_PLACE" | "MAP_PICKER"
  * @param {number} params.latitude
@@ -24,7 +24,7 @@ export function getNearbyStores(params) {
 	if (USE_MOCK) {
 		return mockGetNearbyStores(params)
 	}
-	return post('/stores/nearby', params)
+	return get('/stores/nearby', params)
 }
 
 /**

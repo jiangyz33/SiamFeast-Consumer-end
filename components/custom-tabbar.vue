@@ -56,23 +56,33 @@ export default {
 			]
 		}
 	},
-	watch: {
-		current: {
-			immediate: true,
-			handler(val) {
-				this.currentIndex = val
-			}
-		}
-	},
 	created() {
 		const systemInfo = uni.getSystemInfoSync()
 		this.safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
+		// Initial detection from route
+		this.detectFromRoute()
+		// Listen for tabbarUpdate event (emitted by pages onShow)
+		uni.$on('tabbarUpdate', () => {
+			this.detectFromRoute()
+		})
+	},
+	beforeDestroy() {
+		uni.$off('tabbarUpdate')
 	},
 	methods: {
+		detectFromRoute() {
+			const pages = getCurrentPages()
+			const currentPage = pages[pages.length - 1]
+			if (currentPage) {
+				const path = '/' + currentPage.route
+				const idx = this.tabList.findIndex(t => t.pagePath === path)
+				if (idx >= 0) this.currentIndex = idx
+			}
+		},
 		switchTab(item, index) {
 			if (this.currentIndex === index) return
 			this.currentIndex = index
-			uni.reLaunch({
+			uni.switchTab({
 				url: item.pagePath
 			})
 		}
@@ -107,6 +117,11 @@ export default {
 	width: 24px;
 	height: 24px;
 	margin-bottom: 2px;
+	transition: transform 0.2s ease;
+}
+
+.tabbar-item:active .tabbar-icon {
+	transform: scale(0.85);
 }
 
 .tabbar-text {

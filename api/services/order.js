@@ -161,8 +161,8 @@ export function calculateCoinDeduct(orderAmount, coinsToUse) {
 				code: 0,
 				data: {
 					order_amount: orderAmount,
-					coins_to_use: coinsToUse,
-					coin_deduct_amount: maxDeduct,
+					coin_balance: coinsToUse,
+					deduct_amount: maxDeduct,
 					final_amount: orderAmount - maxDeduct
 				}
 			})
@@ -222,6 +222,14 @@ export function updateOrderStatus(orderId, status, cancelReason = null) {
 }
 
 // 导出模块对象
+/**
+ * 获取订单交易类型列表
+ * @returns {Promise}
+ */
+export function getTransactionTypes() {
+	return get('/user-orders/transaction-types')
+}
+
 export const orderApi = {
 	getUserOrders,
 	getOrderDetail,

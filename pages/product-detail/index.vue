@@ -29,7 +29,7 @@
 		<scroll-view v-else class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<!-- 商品图片 -->
 			<view class="product-image-section">
-				<image class="product-image" :src="product.image_url || '/static/logo.png'" mode="aspectFill"></image>
+				<image class="product-image" :src="product.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 			</view>
 
 			<!-- 商品信息卡片 -->
@@ -41,7 +41,7 @@
 					</view>
 					<text class="price-original" v-if="product.original_price">฿{{ product.original_price }}</text>
 				</view>
-				<text class="product-name">{{ product['name_' + i18n.getLanguage()] || product.name }}</text>
+				<text class="product-name">{{ product['name_' + i18n.getLanguage()] || product.name || product.name_en }}</text>
 				<text class="product-desc" v-if="product.description">{{ product['description_' + i18n.getLanguage()] || product.description }}</text>
 
 				<!-- 标签 -->
@@ -84,7 +84,7 @@
 						mode="widthFix"
 					></image>
 					<text class="detail-text" v-if="product.description">{{ product['description_' + i18n.getLanguage()] || product.description }}</text>
-					<text class="detail-text" v-else>{{ product['name_' + i18n.getLanguage()] || product.name }}</text>
+					<text class="detail-text" v-else>{{ product['name_' + i18n.getLanguage()] || product.name || product.name_en }}</text>
 				</view>
 			</view>
 
@@ -113,8 +113,8 @@
 						class="recommend-item"
 						@click="handleRecommendClick(item)"
 					>
-						<image class="recommend-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
-						<text class="recommend-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
+						<image class="recommend-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<text class="recommend-name">{{ item['name_' + i18n.getLanguage()] || item.name || item.name_en }}</text>
 						<view class="recommend-price">
 							<text class="recommend-price-symbol">฿</text>
 							<text class="recommend-price-num">{{ item.price }}</text>
@@ -164,7 +164,7 @@ import appStore from '@/store/index.js'
 import { getMenuItem } from '@/api/services/menu.js'
 import footprintManager from '@/utils/footprint.js'
 import { getAvailableCoupons } from '@/api/services/coupon.js'
-import { searchProducts } from '@/api/services/products.js'
+import { getHotProducts } from '@/api/services/products.js'
 import { checkFavorite, addFavorite, removeFavorite } from '@/api/services/favorite.js'
 
 export default {
@@ -277,7 +277,7 @@ export default {
 
 		async loadRecommendations() {
 			try {
-				const res = await searchProducts({ limit: 5 })
+				const res = await getHotProducts({ limit: 5, ...(this.shopId ? { store_id: this.shopId } : {}) })
 				if (res.code === 0 && res.data) {
 					const items = res.data.items || []
 					this.recommendations = items.filter(p => p.id !== this.productId).slice(0, 4)
@@ -317,12 +317,21 @@ export default {
 			}
 		},
 
-		handleAddToCart() {
-			if (this.product.is_sold_out) {
-				showToast('商品已售罄')
-				return
-			}
-			showToast(this.i18n.t('dinein.addToCart'))
+			handleAddToCart() {
+				if (this.product.is_sold_out) {
+					showToast(this.i18n.t('dinein.soldOut'))
+					return
+				}
+				appStore.addToCart(this.shopId, {
+					id: this.product.id || this.productId,
+					name: this.product.name || '',
+					price: this.product.price || 0,
+					image: this.product.image_url || '',
+					quantity: 1,
+					specs: {},
+					store_id: this.shopId
+				})
+				showToast(this.i18n.t('dinein.addToCart'))
 		},
 
 		handleBuyNow() {

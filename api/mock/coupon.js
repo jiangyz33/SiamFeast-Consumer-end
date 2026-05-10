@@ -210,6 +210,37 @@ export function mockReceiveNewbiePack() {
 	})
 }
 
+
+/**
+ * 模拟计算优惠券折扣
+ */
+export function mockCalculateDiscount(params) {
+	return new Promise((resolve) => {
+		setTimeout(() => {
+			const coupon = mockCouponState.find(c => c.id === Number(params.coupon_id))
+			if (!coupon) {
+				return resolve({ code: -1, message: '优惠券不存在' })
+			}
+			if (coupon.status !== 'available' && coupon.status !== 'claimed') {
+				return resolve({ code: -1, message: '优惠券不可用' })
+			}
+			if (params.order_amount < coupon.min_spend) {
+				return resolve({ code: -1, message: '未满足最低消费' })
+			}
+			resolve({
+				code: 0,
+				message: 'success',
+				data: {
+					coupon_id: coupon.id,
+					order_amount: params.order_amount,
+					discount: coupon.amount,
+					final_amount: Math.max(0, params.order_amount - coupon.amount)
+				}
+			})
+		}, 300)
+	})
+}
+
 // 导出原始静态列表（只读引用）
 export const mockCoupons = [...mockCouponState]
 

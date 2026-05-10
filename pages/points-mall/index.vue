@@ -87,9 +87,9 @@
                     :key="item.id"
                     @click="handleProductClick(item)"
                 >
-                    <image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
+                    <image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
                     <view class="product-info">
-                        <text class="product-name">{{ item.name }}</text>
+                        <text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
                         <view class="product-footer">
                             <view class="points-cost">
                                 <text class="cost-num">{{ item.point_price }}</text>
@@ -104,7 +104,9 @@
 
                 <!-- 空状态 -->
                 <view v-if="pointsBenefits.length === 0" class="empty-state">
-                    <text class="empty-text">暂无可兑换商品</text>
+                    <image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
+                        <text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
+                        <text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
                 </view>
             </view>
 
@@ -116,12 +118,12 @@
                     :key="item.id"
                     @click="handleProductClick(item)"
                 >
-                    <image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
+                    <image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
                     <view class="product-info">
-                        <text class="product-name">{{ item.name }}</text>
+                        <text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
                         <view class="product-footer">
                             <view class="points-cost">
-                                <text class="cost-symbol">฿</text>
+							<image class="coin-icon" src="/static/icons/coin.svg" mode="aspectFit"></image>
                                 <text class="cost-num">{{ item.coin_price }}</text>
                             </view>
                             <view class="exchange-btn" @click.stop="handleExchange(item)">
@@ -133,7 +135,9 @@
 
                 <!-- 空状态 -->
                 <view v-if="balanceBenefits.length === 0" class="empty-state">
-                    <text class="empty-text">暂无可兑换商品</text>
+                    <image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
+                        <text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
+                        <text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
                 </view>
             </view>
 
@@ -359,7 +363,7 @@ export default {
         },
 
         handleProductClick(item) {
-            showToast(`${item.name}`)
+            showToast(`${item.name || item.name_en}`)
         },
 
         async handleExchange(item) {
@@ -696,6 +700,12 @@ export default {
     align-items: baseline;
     gap: 2px;
 }
+			.coin-icon {
+				width: 14px;
+				height: 14px;
+				margin-right: 2px;
+			}
+
 .cost-symbol {
     font-size: 12px;
     font-weight: 700;
@@ -730,9 +740,15 @@ export default {
     display: flex;
     justify-content: center;
 }
-.empty-text {
-    font-size: 14px;
-    color: #949494;
+.empty-title {
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+.empty-desc {
+    font-size: 13px;
+    color: #999;
 }
 
 /* 铂金权益 */

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="100" cy="90" r="70" fill="#FFF8E1"/>
+  <!-- 优惠券 -->
+  <rect x="45" y="55" width="110" height="65" rx="8" fill="white" stroke="#F2B131" stroke-width="2.5"/>
+  <!-- 锯齿 -->
+  <circle cx="45" cy="87" r="8" fill="#FFF8E1"/>
+  <circle cx="155" cy="87" r="8" fill="#FFF8E1"/>
+  <!-- 虚线分隔 -->
+  <line x1="110" y1="60" x2="110" y2="115" stroke="#F2B131" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <!-- 百分号 -->
+  <text x="75" y="95" font-family="Arial" font-size="30" font-weight="bold" fill="#F2B131" opacity="0.6">%</text>
+  <!-- 右侧文字行 -->
+  <rect x="118" y="72" width="28" height="4" rx="2" fill="#F2B131" opacity="0.25"/>
+  <rect x="118" y="82" width="22" height="4" rx="2" fill="#F2B131" opacity="0.15"/>
+  <rect x="118" y="92" width="26" height="4" rx="2" fill="#F2B131" opacity="0.15"/>
+  <!-- 底部小星星 -->
+  <circle cx="100" cy="155" r="3" fill="#F2B131" opacity="0.2"/>
+  <circle cx="90" cy="162" r="2" fill="#F2B131" opacity="0.15"/>
+  <circle cx="110" cy="162" r="2" fill="#F2B131" opacity="0.15"/>
+</svg>

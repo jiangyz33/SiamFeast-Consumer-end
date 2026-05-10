@@ -14,7 +14,7 @@
 		<!-- 用户信息区域 -->
 		<view class="user-section">
 			<view class="user-info-row" v-if="userInfo" @click="goSettings">
-				<image class="user-avatar" :src="userInfo.avatar_url || '/static/logo.png'" mode="aspectFill"></image>
+				<image class="user-avatar" :src="userInfo.avatar_url || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
 				<view class="user-text">
 					<text class="user-name">{{ userInfo.nickname || i18n.t('mine.title') }}</text>
 					<text class="user-phone">{{ formatPhone }}</text>
@@ -24,7 +24,7 @@
 				</view>
 			</view>
 			<view class="user-info-row" v-else @click="goLogin">
-				<image class="user-avatar" src="/static/logo.png" mode="aspectFill"></image>
+				<image class="user-avatar" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 				<view class="user-text">
 					<text class="user-name">{{ i18n.t('login.notLoggedIn') }}</text>
 					<text class="user-phone">{{ i18n.t('login.clickToLogin') }}</text>
@@ -101,6 +101,10 @@
 							<image class="feature-icon" src="/static/icons/coupon.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ i18n.t('mine.myCoupons') }}</text>
 						</view>
+						<view class="feature-tab" @click="handleFeature('claimCoupons')">
+							<image class="feature-icon" src="/static/icons/coupon.svg" mode="aspectFit"></image>
+							<text class="feature-text">{{ i18n.t('mine.claimCenter') }}</text>
+						</view>
 						<view class="feature-tab" @click="handleFeature('settings')">
 							<image class="feature-icon" src="/static/icons/settings.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ i18n.t('mine.settings') }}</text>
@@ -122,11 +126,11 @@
 						>
 							<image class="shop-logo" :src="item.logo" mode="aspectFill"></image>
 							<view class="shop-info">
-								<text class="shop-name">{{ item.name }}</text>
+								<text class="shop-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
 								<view class="shop-stats">
-									<text class="stat-text">{{ item.rating }}{{ i18n.t('mine.score') }}</text>
+									<text class="stat-text shop-status" :class="item.status === 'OPEN' ? 'status-open' : 'status-closed'">{{ item.status === 'OPEN' ? i18n.t('mine.open') : i18n.t('mine.closed') }}</text>
 									<text class="stat-divider">|</text>
-									<text class="stat-text">{{ i18n.t('mine.monthlySales') }}{{ item.monthlySales }}+</text>
+									<text class="stat-text" v-if="item.businessHours">{{ item.businessHours }}</text>
 								</view>
 								<view class="shop-tags">
 									<text class="tag" v-for="(tag, tagIndex) in item.tags" :key="tagIndex">{{ tag }}</text>
@@ -164,11 +168,12 @@
 
 <script>
 import store from '@/store/index.js'
-import { showToast, formatPhone } from '@/utils/index.js'
+import { showToast, formatPhone, fixMinioUrl } from '@/utils/index.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import UpgradeAnimation from '@/components/upgrade-animation.vue'
 import i18n from '@/i18n/index.js'
-import { getMemberProgress, getMemberBalance, getMemberPoints } from '@/api/services/member.js'
+import { getMemberInfo, getMemberProgress } from '@/api/services/member.js'
+	import { getUserInfo } from '@/api/services/auth.js'
 import { getMyCoupons } from '@/api/services/coupon.js'
 import { getStores } from '@/api/services/store.js'
 
@@ -190,7 +195,7 @@ export default {
 			userPoints: 0,
 			newUserCoupons: 0,
 			recommendations: [],
-			showUpgradeAnimation: false,
+			showUpgradeAnimation: false
 		}
 	},
 	computed: {
@@ -210,11 +215,40 @@ export default {
 		this.statusBarHeight = systemInfo.statusBarHeight || 20
 	},
 	onShow() {
-		this.userInfo = store.getUserInfo()
+			uni.$emit('tabbarUpdate')
+			const cached = store.getUserInfo()
+			if (cached) this.userInfo = cached
+			this.refreshUserInfo()
 		this.initPage()
 		this.loadMemberData()
 	},
 	methods: {
+		async refreshUserInfo() {
+			try {
+				// /member/info 有余额等会员数据，/users/me 有昵称头像
+				const [memberRes, userRes] = await Promise.all([
+					getMemberInfo().catch(() => null),
+					getUserInfo().catch(() => null)
+				])
+				let info = {}
+				if (memberRes && memberRes.code === 0 && memberRes.data) {
+					info = { ...memberRes.data }
+				}
+				if (userRes) {
+					const ud = userRes.data || userRes
+					if (ud) info = { ...info, ...ud }
+				}
+				if (Object.keys(info).length > 0) {
+					if (info.avatar_url) info.avatar_url = fixMinioUrl(info.avatar_url)
+					this.userInfo = info
+					store.setUserInfo(info)
+				this.userBalance = info.coin_balance || 0
+				this.userPoints = info.point_balance || 0
+				}
+			} catch(e) {
+				console.error('refreshUserInfo error:', e)
+			}
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -273,6 +307,10 @@ export default {
 				uni.navigateTo({
 					url: '/pages/footprint/index'
 				})
+			} else if (type === 'claimCoupons') {
+				uni.navigateTo({
+					url: '/pages/claim-coupons/index'
+				})
 			} else if (type === 'settings') {
 				uni.navigateTo({
 					url: '/pages/settings/index'
@@ -292,44 +330,34 @@ export default {
 			try {
 				const results = await Promise.allSettled([
 					getMemberProgress(),
-					getMemberBalance(),
-					getMemberPoints(),
 					getMyCoupons({ status: 'UNUSED' }),
 					getStores({ limit: 3 }),
 				])
 
-				const [progressRes, balanceRes, pointsRes, couponsRes, storesRes] = results;
+				const [progressRes, couponsRes, storesRes] = results;
 
 				// 会员等级进度
 				if (progressRes.status === 'fulfilled' && progressRes.value.code === 0 && progressRes.value.data) {
 					const d = progressRes.value.data
-					this.consumedAmount = d.current_spent || 0
-					this.totalAmount = d.required_for_next || 200
-					const isBackendPlatinum = d.current_tier === 'PLATINUM'
-					const hasMetGoal = this.consumedAmount >= this.totalAmount
-					const hasSeenAnimation = this.hasSeenUpgradeAnimation()
-					// Backend platinum OR user has seen animation = show platinum directly
-					if (isBackendPlatinum || hasSeenAnimation) {
-						this.currentLevel = 1
-					} else if (hasMetGoal) {
-						// Goal met but animation not seen = play animation
-						this.currentLevel = 0
-						this.showUpgradeAnimation = true
-						this.markUpgradeAnimationShown()
-					} else {
-						this.currentLevel = 0
-					}
+					this.consumedAmount = d.total_spent || d.current_spent || 0
+					this.totalAmount = d.threshold || d.required_for_next || 200
+						const isBackendPlatinum = d.current_tier === 'PLATINUM'
+						const hasMetGoal = this.consumedAmount >= this.totalAmount
+						const hasSeenAnimation = this.hasSeenUpgradeAnimation()
+						const shouldShowPlatinum = isBackendPlatinum || hasMetGoal
+						if (shouldShowPlatinum && !hasSeenAnimation) {
+							// Platinum but animation not yet shown = play animation
+							this.currentLevel = 0
+							this.showUpgradeAnimation = true
+							this.markUpgradeAnimationShown()
+						} else if (shouldShowPlatinum) {
+							this.currentLevel = 1
+						} else {
+							this.currentLevel = 0
+						}
 				}
 
-				// 余额
-				if (balanceRes.status === 'fulfilled' && balanceRes.value.code === 0 && balanceRes.value.data) {
-					this.userBalance = balanceRes.value.data.balance || 0
-				}
 
-				// 积分
-				if (pointsRes.status === 'fulfilled' && pointsRes.value.code === 0 && pointsRes.value.data) {
-					this.userPoints = pointsRes.value.data.balance || 0
-				}
 
 				// 优惠券数量
 				if (couponsRes.status === 'fulfilled' && couponsRes.value.code === 0 && couponsRes.value.data) {
@@ -343,9 +371,11 @@ export default {
 					this.recommendations = stores.slice(0, 3).map(s => ({
 						id: s.id,
 						name: s.name,
-						logo: s.logo || '/static/logo.png',
-						rating: s.rating || '4.7',
-						monthlySales: s.monthly_sales || 1000,
+						name_en: s.name_en || '',
+						name_th: s.name_th || '',
+						logo: s.logo || s.image_url || '/static/images/store-placeholder.svg',
+						status: s.status || 'OPEN',
+						businessHours: s.business_hours || '',
 						tags: s.business_types || [s.name]
 					}))
 				}
@@ -367,6 +397,8 @@ export default {
 			uni.showModal({
 				title: this.i18n.t('common.confirm'),
 				content: this.i18n.t('mine.logoutConfirm'),
+				confirmText: this.i18n.t('common.confirm'),
+				cancelText: this.i18n.t('common.cancel'),
 				success: (res) => {
 					if (res.confirm) {
 						store.logout()
@@ -906,6 +938,14 @@ export default {
 .stat-divider {
 	font-size: 12px;
 	color: #00000099;
+}
+
+.status-open {
+	color: #4CAF50;
+}
+
+.status-closed {
+	color: #999;
 }
 
 .shop-tags {

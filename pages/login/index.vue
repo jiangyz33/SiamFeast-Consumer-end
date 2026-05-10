@@ -3,7 +3,15 @@
 		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
-		<!-- Logo区域 -->
+		<!-- 导航栏 -->
+		<view class="nav-bar">
+			<view class="nav-left"></view>
+			<view class="lang-switch" @click="switchLanguage">
+				<text class="lang-text">{{ currentLangLabel }}</text>
+			</view>
+		</view>
+
+			<!-- Logo区域 -->
 		<view class="logo-section">
 			<view class="logo-wrapper">
 				<image class="logo" src="/static/logo.png" mode="aspectFill"></image>
@@ -21,7 +29,7 @@
 					<input
 						class="input"
 						type="text"
-						:placeholder="i18n.t('login.phonePlaceholder')"
+						:placeholder="t('login.phonePlaceholder')"
 						placeholder-style="color: #828282;"
 						v-model="phone"
 						@focus="phoneFocused = true"
@@ -34,7 +42,7 @@
 					<input
 						class="input"
 						:password="!showPassword"
-						:placeholder="i18n.t('login.passwordPlaceholder')"
+						:placeholder="t('login.passwordPlaceholder')"
 						placeholder-style="color: #828282;"
 						v-model="password"
 						@focus="passwordFocused = true"
@@ -51,7 +59,17 @@
 					:class="{ 'btn-disabled': !canSubmit || loading }"
 					@click="handleLogin"
 				>
-					<text class="btn-text">{{ loading ? i18n.t('common.loading') : i18n.t('common.confirm') }}</text>
+					<text class="btn-text">{{ loading ? t('common.loading') : t('common.confirm') }}</text>
+				</view>
+
+				<!-- 登录链接 -->
+				<view class="login-links">
+					<view class="switch-login" @click="goSmsLogin">
+						<text class="switch-text">{{ t('login.codeLogin') }}</text>
+					</view>
+					<view class="register-link" @click="goRegister">
+						<text class="register-text">{{ t('login.goRegister') }}</text>
+					</view>
 				</view>
 			</view>
 
@@ -81,10 +99,10 @@
 						<text v-if="agreed" class="check-icon">✓</text>
 					</view>
 				</view>
-				<text class="agreement-text">{{ i18n.t('login.agreementPrefix') }}</text>
-				<text class="agreement-link" @click="openAgreement('terms')">{{ i18n.t('login.terms') }}</text>
-				<text class="agreement-text">{{ i18n.t('login.and') }}</text>
-				<text class="agreement-link" @click="openAgreement('privacy')">{{ i18n.t('login.privacy') }}</text>
+				<text class="agreement-text">{{ t('login.agreementPrefix') }}</text>
+				<text class="agreement-link" @click="openAgreement('terms')">{{ t('login.terms') }}</text>
+				<text class="agreement-text">{{ t('login.and') }}</text>
+				<text class="agreement-link" @click="openAgreement('privacy')">{{ t('login.privacy') }}</text>
 			</view>
 		</view>
 
@@ -110,11 +128,17 @@ export default {
 			agreed: true,
 			loading: false,
 			phoneFocused: false,
-			passwordFocused: false
+			passwordFocused: false,
+				langVersion: 0
 		}
 	},
 	computed: {
-		canSubmit() {
+		currentLangLabel() {
+					this.langVersion; const lang = i18n.getLanguage()
+				const labels = { zh: '中文', en: 'EN', th: 'ไทย' };
+				return labels[lang] || 'EN';
+			},
+			canSubmit() {
 			if (!validatePhone(this.phone)) return false
 			if (!this.agreed) return false
 			return this.password.length >= 6
@@ -123,19 +147,27 @@ export default {
 	onLoad() {
 		const systemInfo = uni.getSystemInfoSync()
 		this.statusBarHeight = systemInfo.statusBarHeight || 20
-	},
+				uni.$on("languageChanged", () => { this.langVersion++ })
+		},
+		onUnload() {
+			uni.$off("languageChanged")
+		},
 	methods: {
+			t(key, params) {
+				this.langVersion; // reactive dependency
+				return i18n.t(key, params)
+			},
 		// 处理登录
 		async handleLogin() {
 			if (!this.canSubmit || this.loading) return
 
 			if (!validatePhone(this.phone)) {
-				showToast(this.i18n.t('login.phoneRequired'))
+				showToast(this.t('login.phoneRequired'))
 				return
 			}
 
 			if (!this.agreed) {
-				showToast(this.i18n.t('login.agreementRequired'))
+				showToast(this.t('login.agreementRequired'))
 				return
 			}
 
@@ -145,7 +177,7 @@ export default {
 				const res = await loginByPassword(this.phone, this.password)
 
 				if (res.code !== 0) {
-					showToast(res.message || this.i18n.t('login.loginFailed'))
+					showToast(res.message || this.t('login.loginFailed'))
 					return
 				}
 
@@ -157,7 +189,7 @@ export default {
 					}
 				}
 
-				showToast(this.i18n.t('login.loginSuccess'))
+				showToast(this.t('login.loginSuccess'))
 
 				// 跳转到首页
 				setTimeout(() => {
@@ -167,16 +199,43 @@ export default {
 				}, 1500)
 			} catch (e) {
 				console.error('登录失败:', e)
-				showToast(this.i18n.t('common.networkError'))
+				showToast(this.t('common.networkError'))
 			} finally {
 				this.loading = false
 			}
 		},
 
-		// 社交登录
+		// 验证码登录
+		goSmsLogin() {
+			if (!validatePhone(this.phone)) {
+				showToast(this.t('login.phoneRequired'))
+				return
+			}
+			uni.navigateTo({
+				url: '/pages/login/verify?phone=' + encodeURIComponent(this.phone) + '&type=login'
+			})
+		},
+
+		// 语言切换
+			switchLanguage() {
+				const langs = ['zh', 'en', 'th'];
+				const current = i18n.getLanguage();
+				const nextIdx = (langs.indexOf(current) + 1) % langs.length;
+				i18n.setLanguage(langs[nextIdx]);
+				showToast(this.t('language.switchSuccess'));
+			},
+
+			// 注册
+			goRegister() {
+				uni.navigateTo({
+					url: '/pages/login/verify?type=register'
+				})
+			},
+
+			// 社交登录
 		socialLogin(platform) {
 			if (!this.agreed) {
-				showToast(this.i18n.t('login.agreementRequired'))
+				showToast(this.t('login.agreementRequired'))
 				return
 			}
 			showToast(`${platform} login coming soon`)
@@ -204,7 +263,26 @@ export default {
 	width: 100%;
 }
 
-.logo-section {
+.nav-bar {
+		height: 88rpx;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+		padding: 0 32rpx;
+	}
+
+	.lang-switch {
+	}
+
+	.lang-text {
+		font-size: 26rpx;
+		color: #828282;
+		padding: 12rpx 24rpx;
+		border: 2rpx solid #E0E0E0;
+		border-radius: 32rpx;
+	}
+
+	.logo-section {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -294,7 +372,38 @@ export default {
 	color: rgba(0, 0, 0, 0.6);
 }
 
-.divider {
+.switch-login {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 20rpx;
+	padding-right: 8rpx;
+}
+
+.switch-text {
+	font-size: 26rpx;
+	color: #019EFF;
+}
+
+.login-links {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 20rpx;
+		padding: 0 8rpx;
+	}
+
+	.register-link {
+		display: flex;
+		align-items: center;
+	}
+
+	.register-text {
+		font-size: 26rpx;
+		color: #F2B131;
+		font-weight: 500;
+	}
+
+	.divider {
 	display: flex;
 	flex-direction: row;
 	align-items: center;

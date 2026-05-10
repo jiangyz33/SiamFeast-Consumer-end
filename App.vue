@@ -71,6 +71,14 @@ page {
 	display: none !important;
 }
 
+	/* H5环境下隐藏原生TabBar */
+.uni-tabbar {
+	display: none !important;
+}
+	.uni-tabbar-bottom {
+	display: none !important;
+}
+
 /* 清除默认样式 */
 view, text, image, input, button {
 	box-sizing: border-box;
@@ -111,6 +119,116 @@ view, text, image, input, button {
 
 .bg-white {
 	background-color: #FFFFFF;
+}
+
+/* 页面淡入动画 — 美团风格 */
+/* #ifdef H5 */
+uni-page-body {
+	animation: pageFadeIn 0.3s ease-out;
+}
+
+@keyframes pageFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* 骨架屏闪烁动画 */
+.skeleton {
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: skeletonShimmer 1.5s ease-in-out infinite;
+	border-radius: 8rpx;
+}
+
+.skeleton-circle {
+	background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+	background-size: 200% 100%;
+	animation: skeletonShimmer 1.5s ease-in-out infinite;
+	border-radius: 50%;
+}
+
+.skeleton-text {
+	height: 28rpx;
+	margin-bottom: 16rpx;
+}
+
+.skeleton-text-short {
+	width: 40%;
+}
+
+.skeleton-text-medium {
+	width: 65%;
+}
+
+.skeleton-text-long {
+	width: 90%;
+}
+
+.skeleton-image {
+	width: 100%;
+	height: 200rpx;
+}
+
+.skeleton-card {
+	width: 100%;
+	height: 160rpx;
+	margin-bottom: 16rpx;
+}
+
+@keyframes skeletonShimmer {
+	0% {
+		background-position: 200% 0;
+	}
+	100% {
+		background-position: -200% 0;
+	}
+}
+
+/* 图片懒加载占位 */
+.lazy-image-placeholder {
+	background: linear-gradient(90deg, #f5f5f5 25%, #ebebeb 50%, #f5f5f5 75%);
+	background-size: 200% 100%;
+	animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+/* #endif */
+
+/* 全局空状态样式 */
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 80rpx 40rpx;
+}
+
+.empty-icon {
+	width: 200rpx;
+	height: 200rpx;
+	margin-bottom: 32rpx;
+}
+
+.empty-title {
+	font-size: 30rpx;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 12rpx;
+}
+
+.empty-desc {
+	font-size: 26rpx;
+	color: #999;
+	margin-bottom: 24rpx;
+}
+
+.empty-text {
+	font-size: 26rpx;
+	color: #999;
 }
 
 /* Flex 布局 */

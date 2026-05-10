@@ -24,12 +24,13 @@ export function getCategories(storeId) {
 }
 
 /**
- * 获取菜单分类列表（C端）
- * @param {number} storeId 门店ID
+ * 获取菜单分类列表（C端，全局分类）
+ * 后端已改为查询全局分类（store_id=0），不再按门店查询
+ * @param {string} [businessType] 业态类型过滤（可选），如 'hotpot'
  * @returns {Promise}
  */
-export function getConsumerCategories(storeId) {
-	return get(`/menu/${storeId}/categories`)
+export function getConsumerCategories(businessType) {
+	return get('/categories', businessType ? { business_type: businessType } : {})
 }
 
 /**
@@ -37,7 +38,16 @@ export function getConsumerCategories(storeId) {
  * @returns {Promise}
  */
 export function getGlobalCategories() {
-	return get('/menu/categories/global')
+	return get('/menu/categories/global', {}, { silent: true })
+}
+
+/**
+ * 获取门店菜单分类（C端，按门店分组展示）
+ * @param {number} storeId 门店ID
+ * @returns {Promise}
+ */
+export function getStoreMenuCategories(storeId) {
+	return get('/store/menu-categories', { store_id: storeId })
 }
 
 /**
@@ -134,7 +144,7 @@ export function getMenuItems(params) {
 	if (USE_MOCK) {
 		return mockGetMenuItems(params)
 	}
-	return get('/menu/items', params)
+	return get('/menu-items', params)
 }
 
 /**
@@ -145,7 +155,7 @@ export function getMenuItems(params) {
  * @returns {Promise}
  */
 export function getConsumerMenuItems(storeId, params = {}) {
-	return get(`/menu/${storeId}/items`, params)
+	return get('/menu-items', { store_id: storeId, ...params })
 }
 
 /**
@@ -157,7 +167,7 @@ export function getMenuItem(itemId) {
 	if (USE_MOCK) {
 		return mockGetMenuItem(itemId)
 	}
-	return get(`/menu/items/${itemId}`)
+	return get(`/menu-items/${itemId}`)
 }
 
 /**
@@ -177,7 +187,7 @@ export function createMenuItem(data) {
 			}, 300)
 		})
 	}
-	return post('/menu/items', data)
+	return post('/menu-items', data)
 }
 
 /**
@@ -198,7 +208,7 @@ export function updateMenuItem(itemId, data) {
 			}, 300)
 		})
 	}
-	return put(`/menu/items/${itemId}`, data)
+	return put(`/menu-items/${itemId}`, data)
 }
 
 /**
@@ -218,12 +228,12 @@ export function deleteMenuItem(itemId) {
 			}, 300)
 		})
 	}
-	return del(`/menu/items/${itemId}`)
+	return del(`/menu-items/${itemId}`)
 }
 
 /**
  * 获取热销菜品
- * 使用 /products/hot 接口（后端无 /menu/items/hot）
+ * 使用 /products/hot 接口（后端无 /menu-items/hot）
  * @param {number} storeId 门店ID
  * @param {number} limit 数量限制
  * @returns {Promise}
@@ -240,7 +250,7 @@ export function getHotItems(storeId, limit = 10) {
 
 /**
  * 获取新品推荐
- * 使用 /products/new 接口（后端无 /menu/items/new）
+ * 使用 /products/new 接口（后端无 /menu-items/new）
  * @param {number} storeId 门店ID
  * @param {number} limit 数量限制
  * @returns {Promise}

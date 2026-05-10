@@ -8,7 +8,8 @@
 			<!-- 门店选择 -->
 			<view class="store-selector" @click="handleLocationClick">
 				<image class="location-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-				<text class="store-name">{{ currentLocation }}</text>
+					<image v-if="currentStoreLogo" class="store-logo" :src="currentStoreLogo" mode="aspectFill"></image>
+					<text class='store-name'>{{ currentLocation || t('index.notLocated') }}</text>
 				<view class="arrow-wrapper">
 					<image class="arrow-icon" src="/static/icons/arrow-down.svg" mode="aspectFit"></image>
 				</view>
@@ -48,7 +49,7 @@
 				</swiper-item>
 			</swiper>
 			<view v-else class="top-banner">
-				<image class="banner-image" src="/static/logo.png" mode="aspectFill"></image>
+				<image class="banner-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 			</view>
 
 			<!-- 堂食/商城 Tab切换 -->
@@ -60,8 +61,8 @@
 						@click="switchMainTab(0)"
 					>
 						<view class="tab-content">
-							<text class="tab-title">{{ i18n.t('index.dineIn') }}</text>
-							<text class="tab-subtitle">{{ i18n.t('index.dineInDesc') }}</text>
+							<text class="tab-title">{{ t('index.dineIn') }}</text>
+							<text class="tab-subtitle">{{ t('index.dineInDesc') }}</text>
 						</view>
 						<image class="tab-icon" src="/static/icons/dine-in.svg" mode="aspectFit"></image>
 					</view>
@@ -71,8 +72,8 @@
 						@click="switchMainTab(1)"
 					>
 						<view class="tab-content">
-							<text class="tab-title">{{ i18n.t('index.mall') }}</text>
-							<text class="tab-subtitle">{{ i18n.t('index.mallDesc') }}</text>
+							<text class="tab-title">{{ t('index.mall') }}</text>
+							<text class="tab-subtitle">{{ t('index.mallDesc') }}</text>
 						</view>
 						<image class="tab-icon" src="/static/icons/mall.svg" mode="aspectFit"></image>
 					</view>
@@ -82,7 +83,7 @@
 			<!-- 会员信息卡片 -->
 			<view class="member-card">
 				<view class="member-left">
-					<image class="member-avatar" :src="memberInfo.avatar_url || '/static/logo.png'" mode="aspectFill"></image>
+					<image class="member-avatar" :src="memberInfo.avatar_url || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
 					<view class="member-info">
 						<text class="member-name">{{ memberInfo.nickname || '用户名称' }}</text>
 						<view class="member-level">
@@ -93,11 +94,15 @@
 				<view class="member-stats">
 					<view class="stat-item" @click="handleCouponClick">
 						<text class="stat-num">{{ couponCount }}</text>
-						<text class="stat-label">{{ i18n.t('index.coupons') }}</text>
+						<text class="stat-label">{{ t('index.coupons') }}</text>
+					</view>
+					<view class="stat-item">
+						<text class="stat-num">{{ coinBalance }}</text>
+						<text class="stat-label">{{ t('index.coins') }}</text>
 					</view>
 					<view class="stat-item">
 						<text class="stat-num">{{ points }}</text>
-						<text class="stat-label">{{ i18n.t('index.points') }}</text>
+						<text class="stat-label">{{ t('index.points') }}</text>
 					</view>
 				</view>
 			</view>
@@ -107,13 +112,13 @@
 				<!-- 左侧新品上市 -->
 				<view class="feature-card feature-left" @click="handleFeature('new')">
 					<view class="feature-content">
-						<text class="feature-title">{{ i18n.t('index.newProducts') }}</text>
-						<text class="feature-subtitle">{{ newProducts.length }} {{ i18n.t('index.newProductsDesc') }}</text>
+						<text class="feature-title">{{ t('index.newProducts') }}</text>
+						<text class="feature-subtitle">{{ newProducts.length }} {{ t('index.newProductsDesc') }}</text>
 					</view>
 					<image
 						v-if="newProducts.length > 0"
 						class="feature-icon"
-						:src="newProducts[0].image_url || '/static/logo.png'"
+						:src="newProducts[0].image_url || '/static/images/img-placeholder.svg'"
 						mode="aspectFit"
 					></image>
 					<image v-else class="feature-icon" src="/static/icons/new-product.svg" mode="aspectFit"></image>
@@ -122,21 +127,21 @@
 				<view class="feature-right">
 					<view class="feature-small" @click="handleFeature('hot')">
 						<view class="feature-small-content">
-							<text class="feature-small-title">{{ i18n.t('index.hotList') }}</text>
-							<text class="feature-small-subtitle">{{ i18n.t('index.hotListDesc') }}</text>
+							<text class="feature-small-title">{{ t('index.hotList') }}</text>
+							<text class="feature-small-subtitle">{{ t('index.hotListDesc') }}</text>
 						</view>
 						<image
 							v-if="hotProducts.length > 0"
 							class="feature-small-icon"
-							:src="hotProducts[0].image_url || '/static/logo.png'"
+							:src="hotProducts[0].image_url || '/static/images/img-placeholder.svg'"
 							mode="aspectFit"
 						></image>
 						<image v-else class="feature-small-icon" src="/static/icons/hot-rank.svg" mode="aspectFit"></image>
 					</view>
 					<view class="feature-small" @click="handleFeature('points')">
 						<view class="feature-small-content">
-							<text class="feature-small-title">{{ i18n.t('index.pointsMall') }}</text>
-							<text class="feature-small-subtitle">{{ i18n.t('index.pointsMallDesc') }}</text>
+							<text class="feature-small-title">{{ t('index.pointsMall') }}</text>
+							<text class="feature-small-subtitle">{{ t('index.pointsMallDesc') }}</text>
 						</view>
 						<image class="feature-small-icon" src="/static/icons/points-mall.svg" mode="aspectFit"></image>
 					</view>
@@ -178,13 +183,13 @@ import i18n from '@/i18n/index.js'
 import {
 	getHomeBanners,
 	getMemberInfo,
-	getMemberPoints,
 	getMyCoupons,
 	getNewProducts,
 	getHotProducts
 } from '@/api/index.js'
 import { getUnreadCount } from '@/api/services/notification.js'
 import { getMemberProgress } from '@/api/services/member.js'
+import { getUserInfo } from '@/api/services/auth.js'
 
 export default {
 	components: {
@@ -197,14 +202,17 @@ export default {
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
-			currentLocation: '茉莉奶白万达店',
+				currentLocation: '',
+				currentStoreLogo: '',
 			currentStoreId: null,
 			activeMainTab: 0,
 			showShareModal: false,
 			showLanguageModal: false,
 			banners: [],
-			memberInfo: {},
+				langVersion: 0,
+				memberInfo: {},
 			couponCount: 0,
+			coinBalance: 0,
 			points: 0,
 			unreadCount: 0,
 			newProducts: [],
@@ -222,19 +230,25 @@ export default {
 	},
 	onLoad(options) {
 		this.initPage()
+			// Pre-populate memberInfo from cache for instant avatar display
+			const cachedUser = appStore.getUserInfo()
+			if (cachedUser) this.memberInfo = cachedUser
 		this.checkShareLink(options)
 		this.loadBanners()
 		this.loadHomeData()
 		// 监听门店选择事件
 		uni.$on('storeSelected', this.handleStoreSelected)
+			uni.$on("languageChanged", () => { this.langVersion++; this.initStoreInfo() })
 		// 初始化门店信息
 		this.initStoreInfo()
 	},
 	onUnload() {
 		// 移除事件监听
 		uni.$off('storeSelected', this.handleStoreSelected)
+			uni.$off("languageChanged")
 	},
 	onShow() {
+		uni.$emit("tabbarUpdate")
 		// 每次显示时刷新会员数据和统计
 		this.loadMemberData()
 		this.loadUnreadCount()
@@ -243,24 +257,29 @@ export default {
 		hasUnread() {
 			return this.unreadCount > 0
 		},
-		memberLevelText() {
-			const tierMap = {
-				REGULAR: this.i18n.t("member.normal") || "普通会员",
-				PLATINUM: this.i18n.t("member.platinum") || "铂金会员"
+			memberLevelText() {
+				const t = this.t.bind(this)
+				const tierMap = {
+					REGULAR: t("member.normal") || "普通会员",
+					PLATINUM: t("member.platinum") || "铂金会员"
+				}
+				return tierMap[this.memberInfo?.membership_tier] || t("index.memberLevel") || "普通会员"
 			}
-			return tierMap[this.memberInfo.membership_tier] || this.i18n.t("index.memberLevel") || "普通会员"
-		}
 	},
 	methods: {
+			t(key, params) {
+				this.langVersion; // reactive dependency
+				return i18n.t(key, params)
+			},
 		/**
 		 * 加载首页轮播图
 		 */
 		async loadBanners() {
 			try {
 				const res = await getHomeBanners()
-				this.banners = res.data || []
+				this.banners = (res.data.items || res.data || []).map(b => ({ ...b, image_url: fixMinioUrl(b.image_url) }))
 			} catch (e) {
-				console.error('加载轮播图失败:', e)
+				console.error('loadBanners error:', e)
 				this.banners = []
 			}
 		},
@@ -291,31 +310,33 @@ export default {
 				let hasSeenAnimation = false
 				try { hasSeenAnimation = !!uni.getStorageSync(UPGRADE_SHOWN_KEY) } catch(e) {}
 
-				const [infoRes, pointsRes, couponsRes, progressRes] = await Promise.allSettled([
-					getMemberInfo(),
-					getMemberPoints(),
-					getMyCoupons({ status: 'UNUSED' }),
-					getMemberProgress()
-				])
+					const [userRes, infoRes, couponsRes, progressRes] = await Promise.allSettled([
+						getUserInfo(),
+						getMemberInfo(),
+						getMyCoupons({ status: 'UNUSED' }),
+						getMemberProgress()
+					])
 
-				if (infoRes.status === 'fulfilled' && infoRes.value.code === 0 && infoRes.value.data) {
+				if (userRes.status === 'fulfilled' && userRes.value.code === 0 && userRes.value.data) {
+						this.memberInfo = { ...userRes.value.data }
+						if (this.memberInfo.avatar_url) this.memberInfo.avatar_url = fixMinioUrl(this.memberInfo.avatar_url)
+					}
+					if (infoRes.status === 'fulfilled' && infoRes.value.code === 0 && infoRes.value.data) {
 						const info = infoRes.value.data
-						if (info.avatar_url) info.avatar_url = fixMinioUrl(info.avatar_url)
-						this.memberInfo = info
-				}
-				if (pointsRes.status === 'fulfilled' && pointsRes.value.code === 0 && pointsRes.value.data) {
-					this.points = pointsRes.value.data.balance || 0
+						this.memberInfo = { ...this.memberInfo, ...info }
+				this.coinBalance = info.coin_balance || 0
+				this.points = info.point_balance || 0
 				}
 				if (couponsRes.status === 'fulfilled' && couponsRes.value.code === 0 && couponsRes.value.data) {
 					const d = couponsRes.value.data
 					const items = d.items || d || []
-					this.couponCount = Array.isArray(items) ? items.length : 0
+					this.couponCount = Array.isArray(items) ? items.filter(c => c.status === 'CLAIMED' || c.status === 'ACTIVE' || c.status === 'UNUSED').length : 0
 				}
 				// 消费已达标且用户看过动画 → 直接显示铂金会员
 				if (progressRes.status === 'fulfilled' && progressRes.value.code === 0 && progressRes.value.data) {
 					const p = progressRes.value.data
-					const consumed = p.current_spent || 0
-					const required = p.required_for_next || 200
+					const consumed = p.total_spent || p.current_spent || 0
+					const required = p.threshold || p.required_for_next || 200
 					const isPlatinum = p.current_tier === 'PLATINUM'
 					console.log('[index] progress:', JSON.stringify(p), 'isPlatinum:', isPlatinum, 'consumed >= required:', consumed >= required, 'hasSeenAnimation:', hasSeenAnimation)
 					// Backend platinum OR user has seen animation = show platinum directly
@@ -339,10 +360,10 @@ export default {
 				])
 
 				if (newRes.status === 'fulfilled' && newRes.value.data) {
-					this.newProducts = newRes.value.data.items || []
+					this.newProducts = (newRes.value.data.items || []).map(p => ({ ...p, image_url: fixMinioUrl(p.image_url) }))
 				}
 				if (hotRes.status === 'fulfilled' && hotRes.value.data) {
-					this.hotProducts = hotRes.value.data.items || []
+					this.hotProducts = (hotRes.value.data.items || []).map(p => ({ ...p, image_url: fixMinioUrl(p.image_url) }))
 				}
 			} catch (e) {
 				console.error('加载首页数据失败:', e)
@@ -355,7 +376,9 @@ export default {
 		initStoreInfo() {
 			const currentStore = appStore.getCurrentStore()
 			if (currentStore) {
-				this.currentLocation = currentStore.name
+				const lang = i18n.getLanguage()
+				this.currentLocation = currentStore["name_" + lang] || currentStore.name
+				this.currentStoreLogo = fixMinioUrl(currentStore.logo_url || currentStore.logo || '')
 				this.currentStoreId = currentStore.id
 			}
 		},
@@ -438,7 +461,9 @@ export default {
 		 */
 		handleStoreSelected(storeInfo) {
 			if (storeInfo) {
-				this.currentLocation = storeInfo.name
+				const lang2 = i18n.getLanguage()
+				this.currentLocation = storeInfo["name_" + lang2] || storeInfo.name
+				this.currentStoreLogo = fixMinioUrl(storeInfo.logo_url || storeInfo.logo || '')
 				this.currentStoreId = storeInfo.id
 				// 保存到全局状态
 				appStore.setCurrentStore(storeInfo)
@@ -455,8 +480,8 @@ export default {
 
 		handleLanguageChange(lang) {
 			// 语言已切换，刷新页面文本
-			this.$forceUpdate()
-			showToast(this.i18n.t('language.switchSuccess'))
+			this.langVersion++
+			showToast(this.t('language.switchSuccess'))
 		},
 
 		handleMessageClick() {
@@ -485,25 +510,18 @@ export default {
 				})
 			} else {
 				// 堂食 - 跳转到堂食页面
-				uni.navigateTo({
-					url: '/pages/dinein/index'
-				})
+				uni.navigateTo({ url: "/pages/dinein/index?shopId=" + (this.currentStoreId || "") })
 			}
 		},
 
 		handleFeature(type) {
-			if (type === 'new') {
-				uni.navigateTo({
-					url: '/pages/new-products/index'
-				})
-			} else if (type === 'hot') {
-				uni.navigateTo({
-					url: '/pages/hot-products/index'
-				})
-			} else if (type === 'points') {
-				uni.navigateTo({
-					url: '/pages/points-mall/index'
-				})
+				const sid = this.currentStoreId || ""
+				if (type === "new") {
+					uni.navigateTo({ url: "/pages/new-products/index?shopId=" + sid })
+				} else if (type === "hot") {
+					uni.navigateTo({ url: "/pages/hot-products/index?shopId=" + sid })
+				} else if (type === "points") {
+					uni.navigateTo({ url: "/pages/points-mall/index" })
 			}
 		},
 
@@ -542,7 +560,8 @@ export default {
 .store-selector {
 	display: flex;
 	align-items: center;
-	background-color: #F8F8F8;
+	background-color: #FFFFFF;
+	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: 22px;
 	padding: 6px 14px;
 	gap: 8px;
@@ -550,13 +569,20 @@ export default {
 }
 
 .store-selector:active {
-	background-color: #EEEEEE;
+	background-color: #F5F5F5;
 }
 
 .location-icon {
 	width: 16px;
 	height: 16px;
 }
+
+	.store-logo {
+		width: 24px;
+		height: 24px;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
 
 .store-name {
 	font-size: 13px;
@@ -588,7 +614,8 @@ export default {
 .nav-icon-btn {
 	width: 32px;
 	height: 32px;
-	background-color: #F8F8F8;
+	background-color: #FFFFFF;
+	border: 1px solid rgba(0, 0, 0, 0.08);
 	border-radius: 50%;
 	display: flex;
 	align-items: center;

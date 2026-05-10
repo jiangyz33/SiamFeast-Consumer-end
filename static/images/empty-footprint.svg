@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="100" cy="90" r="70" fill="#FFF8E1"/>
+  <!-- 时钟 -->
+  <circle cx="100" cy="85" r="40" fill="white" stroke="#F2B131" stroke-width="2.5"/>
+  <!-- 时针 -->
+  <line x1="100" y1="85" x2="100" y2="58" stroke="#F2B131" stroke-width="3" stroke-linecap="round"/>
+  <!-- 分针 -->
+  <line x1="100" y1="85" x2="122" y2="85" stroke="#F2B131" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 中心点 -->
+  <circle cx="100" cy="85" r="3" fill="#F2B131"/>
+  <!-- 脚印 (浏览) -->
+  <ellipse cx="72" cy="150" rx="10" ry="14" fill="#F2B131" opacity="0.15" transform="rotate(-15 72 150)"/>
+  <ellipse cx="128" cy="145" rx="10" ry="14" fill="#F2B131" opacity="0.15" transform="rotate(15 128 145)"/>
+  <!-- 小脚趾 -->
+  <circle cx="66" cy="138" r="3" fill="#F2B131" opacity="0.1"/>
+  <circle cx="74" cy="136" r="3" fill="#F2B131" opacity="0.1"/>
+  <circle cx="122" cy="133" r="3" fill="#F2B131" opacity="0.1"/>
+  <circle cx="130" cy="131" r="3" fill="#F2B131" opacity="0.1"/>
+</svg>

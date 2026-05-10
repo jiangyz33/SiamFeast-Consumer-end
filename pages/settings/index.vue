@@ -23,7 +23,7 @@
 						<view class="setting-item" @click="handleAvatarClick">
 						<text class="setting-label">{{ i18n.t('settings.avatar') }}</text>
 						<view class="setting-right">
-							<image class="setting-avatar-preview" :src="userInfo?.avatar_url || '/static/logo.png'" mode="aspectFill"></image>
+							<image class="setting-avatar-preview" :src="userInfo?.avatar_url || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
@@ -342,6 +342,8 @@ export default {
 				uni.showModal({
 					title: this.i18n.t('common.confirm'),
 					content: this.i18n.t('settings.cacheClearConfirm'),
+					confirmText: this.i18n.t('common.confirm'),
+					cancelText: this.i18n.t('common.cancel'),
 					success: (res) => {
 						if (res.confirm) {
 							showToast(this.i18n.t('settings.cacheClear'))
@@ -497,6 +499,8 @@ export default {
 			uni.showModal({
 				title: this.i18n.t('common.confirm'),
 				content: this.i18n.t('mine.logoutConfirm'),
+				confirmText: this.i18n.t('common.confirm'),
+				cancelText: this.i18n.t('common.cancel'),
 				success: (res) => {
 					if (res.confirm) {
 						store.logout()

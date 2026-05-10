@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="100" cy="90" r="70" fill="#FFF8E1"/>
+  <!-- 订单文件 -->
+  <rect x="55" y="35" width="90" height="110" rx="8" fill="white" stroke="#F2B131" stroke-width="2.5"/>
+  <!-- 文件折角 -->
+  <path d="M120 35 L145 35 L145 60 Z" fill="#FFF3CC" stroke="#F2B131" stroke-width="1.5" stroke-linejoin="round"/>
+  <!-- 文字行 -->
+  <rect x="72" y="62" width="50" height="5" rx="2.5" fill="#F2B131" opacity="0.3"/>
+  <rect x="72" y="76" width="38" height="5" rx="2.5" fill="#F2B131" opacity="0.2"/>
+  <rect x="72" y="90" width="46" height="5" rx="2.5" fill="#F2B131" opacity="0.2"/>
+  <rect x="72" y="104" width="30" height="5" rx="2.5" fill="#F2B131" opacity="0.15"/>
+  <!-- 勾选标记 -->
+  <circle cx="100" cy="165" r="16" fill="#F2B131" opacity="0.15"/>
+  <path d="M92 165 L98 171 L110 159" stroke="#F2B131" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

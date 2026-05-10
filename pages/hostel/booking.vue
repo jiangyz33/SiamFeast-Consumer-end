@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">预订确认</text>
+			<text class="nav-title">{{ i18n.t("hostel.bookingConfirm") }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -23,7 +23,7 @@
 					<view class="room-price-row">
 						<text class="price-symbol">฿</text>
 						<text class="price-num">{{ roomPrice }}</text>
-						<text class="price-unit">/晚</text>
+						<text class="price-unit">{{ i18n.t("hostel.perNightUnit") }}</text>
 					</view>
 				</view>
 			</view>
@@ -31,49 +31,53 @@
 			<!-- 入住日期 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">入住信息</text>
+					<text class="section-title">{{ i18n.t("hostel.stayInfo") }}</text>
 				</view>
-				<view class="date-info">
-					<view class="date-block">
-						<text class="date-label">入住日期</text>
-						<text class="date-value">{{ checkIn }}</text>
-					</view>
-					<view class="date-arrow">
-						<view class="nights-badge" v-if="nights > 0">
-							<text class="nights-text">{{ nights }}晚</text>
+					<view class="date-info">
+						<picker mode="date" :value="checkIn" :start="todayStr" @change="onCheckInChange">
+							<view class="date-block">
+								<text class="date-label">{{ i18n.t("hostel.checkInDate") }}</text>
+								<text class="date-value" :class="{&quot;date-placeholder&quot;: !checkIn}">{{ checkIn || i18n.t("hostel.selectDate") }}</text>
+							</view>
+						</picker>
+						<view class="date-arrow">
+							<view class="nights-badge" v-if="nights > 0">
+								<text class="nights-text">{{ nights }}{{ i18n.t("hostel.nights") }}</text>
+							</view>
+							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
-						<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
+						<picker mode="date" :value="checkOut" :start="checkIn || todayStr" @change="onCheckOutChange">
+							<view class="date-block">
+								<text class="date-label">{{ i18n.t("hostel.checkOutDate") }}</text>
+								<text class="date-value" :class="{&quot;date-placeholder&quot;: !checkOut}">{{ checkOut || i18n.t("hostel.selectDate") }}</text>
+							</view>
+						</picker>
 					</view>
-					<view class="date-block">
-						<text class="date-label">退房日期</text>
-						<text class="date-value">{{ checkOut }}</text>
-					</view>
-				</view>
 				<view class="guest-row" v-if="capacity">
-					<text class="guest-label">最大入住</text>
-					<text class="guest-value">{{ capacity }}人</text>
+					<text class="guest-label">{{ i18n.t("hostel.maxGuests") }}</text>
+					<text class="guest-value">{{ capacity }}{{ i18n.t("hostel.person") }}</text>
 				</view>
 			</view>
 
 			<!-- 入住人信息 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">入住人信息</text>
+					<text class="section-title">{{ i18n.t("hostel.guestInfo") }}</text>
 				</view>
 				<view class="form-group">
-					<text class="form-label">姓名</text>
-					<input class="form-input" v-model="guestInfo.name" placeholder="请输入入住人姓名" />
+					<text class="form-label">{{ i18n.t("hostel.guestName") }}</text>
+					<input class="form-input" v-model="guestInfo.name" placeholder="{{ i18n.t("hostel.guestNamePlaceholder") }}" />
 				</view>
 				<view class="form-group">
-					<text class="form-label">手机号</text>
-					<input class="form-input" v-model="guestInfo.phone" placeholder="请输入手机号" type="number" />
+					<text class="form-label">{{ i18n.t("hostel.guestPhone") }}</text>
+					<input class="form-input" v-model="guestInfo.phone" placeholder="{{ i18n.t("hostel.guestPhonePlaceholder") }}" type="number" />
 				</view>
 				<view class="form-group">
-					<text class="form-label">身份证/护照号</text>
-					<input class="form-input" v-model="guestInfo.id_number" placeholder="请输入证件号（选填）" />
+					<text class="form-label">{{ i18n.t("hostel.guestIdNumber") }}</text>
+					<input class="form-input" v-model="guestInfo.id_number" placeholder="{{ i18n.t("hostel.guestIdPlaceholder") }}" />
 				</view>
 				<view class="form-group">
-					<text class="form-label">入住人数</text>
+					<text class="form-label">{{ i18n.t("hostel.guestCount") }}</text>
 					<view class="guest-count-control">
 						<view class="count-btn" @click="changeGuestCount(-1)">
 							<text class="count-btn-text">-</text>
@@ -89,26 +93,26 @@
 			<!-- 备注 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">备注</text>
+					<text class="section-title">{{ i18n.t("hostel.remark") }}</text>
 				</view>
-				<textarea class="remark-input" v-model="remark" placeholder="特殊需求、预计到店时间等（选填）" maxlength="200"></textarea>
+				<textarea class="remark-input" v-model="remark" placeholder="{{ i18n.t("hostel.remarkPlaceholder") }}" maxlength="200"></textarea>
 			</view>
 
 			<!-- 费用明细 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">费用明细</text>
+					<text class="section-title">{{ i18n.t("hostel.feeDetail") }}</text>
 				</view>
 				<view class="fee-row">
-					<text class="fee-label">房费 ({{ roomPrice }} x {{ nights }}晚)</text>
+					<text class="fee-label">{{ i18n.t("hostel.roomFee") }} ({{ roomPrice }} x {{ nights }}{{ i18n.t("hostel.nights") }})</text>
 					<text class="fee-value">฿{{ roomTotal }}</text>
 				</view>
 				<view class="fee-row" v-if="deposit > 0">
-					<text class="fee-label">押金</text>
+					<text class="fee-label">{{ i18n.t("hostel.deposit") }}</text>
 					<text class="fee-value">฿{{ deposit }}</text>
 				</view>
 				<view class="fee-row fee-total">
-					<text class="fee-label">合计</text>
+					<text class="fee-label">{{ i18n.t("hostel.total") }}</text>
 					<text class="fee-value fee-total-value">฿{{ totalAmount }}</text>
 				</view>
 			</view>
@@ -120,14 +124,14 @@
 		<!-- 底部提交栏 -->
 		<view class="submit-bar">
 			<view class="submit-info">
-				<text class="submit-total-label">总计</text>
+				<text class="submit-total-label">{{ i18n.t("hostel.totalLabel") }}</text>
 				<view class="submit-price">
 					<text class="price-symbol">฿</text>
 					<text class="price-num">{{ totalAmount }}</text>
 				</view>
 			</view>
 			<view class="submit-btn" :class="{ 'submit-btn-disabled': submitting }" @click="handleSubmit">
-				<text class="submit-btn-text">{{ submitting ? '提交中...' : '确认预订' }}</text>
+				<text class="submit-btn-text">{{ submitting ? i18n.t("hostel.submitting") : i18n.t("hostel.confirmBooking") }}</text>
 			</view>
 		</view>
 	</view>
@@ -135,12 +139,14 @@
 
 <script>
 import { showToast } from '@/utils/index.js'
+import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
 import { createBooking } from '@/api/services/hostel.js'
 
 export default {
 	data() {
 		return {
+			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			submitting: false,
@@ -163,7 +169,8 @@ export default {
 			},
 			guestCount: 1,
 			remark: '',
-			deposit: 0
+				deposit: 0,
+				todayStr: ''
 		}
 	},
 	computed: {
@@ -177,15 +184,18 @@ export default {
 	onLoad(options) {
 		this.initPage()
 		this.roomId = options.roomId ? parseInt(options.roomId) : null
-		this.roomName = options.roomName ? decodeURIComponent(options.roomName) : '客房'
+		this.roomName = options.roomName ? decodeURIComponent(options.roomName) : i18n.t("hostel.defaultRoomName")
 		this.roomPrice = options.roomPrice ? parseFloat(options.roomPrice) : 0
-		this.roomImage = options.roomImage ? decodeURIComponent(options.roomImage) : '/static/logo.png'
+		this.roomImage = options.roomImage ? decodeURIComponent(options.roomImage) : '/static/images/empty-room.svg'
 		this.checkIn = options.checkIn || ''
 		this.checkOut = options.checkOut || ''
-		this.nights = options.nights ? parseInt(options.nights) : 1
+		this.nights = options.nights ? parseInt(options.nights) : 0
 		this.storeId = options.storeId ? parseInt(options.storeId) : null
 		this.storeName = options.storeName ? decodeURIComponent(options.storeName) : ''
 		this.capacity = options.capacity ? parseInt(options.capacity) : 0
+
+			const d = new Date()
+			this.todayStr = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0")
 
 		// 填充用户信息
 		const userInfo = appStore.getUserInfo()
@@ -208,11 +218,40 @@ export default {
 			uni.navigateBack()
 		},
 
+			onCheckInChange(e) {
+				this.checkIn = e.detail.value
+				if (this.checkOut && this.checkOut <= this.checkIn) {
+					this.checkOut = ''
+				}
+				this.recalcNights()
+			},
+
+			onCheckOutChange(e) {
+				const val = e.detail.value
+				if (this.checkIn && val <= this.checkIn) {
+					showToast(i18n.t("hostel.checkOutAfterCheckIn"))
+					return
+				}
+				this.checkOut = val
+				this.recalcNights()
+			},
+
+			recalcNights() {
+				if (this.checkIn && this.checkOut) {
+					const inDate = new Date(this.checkIn)
+					const outDate = new Date(this.checkOut)
+					const diff = (outDate - inDate) / (1000 * 60 * 60 * 24)
+					this.nights = diff > 0 ? diff : 0
+				} else {
+					this.nights = 0
+				}
+			},
+
 		changeGuestCount(delta) {
 			const newCount = this.guestCount + delta
 			if (newCount < 1) return
 			if (this.capacity > 0 && newCount > this.capacity) {
-				showToast(`最多入住${this.capacity}人`)
+				showToast(i18n.t("hostel.maxGuestsLimit", { count: this.capacity }))
 				return
 			}
 			this.guestCount = newCount
@@ -223,15 +262,19 @@ export default {
 
 			// 验证
 			if (!this.guestInfo.name.trim()) {
-				showToast('请输入入住人姓名')
+				showToast(i18n.t("hostel.enterGuestName"))
 				return
 			}
 			if (!this.guestInfo.phone.trim()) {
-				showToast('请输入手机号')
+				showToast(i18n.t("hostel.enterGuestPhone"))
+				return
+			}
+			if (!this.checkIn || !this.checkOut) {
+				showToast(i18n.t("hostel.selectDates"))
 				return
 			}
 			if (!this.roomId) {
-				showToast('客房信息异常')
+				showToast(i18n.t("hostel.roomInfoError"))
 				return
 			}
 
@@ -241,25 +284,19 @@ export default {
 				const bookingData = {
 					store_id: this.storeId,
 					room_id: this.roomId,
-					order_source: 'DINE_IN_SCAN',
-					extra_data: {
-						check_in_date: this.checkIn,
-						check_out_date: this.checkOut,
-						guest_count: this.guestCount,
-						deposit_amount: this.deposit,
-						guest_info: {
-							name: this.guestInfo.name,
-							phone: this.guestInfo.phone,
-							id_number: this.guestInfo.id_number
-						}
-					},
-					remark: this.remark
+					check_in: this.checkIn,
+					check_out: this.checkOut,
+					guest_name: this.guestInfo.name,
+					guest_phone: this.guestInfo.phone,
+					guest_email: this.guestInfo.email || '',
+					num_guests: this.guestCount,
+					source: 'APP'
 				}
 
 				const res = await createBooking(bookingData)
 
 				if (res.code === 0 && res.data) {
-					showToast('预订成功')
+					showToast(i18n.t("hostel.bookingSuccess"))
 					setTimeout(() => {
 						uni.redirectTo({
 							url: `/pages/order-detail/index?orderId=${res.data.order_id || res.data.id}`
@@ -371,13 +408,13 @@ export default {
 .price-symbol {
 	font-size: 12px;
 	font-weight: 600;
-	color: #2D6A4F;
+	color: #F2B131;
 }
 
 .price-num {
 	font-size: 20px;
 	font-weight: 700;
-	color: #2D6A4F;
+	color: #F2B131;
 }
 
 .price-unit {
@@ -426,6 +463,10 @@ export default {
 	font-weight: 600;
 	color: rgba(0, 0, 0, 0.9);
 }
+.date-placeholder {
+	color: #C0C0C0 !important;
+	font-weight: 400 !important;
+}
 
 .date-arrow {
 	display: flex;
@@ -435,7 +476,7 @@ export default {
 }
 
 .nights-badge {
-	background-color: #2D6A4F;
+	background-color: #F2B131;
 	border-radius: 10px;
 	padding: 2px 8px;
 }
@@ -568,7 +609,7 @@ export default {
 .fee-total-value {
 	font-size: 18px;
 	font-weight: 700;
-	color: #2D6A4F;
+	color: #F2B131;
 }
 
 /* 底部占位 */
@@ -609,17 +650,17 @@ export default {
 
 .submit-price .price-symbol {
 	font-size: 12px;
-	color: #2D6A4F;
+	color: #F2B131;
 }
 
 .submit-price .price-num {
 	font-size: 22px;
 	font-weight: 700;
-	color: #2D6A4F;
+	color: #F2B131;
 }
 
 .submit-btn {
-	background-color: #2D6A4F;
+	background-color: #F2B131;
 	padding: 12px 32px;
 	border-radius: 22px;
 }

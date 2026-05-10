@@ -3,7 +3,7 @@
  * 包含：设备推送设置 + 消息列表管理
  */
 import { USE_MOCK } from '../config.js'
-import { post, get } from '../request.js'
+import { put, get, post, del, patch } from '../request.js'
 import {
 	mockGetMessages,
 	mockGetUnreadCount,
@@ -80,7 +80,7 @@ export function registerDevice(data) {
 	if (USE_MOCK) {
 		return mockRegisterDevice(data)
 	}
-	return post('/notifications/devices/register', data)
+	return post('/devices/register', data)
 }
 
 /**
@@ -93,7 +93,7 @@ export function unregisterDevice(deviceToken) {
 		return mockUnregisterDevice()
 	}
 	const token = deviceToken || uni.getStorageSync('device_token') || ''
-	return del(`/notifications/devices/${encodeURIComponent(token)}`)
+	return del(`/devices/${encodeURIComponent(token)}`)
 }
 
 /**
@@ -172,7 +172,7 @@ export function markAsRead(id) {
 	if (USE_MOCK) {
 		return mockMarkAsRead(id)
 	}
-	return post(`/notifications/${id}/read`)
+	return patch(`/notifications/${id}`, { is_read: true })
 }
 
 /**
@@ -186,6 +186,34 @@ export function markAllAsRead() {
 	return post('/notifications/read-all')
 }
 
+
+/**
+ * 获取通知详情
+ * @param {number} id 通知ID
+ * @returns {Promise}
+ */
+export function getNotificationDetail(id) {
+	return get(`/notifications/${id}`)
+}
+
+/**
+ * 删除通知
+ * @param {number} id 通知ID
+ * @returns {Promise}
+ */
+export function deleteNotification(id) {
+	return del(`/notifications/${id}`)
+}
+
+/**
+ * 批量标记已读
+ * @param {Array<number>} ids 通知ID列表
+ * @returns {Promise}
+ */
+export function batchMarkAsRead(ids) {
+	return post('/notifications/batch-read', { notification_ids: ids })
+}
+
 export const notificationApi = {
 	registerDevice,
 	unregisterDevice,
@@ -194,7 +222,10 @@ export const notificationApi = {
 	getMessages,
 	getUnreadCount,
 	markAsRead,
-	markAllAsRead
+	markAllAsRead,
+	getNotificationDetail,
+	deleteNotification,
+	batchMarkAsRead
 }
 
 export default notificationApi

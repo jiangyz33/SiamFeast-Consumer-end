@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="100" cy="90" r="70" fill="#FFF8E1"/>
+  <!-- 房子 -->
+  <path d="M55 90 L100 45 L145 90" stroke="#F2B131" stroke-width="2.5" fill="none" stroke-linejoin="round"/>
+  <rect x="65" y="88" width="70" height="55" fill="white" stroke="#F2B131" stroke-width="2.5" rx="2"/>
+  <!-- 门 -->
+  <rect x="88" y="110" width="24" height="33" rx="3" fill="#FFF3CC" stroke="#F2B131" stroke-width="2"/>
+  <circle cx="108" cy="128" r="2" fill="#F2B131"/>
+  <!-- 窗户 -->
+  <rect x="72" y="98" width="14" height="14" rx="2" fill="#FFF3CC" stroke="#F2B131" stroke-width="1.5"/>
+  <line x1="79" y1="98" x2="79" y2="112" stroke="#F2B131" stroke-width="1" opacity="0.5"/>
+  <line x1="72" y1="105" x2="86" y2="105" stroke="#F2B131" stroke-width="1" opacity="0.5"/>
+  <!-- 月亮/星星 (夜间) -->
+  <path d="M140 50 C140 50 132 55 132 63 C132 71 140 76 140 76 C132 74 126 68 126 63 C126 58 132 52 140 50Z" fill="#F2B131" opacity="0.25"/>
+</svg>

@@ -15,7 +15,7 @@ export function getActiveCampaigns(params = {}) {
 	if (USE_MOCK) {
 		return mockGetActiveCampaigns(params)
 	}
-	return get('/campaigns/active', params)
+	return get('/campaigns', { status: 'ACTIVE', ...params })
 }
 
 /**

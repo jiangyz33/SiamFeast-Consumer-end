@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="100" cy="95" r="70" fill="#FFF8E1"/>
+  <!-- 主圆 -->
+  <circle cx="100" cy="90" r="45" fill="white" stroke="#F2B131" stroke-width="3"/>
+  <!-- 勾选 -->
+  <path d="M78 90 L93 105 L124 74" stroke="#F2B131" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- 散射装饰 -->
+  <line x1="100" y1="25" x2="100" y2="35" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="100" y1="145" x2="100" y2="155" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="35" y1="90" x2="45" y2="90" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="155" y1="90" x2="165" y2="90" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+  <line x1="55" y1="45" x2="62" y2="52" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+  <line x1="138" y1="128" x2="145" y2="135" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+  <line x1="55" y1="135" x2="62" y2="128" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+  <line x1="138" y1="52" x2="145" y2="45" stroke="#F2B131" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+</svg>

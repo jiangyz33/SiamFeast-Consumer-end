@@ -66,7 +66,7 @@
 					<view class="shop-content">
 						<image class="shop-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 						<view class="shop-info">
-							<text class="shop-name">{{ shopInfo.name }}</text>
+							<text class="shop-name">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.name }}</text>
 							<text class="shop-address">{{ shopInfo.address }}</text>
 						</view>
 						<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
@@ -86,7 +86,7 @@
 					<!-- 商品列表 -->
 					<view class="product-list">
 						<view class="product-item" v-for="(item, index) in cartItems" :key="index">
-							<image class="product-image" :src="item.image || '/static/logo.png'" mode="aspectFill"></image>
+							<image class="product-image" :src="item.image || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 							<view class="product-info">
 								<text class="product-name">{{ item.name }}</text>
 								<view class="product-specs" v-if="item.specs && Object.keys(item.specs).length > 0">
@@ -168,8 +168,9 @@
 				<view class="section-card">
 					<view class="coin-row">
 						<view class="coin-left">
-							<text class="coin-label">金币抵扣</text>
-							<text class="coin-balance">余额{{ coinBalance }}个</text>
+							<image class="coin-icon" src="/static/icons/coin.svg" mode="aspectFit"></image>
+							<text class="coin-label">{{ i18n.t('orderDetail.coinDeduct') }}</text>
+							<text class="coin-balance">{{ i18n.t("orderDetail.coinsUnit", { n: coinBalance }) }}</text>
 						</view>
 						<view class="coin-right">
 							<text class="coin-deduct" v-if="useCoins">-฿{{ coinDeductAmount }}</text>
@@ -189,11 +190,11 @@
 						<text class="title-text">商品费用</text>
 					</view>
 					<view class="shop-name-row">
-						<text class="shop-name-text">{{ shopInfo.name }}</text>
+						<text class="shop-name-text">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.name }}</text>
 					</view>
 					<view class="cost-list">
 						<view class="cost-item" v-for="(item, index) in cartItems" :key="index">
-							<image class="cost-image" :src="item.image || '/static/logo.png'" mode="aspectFill"></image>
+							<image class="cost-image" :src="item.image || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 							<view class="cost-info">
 								<view class="cost-name-row">
 									<text class="cost-name">{{ item.name }}</text>
@@ -212,7 +213,7 @@
 						<text class="cost-value discount">-฿{{ selectedCoupon.amount.toFixed(2) }}</text>
 					</view>
 					<view class="cost-row" v-if="useCoins && coinDeductAmount > 0">
-						<text class="cost-label">金币抵扣</text>
+						<text class="cost-label">{{ i18n.t('orderDetail.coinDeduct') }}</text>
 						<text class="cost-value discount">-฿{{ coinDeductAmount.toFixed(2) }}</text>
 					</view>
 					<view class="total-row">
@@ -327,7 +328,7 @@
 
 <script>
 import { getAddressList } from '@/api/services/address.js'
-import { getAvailableCoupons } from '@/api/services/coupon.js'
+import { getAvailableCoupons, getMyCoupons } from '@/api/services/coupon.js'
 import { getPaymentMethods } from '@/api/services/payment.js'
 import { createPayment } from '@/api/services/payment.js'
 import i18n from '@/i18n/index.js'
@@ -434,6 +435,13 @@ export default {
 			}
 		}
 		this.initPage()
+			// Guard: no store selected
+			if (!this.shopId) {
+				uni.showToast({ title: i18n.t("dinein.selectStoreTitle") || "请选择门店", icon: "none" })
+				setTimeout(() => uni.navigateBack(), 1500)
+				return
+			}
+
 		this.loadCheckoutData()
 
 		uni.$on('addressSelected', (address) => {
@@ -464,6 +472,8 @@ export default {
 							this.shopInfo = {
 								id: s.id,
 								name: s.name,
+								name_en: s.name_en || '',
+								name_th: s.name_th || '',
 								address: s.address || '',
 								phone: s.phone || '',
 								delivery_fee: s.config?.delivery_fee || 0,
@@ -480,6 +490,8 @@ export default {
 						this.shopInfo = {
 							id: currentStore.id,
 							name: currentStore.name,
+							name_en: currentStore.name_en || '',
+							name_th: currentStore.name_th || '',
 							address: currentStore.address,
 							phone: currentStore.phone || '',
 							delivery_fee: currentStore.config?.delivery_fee || 0,
@@ -491,7 +503,7 @@ export default {
 
 				const [addressRes, paymentRes, couponRes, coinRes] = await Promise.allSettled([
 					getAddressList(),
-					getPaymentMethods(),
+					getPaymentMethods(this.shopId),
 					getAvailableCoupons({ order_amount: this.productTotal, ...(this.shopId ? { store_id: this.shopId } : {}) }),
 					getCoinBalance()
 				])
@@ -521,7 +533,7 @@ export default {
 						const myRes = await getMyCoupons({ status: 'all' })
 						if (myRes.code === 0 && myRes.data) {
 							const myItems = myRes.data.items || myRes.data || []
-							couponItems = (Array.isArray(myItems) ? myItems : []).filter(c => c.status === 'UNUSED')
+							couponItems = (Array.isArray(myItems) ? myItems : []).filter(c => c.status === 'UNUSED' || c.status === 'CLAIMED' || c.status === 'ACTIVE')
 						}
 					} catch(e) { console.log('fallback getMyCoupons failed:', e) }
 				}
@@ -532,7 +544,7 @@ export default {
 							id: c.id,
 							coupon_code: c.coupon_code || '',
 							name: tpl.name || c.name || c.coupon_name || '',
-							amount: tpl.discount_value || c.discount_value || c.amount || 0,
+							amount: c.value || tpl.discount_value || c.discount_value || c.amount || 0,
 							min_spend: tpl.min_order_amount || c.min_order_amount || c.min_spend || 0,
 							valid_end: c.valid_end || c.validity_end || '',
 							description: tpl.description || c.description || ''
@@ -613,21 +625,34 @@ export default {
 			this.showCouponPicker = false
 		},
 
-		async handleCoinToggle(e) {
-			this.useCoins = e.detail.value
-			if (this.useCoins && this.coinBalance > 0) {
-				try {
-					const res = await calculateCoinDeduct(this.productTotal, this.coinBalance)
-					if (res.code === 0 && res.data) {
-						this.coinDeductAmount = res.data.coin_deduct_amount || 0
+			async handleCoinToggle(e) {
+				this.useCoins = e.detail.value
+				if (this.useCoins && this.coinBalance > 0) {
+					try {
+						const res = await calculateCoinDeduct(this.productTotal, this.coinBalance)
+						if (res.code === 0 && res.data) {
+							const deduct = res.data.deduct_amount || 0
+							if (deduct <= 0) {
+								this.useCoins = false
+								this.coinDeductAmount = 0
+								uni.showModal({
+									title: '',
+									content: this.i18n.t('checkout.coinDeductUnavailable'),
+									showCancel: false,
+									confirmText: this.i18n.t('common.confirm')
+								})
+							} else {
+								this.coinDeductAmount = deduct
+							}
+						}
+					} catch (e) {
+						this.useCoins = false
+						this.coinDeductAmount = 0
 					}
-				} catch (e) {
-					this.coinDeductAmount = Math.min(this.coinBalance, this.productTotal)
+				} else {
+					this.coinDeductAmount = 0
 				}
-			} else {
-				this.coinDeductAmount = 0
-			}
-		},
+			},
 
 		async handleSubmit() {
 			if (this.submitting) return
@@ -655,7 +680,8 @@ export default {
 					remark: this.remark,
 					table_number: this.orderType === 'dinein' ? (this.cartItems[0]?.table_number || '') : '',
 					extra_data: {
-						store_name: this.shopInfo.name || '',
+
+							store_name: this.shopInfo.name || '',
 						store_address: this.shopInfo.address || ''
 					}
 				}
@@ -681,12 +707,14 @@ export default {
 					const paymentRes = await createPayment({
 						order_id: orderId,
 						amount: parseFloat(this.totalPrice),
-						payment_method: this.selectedPaymentCode
+						method: this.selectedPaymentCode
 					})
 
 					if (paymentRes.code === 0) {
-						const needPickupCode = this.orderType === 'dinein' || this.deliveryType === 'pickup'
-						const pickupCode = needPickupCode ? this.generatePickupCode() : ''
+						const needPickupCode = this.orderType === "dinein" || this.deliveryType === "pickup"
+							const pickupCode = needPickupCode ? this.generatePickupCode() : ""
+							if (pickupCode) { try { uni.setStorageSync("pickup_code_" + orderId, pickupCode) } catch(e) {} }
+
 						uni.redirectTo({
 							url: `/pages/payment-success/index?orderId=${orderId}&orderType=${this.orderType}&deliveryType=${this.deliveryType}&pickupCode=${pickupCode}`
 						})
@@ -1164,6 +1192,11 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+}
+
+.coin-icon {
+	width: 20px;
+	height: 20px;
 }
 
 .coin-label {

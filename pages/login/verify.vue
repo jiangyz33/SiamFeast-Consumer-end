@@ -10,58 +10,149 @@
 			</view>
 		</view>
 
-		<!-- 标题区域 -->
-		<view class="title-section">
-			<text class="main-title">请输入验证码</text>
-			<text class="sub-title">验证码已发送到您的短信</text>
-			<text class="phone-number">{{ formatPhone }}</text>
-		</view>
+		<!-- 注册模式：先填写信息 -->
+		<view v-if="isRegister && !codeSent" class="register-form">
+			<view class="title-section">
+				<text class="main-title">{{ i18n.t('login.goRegister') }}</text>
+				<text class="sub-title">{{ i18n.t('login.registerDesc') }}</text>
+			</view>
 
-		<!-- 验证码输入区域 -->
-		<view class="code-section" @click="focusInput">
-			<view class="code-boxes">
-				<view
-					v-for="(item, index) in codeLength"
-					:key="index"
-					class="code-box"
-					:class="{ 'code-box-active': currentIndex === index }"
-				>
-					<text class="code-text">{{ code[index] || '' }}</text>
-					<view v-if="currentIndex === index && focused" class="cursor"></view>
+			<view class="form-section">
+				<!-- 手机号 -->
+				<view class="input-field" :style="{ borderColor: phoneFocused ? '#F2B131' : '#E0E0E0' }">
+					<text class="phone-prefix">+66</text>
+					<input
+						class="input"
+						type="text"
+						:placeholder="i18n.t('login.phonePlaceholder')"
+						placeholder-style="color: #828282;"
+						v-model="phone"
+						@focus="phoneFocused = true"
+						@blur="phoneFocused = false"
+					/>
+				</view>
+
+				<!-- 密码 -->
+				<view class="input-field" :style="{ borderColor: pwdFocused ? '#F2B131' : '#E0E0E0' }">
+					<input
+						class="input"
+						:password="!showPwd"
+						:placeholder="i18n.t('login.passwordPlaceholder')"
+						placeholder-style="color: #828282;"
+						v-model="password"
+						@focus="pwdFocused = true"
+						@blur="pwdFocused = false"
+					/>
+					<view class="pwd-toggle" @click="showPwd = !showPwd">
+						<text class="pwd-toggle-text">{{ showPwd ? 'Hide' : 'Show' }}</text>
+					</view>
+				</view>
+
+				<!-- 确认密码 -->
+				<view class="input-field" :style="{ borderColor: pwd2Focused ? '#F2B131' : '#E0E0E0' }">
+					<input
+						class="input"
+						:password="!showPwd2"
+						:placeholder="i18n.t('login.confirmPasswordPlaceholder')"
+						placeholder-style="color: #828282;"
+						v-model="confirmPassword"
+						@focus="pwd2Focused = true"
+						@blur="pwd2Focused = false"
+					/>
+				</view>
+
+				<!-- 邀请码（可选） -->
+				<view class="input-field invite-field" :style="{ borderColor: inviteFocused ? '#F2B131' : '#E0E0E0' }">
+					<input
+						class="input"
+						:placeholder="i18n.t('login.inviteCodePlaceholder')"
+						placeholder-style="color: #828282;"
+						v-model="inviteCode"
+						@focus="inviteFocused = true"
+						@blur="inviteFocused = false"
+					/>
 				</view>
 			</view>
-			<input
-				ref="codeInput"
-				class="hidden-input"
-				type="number"
-				:maxlength="codeLength"
-				v-model="code"
-				:focus="inputFocus"
-				@input="onCodeInput"
-				@focus="onFocus"
-				@blur="onBlur"
-			/>
+
+			<!-- 下一步按钮 -->
+			<view class="button-section">
+				<view
+					class="login-btn"
+					:class="{ 'btn-disabled': !canGoNext || sendingCode }"
+					@click="handleSendCode"
+				>
+					<text class="btn-text">{{ sendingCode ? i18n.t('common.loading') : i18n.t('login.getCode') }}</text>
+				</view>
+			</view>
+
+			<!-- 协议 -->
+			<view class="agreement">
+				<view class="agreement-check" @click="agreed = !agreed">
+					<view class="checkbox" :class="{ 'checkbox-active': agreed }">
+						<text v-if="agreed" class="check-icon">✓</text>
+					</view>
+				</view>
+				<text class="agreement-text">{{ i18n.t('login.agreementPrefix') }}</text>
+				<text class="agreement-link" @click="openAgreement('terms')">{{ i18n.t('login.terms') }}</text>
+				<text class="agreement-text">{{ i18n.t('login.and') }}</text>
+				<text class="agreement-link" @click="openAgreement('privacy')">{{ i18n.t('login.privacy') }}</text>
+			</view>
 		</view>
 
-		<!-- 重新发送 -->
-		<view class="resend-section">
-			<text v-if="countdown > 0" class="resend-text disabled">{{ countdown }}s后重新发送</text>
-			<text v-else class="resend-text" @click="resendCode">重新发送</text>
-		</view>
+		<!-- 验证码输入（登录模式 或 注册已发送验证码） -->
+		<view v-else class="code-area">
+			<view class="title-section">
+				<text class="main-title">{{ i18n.t('login.enterCode') }}</text>
+				<text class="sub-title">{{ i18n.t('login.codeSent') }}</text>
+				<text class="phone-number">{{ formatPhone }}</text>
+			</view>
 
-		<!-- 调试提示（开发环境显示验证码） -->
-		<view class="debug-hint" v-if="debugCode">
-			<text class="debug-text">验证码: {{ debugCode }}</text>
-		</view>
+			<!-- 验证码输入区域 -->
+			<view class="code-section" @click="focusInput">
+				<view class="code-boxes">
+					<view
+						v-for="(item, index) in codeLength"
+						:key="index"
+						class="code-box"
+						:class="{ 'code-box-active': currentIndex === index }"
+					>
+						<text class="code-text">{{ code[index] || '' }}</text>
+						<view v-if="currentIndex === index && focused" class="cursor"></view>
+					</view>
+				</view>
+				<input
+					ref="codeInput"
+					class="hidden-input"
+					type="number"
+					:maxlength="codeLength"
+					v-model="code"
+					:focus="inputFocus"
+					@input="onCodeInput"
+					@focus="onFocus"
+					@blur="onBlur"
+				/>
+			</view>
 
-		<!-- 底部按钮 -->
-		<view class="button-section">
-			<view
-				class="login-btn"
-				:class="{ 'btn-disabled': code.length < codeLength || loading }"
-				@click="handleVerify"
-			>
-				<text class="btn-text">{{ loading ? '处理中...' : btnText }}</text>
+			<!-- 重新发送 -->
+			<view class="resend-section">
+				<text v-if="countdown > 0" class="resend-text disabled">{{ countdown }}s {{ i18n.t('login.resendHint') }}</text>
+				<text v-else class="resend-text" @click="resendCode">{{ i18n.t('login.resend') }}</text>
+			</view>
+
+			<!-- 调试提示（开发环境显示验证码） -->
+			<view class="debug-hint" v-if="debugCode">
+				<text class="debug-text">Code: {{ debugCode }}</text>
+			</view>
+
+			<!-- 底部按钮 -->
+			<view class="button-section">
+				<view
+					class="login-btn"
+					:class="{ 'btn-disabled': code.length < codeLength || loading }"
+					@click="handleVerify"
+				>
+					<text class="btn-text">{{ loading ? i18n.t('common.loading') : btnText }}</text>
+				</view>
 			</view>
 		</view>
 
@@ -71,32 +162,44 @@
 </template>
 
 <script>
-import { formatPhoneWithDash, showToast } from '@/utils/index.js'
+import { formatPhoneWithDash, validatePhone, showToast } from '@/utils/index.js'
 import { sendCode, loginByCode, register } from '@/api/index.js'
+import i18n from '@/i18n/index.js'
 import store from '@/store/index.js'
-
-// 模拟验证码存储（用于验证注册时的验证码）
-const mockCodes = {}
 
 export default {
 	data() {
 		return {
+			i18n: i18n,
 			statusBarHeight: 20,
 			phone: '',
 			code: '',
 			codeLength: 6,
 			inputFocus: true,
 			focused: true,
-			countdown: 60,
+			countdown: 0,
 			timer: null,
 			loading: false,
-			debugCode: '', // 开发环境显示验证码
-			loginType: 'login', // login 或 register
-			password: '', // 注册时的密码
-			inviteCode: '' // 注册时的邀请码
+			sendingCode: false,
+			debugCode: '',
+			loginType: 'login',
+			password: '',
+			confirmPassword: '',
+			inviteCode: '',
+			codeSent: false,
+			agreed: true,
+			showPwd: false,
+			showPwd2: false,
+			phoneFocused: false,
+			pwdFocused: false,
+			pwd2Focused: false,
+			inviteFocused: false
 		}
 	},
 	computed: {
+		isRegister() {
+			return this.loginType === 'register'
+		},
 		formatPhone() {
 			return formatPhoneWithDash(this.phone)
 		},
@@ -104,62 +207,95 @@ export default {
 			return Math.min(this.code.length, this.codeLength - 1)
 		},
 		btnText() {
-			if (this.loading) return '处理中...'
-			return this.loginType === 'register' ? '注册' : '登录'
+			return this.isRegister ? i18n.t('login.goRegister') : i18n.t('login.login')
+		},
+		canGoNext() {
+			return validatePhone(this.phone)
+				&& this.password.length >= 6
+				&& this.password === this.confirmPassword
+				&& this.agreed
 		}
 	},
 	onLoad(options) {
-		// 获取状态栏高度
 		const systemInfo = uni.getSystemInfoSync()
 		this.statusBarHeight = systemInfo.statusBarHeight || 20
 
-		// 获取手机号
 		if (options.phone) {
 			this.phone = options.phone
 		}
+		this.loginType = options.type || 'login'
 
-		// 获取登录类型
-		this.loginType = options.type || 'login' // login 或 register
-
-		// 如果是注册类型， 获取密码和邀请码
-		if (this.loginType === 'register') {
-			if (options.password) {
-				this.password = decodeURIComponent(options.password)
-			}
-			if (options.inviteCode) {
-				this.inviteCode = decodeURIComponent(options.inviteCode)
-			}
+		if (this.isRegister && options.password) {
+			this.password = decodeURIComponent(options.password)
+		}
+		if (this.isRegister && options.inviteCode) {
+			this.inviteCode = decodeURIComponent(options.inviteCode)
 		}
 
-		// 开始倒计时
-		this.startCountdown()
-
-		// 自动发送验证码
-		this.sendVerifyCode()
+		// Login mode or register with phone pre-filled: go straight to code input
+		if (!this.isRegister || this.phone) {
+			this.codeSent = true
+			this.startCountdown()
+			this.sendVerifyCode()
+		}
 	},
 	onUnload() {
-		// 清除定时器
 		if (this.timer) {
 			clearInterval(this.timer)
 		}
 	},
 	methods: {
-		// 返回
 		goBack() {
 			uni.navigateBack()
 		},
 
-		// 聚焦输入框
+		openAgreement(type) {
+			uni.navigateTo({
+				url: `/pages/agreement/index?type=${type}`
+			})
+		},
+
+		// ===== Register step 1: send code =====
+
+		async handleSendCode() {
+			if (!this.canGoNext || this.sendingCode) return
+
+			if (!validatePhone(this.phone)) {
+				showToast(i18n.t('login.phoneInvalid'))
+				return
+			}
+			if (this.password.length < 6) {
+				showToast(i18n.t('settings.passwordTooShort'))
+				return
+			}
+			if (this.password !== this.confirmPassword) {
+				showToast(i18n.t('settings.passwordMismatch'))
+				return
+			}
+			if (!this.agreed) {
+				showToast(i18n.t('login.agreementRequired'))
+				return
+			}
+
+			this.sendingCode = true
+			try {
+				await this.sendVerifyCode()
+				this.codeSent = true
+				this.startCountdown()
+			} finally {
+				this.sendingCode = false
+			}
+		},
+
+		// ===== Code input =====
+
 		focusInput() {
 			this.inputFocus = true
 			this.focused = true
 		},
 
-		// 输入事件
 		onCodeInput(e) {
 			this.code = e.detail.value.replace(/\D/g, '').slice(0, this.codeLength)
-
-			// 自动提交
 			if (this.code.length === this.codeLength) {
 				setTimeout(() => {
 					this.handleVerify()
@@ -167,19 +303,16 @@ export default {
 			}
 		},
 
-		// 获得焦点
 		onFocus() {
 			this.inputFocus = true
 			this.focused = true
 		},
 
-		// 失去焦点
 		onBlur() {
 			this.inputFocus = false
 			this.focused = false
 		},
 
-		// 开始倒计时
 		startCountdown() {
 			this.countdown = 60
 			this.timer = setInterval(() => {
@@ -191,66 +324,46 @@ export default {
 			}, 1000)
 		},
 
-		// 发送验证码
 		async sendVerifyCode() {
 			try {
-				const res = await sendCode(this.phone)
-
-				// 开发环境显示验证码
+				const purpose = this.isRegister ? 'register' : 'login'
+				const res = await sendCode(this.phone, purpose)
 				if (res.data && res.data._debug_code) {
 					this.debugCode = res.data._debug_code
 				}
-
-				showToast('验证码已发送')
+				showToast(i18n.t('login.codeSentToast'))
 			} catch (e) {
-				console.error('发送验证码失败:', e)
-				showToast('发送失败，请重试')
+				console.error('sendCode error:', e)
+				showToast(i18n.t('login.codeSendFailed'))
 			}
 		},
 
-		// 重新发送验证码
 		async resendCode() {
 			if (this.countdown > 0) return
-
 			this.code = ''
 			await this.sendVerifyCode()
 			this.startCountdown()
 		},
 
-		// 验证登录/注册
+		// ===== Verify =====
+
 		async handleVerify() {
-			if (this.code.length < this.codeLength) {
-				showToast('请输入完整验证码')
-				return
-			}
-
+			if (this.code.length < this.codeLength) return
 			if (this.loading) return
-
 			this.loading = true
 
 			try {
 				let res
 
-				if (this.loginType === 'register') {
-					// 注册流程：验证码验证 + 注册
-					res = await register({
-						phone: this.phone,
-						sms_code: this.code,
-						password: this.password,
-						invite_code: this.inviteCode
-					})
-				} else {
-					// 普通验证码登录
-					res = await loginByCode(this.phone, this.code)
-				}
+				// Both register and login use sms-login (auto-registers new users)
+				res = await loginByCode(this.phone, this.code)
 
 				if (res.code !== 0) {
-					showToast(res.message || (this.loginType === 'register' ? '注册失败' : '登录失败'))
+					showToast(res.message || (this.isRegister ? i18n.t('login.registerFailed') : i18n.t('login.loginFailed')))
 					this.loading = false
 					return
 				}
 
-				// 保存登录信息
 				if (res.data && res.data.access_token) {
 					store.setToken(res.data.access_token)
 					if (res.data.user) {
@@ -258,17 +371,16 @@ export default {
 					}
 				}
 
-				showToast(this.loginType === 'register' ? '注册成功' : '登录成功')
+				showToast(this.isRegister ? i18n.t('login.registerSuccess') : i18n.t('login.loginSuccess'))
 
-				// 跳转到首页
 				setTimeout(() => {
 					uni.switchTab({
 						url: '/pages/index/index'
 					})
 				}, 1500)
 			} catch (e) {
-				console.error(this.loginType === 'register' ? '注册失败:' : '登录失败:', e)
-				showToast('网络错误，请稍后重试')
+				console.error('handleVerify error:', e)
+				showToast(i18n.t('common.networkError'))
 				this.loading = false
 			}
 		}
@@ -308,6 +420,7 @@ export default {
 	height: 48rpx;
 }
 
+/* Title */
 .title-section {
 	padding: 32rpx 72rpx;
 }
@@ -336,6 +449,100 @@ export default {
 	letter-spacing: -2rpx;
 }
 
+/* Register form */
+.form-section {
+	padding: 32rpx 48rpx 0;
+}
+
+.input-field {
+	display: flex;
+	align-items: center;
+	height: 88rpx;
+	background-color: #FFFFFF;
+	border-radius: 16rpx;
+	border: 2rpx solid #E0E0E0;
+	padding: 0 32rpx;
+	margin-bottom: 24rpx;
+	transition: border-color 0.3s;
+}
+
+.input {
+	flex: 1;
+	font-size: 28rpx;
+	color: #282332;
+}
+
+.phone-prefix {
+	font-size: 28rpx;
+	color: #282332;
+	font-weight: 500;
+	margin-right: 16rpx;
+}
+
+.pwd-toggle {
+	padding: 16rpx;
+}
+
+.pwd-toggle-text {
+	font-size: 24rpx;
+	color: #828282;
+}
+
+.invite-field {
+	border-style: dashed;
+}
+
+/* Agreement */
+.agreement {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	padding: 24rpx 48rpx;
+}
+
+.agreement-check {
+	margin-right: 12rpx;
+}
+
+.checkbox {
+	width: 36rpx;
+	height: 36rpx;
+	border-radius: 8rpx;
+	border: 2rpx solid #E0E0E0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.checkbox-active {
+	background-color: #F2B131;
+	border-color: #F2B131;
+}
+
+.check-icon {
+	font-size: 24rpx;
+	color: #FFFFFF;
+	font-weight: 700;
+}
+
+.agreement-text {
+	font-size: 24rpx;
+	color: #828282;
+}
+
+.agreement-link {
+	font-size: 24rpx;
+	color: #019EFF;
+}
+
+/* Code input */
+.code-area {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+}
+
 .code-section {
 	padding: 64rpx 72rpx;
 	position: relative;
@@ -343,7 +550,6 @@ export default {
 
 .code-boxes {
 	display: flex;
-	flex-direction: row;
 	justify-content: space-between;
 	gap: 24rpx;
 }
@@ -381,12 +587,8 @@ export default {
 }
 
 @keyframes blink {
-	0%, 50% {
-		opacity: 1;
-	}
-	51%, 100% {
-		opacity: 0;
-	}
+	0%, 50% { opacity: 1; }
+	51%, 100% { opacity: 0; }
 }
 
 .hidden-input {
@@ -429,6 +631,7 @@ export default {
 	font-weight: 600;
 }
 
+/* Button */
 .button-section {
 	padding: 32rpx 48rpx;
 	margin-top: auto;

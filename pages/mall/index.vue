@@ -47,7 +47,7 @@
 				</swiper-item>
 			</swiper>
 			<view v-else class="top-banner">
-				<image class="banner-image" src="/static/logo.png" mode="aspectFill"></image>
+				<image class="banner-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 				<view class="banner-indicators">
 					<view class="indicator active"></view>
 				</view>
@@ -69,8 +69,8 @@
 						:class="{ 'category-active': activeCategory === index }"
 						@click="selectCategory(index)"
 					>
-						<image class="category-icon" :src="item.icon || '/static/logo.png'" mode="aspectFit"></image>
-						<text class="category-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
+						<image class="category-icon" :src="item.icon || '/static/images/img-placeholder.svg'" mode="aspectFit"></image>
+						<text class="category-name">{{ item['name_' + i18n.getLanguage()] || item.name || item.name_en }}</text>
 					</view>
 				</view>
 			</scroll-view>
@@ -80,16 +80,16 @@
 				<!-- 优惠专区 -->
 				<view class="zone-card" @click="handleZoneClick('discount')">
 					<view class="zone-header">
-						<text class="zone-title">优惠专区</text>
+						<text class="zone-title">{{ i18n.t("dinein.categories.discount") }}</text>
 						<view class="zone-more">
-							<text class="more-text">更多</text>
+							<text class="more-text">{{ i18n.t("common.more") || "更多" }}</text>
 							<image class="more-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="zone-content" v-if="discountProduct">
-						<image class="zone-image" :src="discountProduct.image_url || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="zone-image" :src="discountProduct.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 						<view class="zone-info">
-							<text class="zone-name">{{ discountProduct.name }}</text>
+							<text class="zone-name">{{ discountProduct["name_" + i18n.getLanguage()] || discountProduct.name }}</text>
 							<view class="zone-price">
 								<text class="price-symbol">฿</text>
 								<text class="price-num">{{ discountProduct.price }}</text>
@@ -97,25 +97,25 @@
 						</view>
 					</view>
 					<view class="zone-content" v-else>
-						<image class="zone-image" src="/static/logo.png" mode="aspectFill"></image>
+						<image class="zone-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 						<view class="zone-info">
-							<text class="zone-name">暂无优惠商品</text>
+							<text class="zone-name">{{ i18n.t("common.empty.noData") }}</text>
 						</view>
 					</view>
 				</view>
 				<!-- 拼单专区 -->
 				<view class="zone-card" @click="handleZoneClick('group')">
 					<view class="zone-header">
-						<text class="zone-title">拼单专区</text>
+						<text class="zone-title">{{ i18n.t("dinein.categories.group") }}</text>
 						<view class="zone-more">
-							<text class="more-text">更多</text>
+							<text class="more-text">{{ i18n.t("common.more") || "更多" }}</text>
 							<image class="more-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="zone-content" v-if="groupProduct">
-						<image class="zone-image" :src="groupProduct.image_url || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="zone-image" :src="groupProduct.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 						<view class="zone-info">
-							<text class="zone-name">{{ groupProduct.name }}</text>
+							<text class="zone-name">{{ groupProduct["name_" + i18n.getLanguage()] || groupProduct.name }}</text>
 							<view class="zone-price">
 								<text class="price-symbol">฿</text>
 								<text class="price-num">{{ groupProduct.price }}</text>
@@ -123,9 +123,9 @@
 						</view>
 					</view>
 					<view class="zone-content" v-else>
-						<image class="zone-image" src="/static/logo.png" mode="aspectFill"></image>
+						<image class="zone-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 						<view class="zone-info">
-							<text class="zone-name">暂无拼单商品</text>
+							<text class="zone-name">{{ i18n.t("common.empty.noData") }}</text>
 						</view>
 					</view>
 				</view>
@@ -142,10 +142,10 @@
 					@click="handleStoreClick(store)"
 				>
 					<view class="store-card-main">
-						<image class="store-card-logo" :src="store.logo_url || store.logo || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="store-card-logo" :src="store.logo_url || store.logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
 						<view class="store-card-info">
 							<view class="store-card-header">
-								<text class="store-card-name">{{ store.name }}</text>
+								<text class="store-card-name">{{ store["name_" + i18n.getLanguage()] || store.name }}</text>
 								<view class="store-card-status" :class="store.status === 'OPEN' ? 'status-open' : 'status-closed'">
 									<text class="store-card-status-text">{{ store.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
 								</view>
@@ -154,7 +154,7 @@
 								<text class="store-card-hours">{{ store.businessHours }}</text>
 							</view>
 							<view class="store-card-delivery" v-if="store.delivery_enabled">
-								<text class="delivery-text">支持外送</text>
+								<text class="delivery-text">{{ i18n.t("dinein.deliverySupported") }}</text>
 							</view>
 							<view class="store-card-tags" v-if="store.business_types && store.business_types.length > 0">
 								<text class="store-card-tag" v-for="(type, idx) in getBusinessTypeText(store.business_types)" :key="idx">{{ type }}</text>
@@ -168,7 +168,7 @@
 						</view>
 						<view class="store-card-actions">
 							<view class="store-card-enter">
-								<text class="store-card-enter-text">进店</text>
+								<text class="store-card-enter-text">{{ i18n.t("mine.enterStore") }}</text>
 							</view>
 						</view>
 					</view>
@@ -186,26 +186,36 @@
 
 		<!-- 自定义底部导航栏 -->
 		<custom-tabbar :current="0"></custom-tabbar>
+
+		<!-- 语言切换弹窗 -->
+		<language-modal
+			:visible="showLanguageModal"
+			@close="handleLanguageModalClose"
+			@change="handleLanguageChange"
+		></language-modal>
 	</view>
 </template>
 
 <script>
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
+import LanguageModal from '@/components/language-modal.vue'
 import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
 import { getStore, getStores } from '@/api/services/store.js'
-import { getGlobalCategories } from '@/api/services/menu.js'
+import { getConsumerCategories } from '@/api/services/menu.js'
 import { getMallBanners } from '@/api/services/banner.js'
 import { getGlobalNotice } from '@/api/services/notice.js'
 
 export default {
 	components: {
-		CustomTabbar
+		CustomTabbar,
+		LanguageModal
 	},
 	data() {
 		return {
 			i18n: i18n,
+			showLanguageModal: false,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			loading: false,
@@ -259,13 +269,15 @@ export default {
 				const [bannerRes, noticeRes, catRes, storesRes] = await Promise.allSettled([
 					getMallBanners(),
 					getGlobalNotice(),
-					getGlobalCategories(),
+					getConsumerCategories(),
 					getStores({}, { silent: true })
 				])
 
 				// 轮播图
 				if (bannerRes.status === 'fulfilled' && bannerRes.value.code === 0 && bannerRes.value.data) {
-					this.banners = Array.isArray(bannerRes.value.data) ? bannerRes.value.data : []
+					const bannerData = bannerRes.value.data
+					const bannerItems = Array.isArray(bannerData) ? bannerData : (bannerData.items || [])
+					this.banners = bannerItems
 				}
 
 					// 全局公告通知（支持多语言）
@@ -279,18 +291,36 @@ export default {
 
 				// 分类列表
 				if (catRes.status === 'fulfilled' && catRes.value.code === 0 && catRes.value.data) {
-					const apiCategories = (catRes.value.data || []).map(c => ({
+					const catRaw = catRes.value.data
+					const catItems = Array.isArray(catRaw) ? catRaw : (catRaw.items || [])
+					const apiCategories = catItems.map(c => {
+						const rawIcon = c.icon || c.icon_url || ''
+						const icon = rawIcon ? fixMinioUrl(rawIcon) : '/static/images/store-placeholder.svg'
+						return {
 							id: c.id,
 							name: c.name,
 							name_en: c.name_en || '',
 							name_th: c.name_th || '',
-							icon: c.icon || c.icon_url || '/static/logo.png'
-					}))
+							icon: icon,
+							business_type: c.business_type || ''
+						}
+					})
+
+					// Deduplicate by name
+					const seen = new Map()
+					for (const cat of apiCategories) {
+						const key = (cat.name_en || cat.name || '').toLowerCase()
+						if (!seen.has(key)) {
+							seen.set(key, cat)
+						}
+					}
+					const dedupedCategories = [...seen.values()]
+
 					// 在前面加上新人礼包入口，后面加更多
 					this.categories = [
-						{ id: 'newbie', name: '新人礼包', icon: '/static/icons/newbie-gift.svg' },
-						...apiCategories,
-						{ id: 'more', name: '更多', icon: '/static/icons/more-categories.svg' }
+						{ id: 'newbie', name: i18n.t('member.newUserPack'), icon: '/static/icons/newbie-gift.svg' },
+						...dedupedCategories,
+						{ id: 'more', name: i18n.t('common.more') || '更多', icon: '/static/icons/more-categories.svg' }
 					]
 				} else {
 					this.categories = [
@@ -309,7 +339,7 @@ export default {
 						name_en: store.name_en || '',
 						name_th: store.name_th || '',
 						logo_url: store.logo_url || '',
-						logo: store.logo || '/static/logo.png',
+						logo: store.logo || '/static/images/store-placeholder.svg',
 						phone: store.phone || '',
 						status: store.status || 'OPEN',
 						address: store.address || '',
@@ -352,9 +382,15 @@ export default {
 		},
 
 		handleLanguageClick() {
-			uni.navigateTo({
-				url: '/pages/language/index'
-			})
+			this.showLanguageModal = true
+		},
+
+		handleLanguageModalClose() {
+			this.showLanguageModal = false
+		},
+
+		handleLanguageChange() {
+			this.loadMallData()
 		},
 
 		handleMessageClick() {
@@ -876,6 +912,8 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 4px;
+	flex: 1;
+	min-width: 0;
 }
 
 .store-card-distance-icon {
@@ -887,12 +925,16 @@ export default {
 	font-size: 12px;
 	color: rgba(0, 0, 0, 0.5);
 	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .store-card-actions {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	flex-shrink: 0;
 }
 
 

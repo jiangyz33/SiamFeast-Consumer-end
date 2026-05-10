@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ categoryName || '商品列表' }}</text>
+			<text class="nav-title">{{ categoryName || i18n.t('products.productList') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -19,7 +19,7 @@
 				<input
 					class="search-input"
 					v-model="searchKeyword"
-					placeholder="搜索商品"
+					:placeholder="i18n.t('products.searchProducts')"
 					confirm-type="search"
 					@confirm="handleSearch"
 				/>
@@ -39,7 +39,7 @@
 					:class="{ 'filter-tab-active': activeFilter === index }"
 					@click="selectFilter(index)"
 				>
-					<text class="filter-tab-text">{{ item.name }}</text>
+					<text class="filter-tab-text">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
 				</view>
 			</view>
 		</view>
@@ -54,23 +54,23 @@
 					@click="handleProductClick(item)"
 				>
 					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image_url || '/static/logo.png'" mode="aspectFill"></image>
+						<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 						<view class="product-shop">
 							<view class="shop-logo-wrapper">
-								<image class="shop-logo" src="/static/logo.png" mode="aspectFill"></image>
+								<image class="shop-logo" :src="storeLogo || '/static/images/banner-placeholder.svg'" mode="aspectFill"></image>
 							</view>
 							<text class="shop-name">{{ item.shopName || currentStoreName }}</text>
 						</view>
-						<view class="buy-btn" @click.stop="handleBuyNow(item)">
-							<text class="buy-btn-text">立即购买</text>
-						</view>
 					</view>
 					<view class="product-info-overlay">
-						<text class="product-name">{{ item.name }}</text>
+						<text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
 						<view class="product-price-row">
 							<text class="product-price">฿{{ item.price }}</text>
 							<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
-							<text class="sales-text">已售{{ item.sales_count || 0 }}份</text>
+							<text class="sales-text">{{ i18n.t("products.sold") }}{{ item.sales_count || 0 }}{{ i18n.t("products.units") }}</text>
+							<view class="buy-btn" @click.stop="handleBuyNow(item)">
+								<text class="buy-btn-text">{{ i18n.t("productDetail.buyNow") }}</text>
+							</view>
 						</view>
 					</view>
 				</view>
@@ -78,13 +78,15 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">加载中...</text>
-				<text v-else-if="noMore && products.length > 0" class="tip-text">没有更多了</text>
+				<text v-if="loading" class="tip-text">{{ i18n.t("common.loading") }}</text>
+				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t("order.noMore") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view v-if="!loading && products.length === 0" class="empty-state">
-				<text class="empty-text">暂无商品</text>
+				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
+				<text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
+				<text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -99,31 +101,35 @@
 <script>
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import appStore from '@/store/index.js'
+import i18n from '@/i18n/index.js'
+import { fixMinioUrl } from '@/utils/index.js'
 import { showToast } from '@/utils/index.js'
 import { searchProducts, getHotProducts, getNewProducts } from '@/api/services/products.js'
-import { getConsumerMenuItems } from '@/api/services/menu.js'
+import { getProductsByCategory } from '@/api/services/products.js'
 import { getActiveCampaigns } from '@/api/services/campaign.js'
 
 export default {
 	components: {
-		CustomTabbar
-	},
+			CustomTabbar
+		},
 	data() {
 		return {
+				i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			activeFilter: 0,
 			filterTabs: [
-				{ name: '全部', type: 'all' },
-				{ name: '热销', type: 'hot' },
-				{ name: '新品', type: 'new' },
-				{ name: '优惠', type: 'discount' }
+				{ name: '全部', name_en: 'All', name_th: 'ทั้งหมด', type: 'all' },
+				{ name: '热销', name_en: 'Hot', name_th: 'ยอดนิยม', type: 'hot' },
+				{ name: '新品', name_en: 'New', name_th: 'ใหม่', type: 'new' },
+				{ name: '优惠', name_en: 'Discount', name_th: 'ส่วนลด', type: 'discount' }
 			],
 			products: [],
 			loading: false,
 			noMore: false,
 			shopId: null,
 			currentStoreName: '',
+			storeLogo: '',
 			searchKeyword: '',
 			isSearchMode: false,
 			categoryId: null,
@@ -132,12 +138,17 @@ export default {
 		}
 	},
 	onLoad(options) {
-		this.initPage()
-		const currentStore = appStore.getCurrentStore()
-		if (currentStore) {
-			this.shopId = currentStore.id
-			this.currentStoreName = currentStore.name || ''
-		}
+			this.initPage()
+			if (options && options.shopId) {
+				this.shopId = options.shopId
+			} else {
+				const currentStore = appStore.getCurrentStore()
+				if (currentStore) {
+					this.shopId = currentStore.id
+					this.currentStoreName = currentStore.name || ""
+				this.storeLogo = fixMinioUrl(currentStore.logo_url || currentStore.logo || '')
+				}
+			}
 		if (options.keyword) {
 			this.searchKeyword = decodeURIComponent(options.keyword)
 			this.isSearchMode = true
@@ -177,51 +188,59 @@ export default {
 				if (this.isSearchMode && this.searchKeyword.trim()) {
 					// 搜索模式
 					const params = { keyword: this.searchKeyword.trim(), limit: 20 }
-					if (this.shopId) params.store_id = this.shopId
+					if (this.categoryId) params.category_id = this.categoryId
 					res = await searchProducts(params)
 				} else if (filterType === 'hot') {
 					const params = { limit: 20 }
-					if (this.shopId) params.store_id = this.shopId
+					if (this.categoryId) params.category_id = this.categoryId
 					res = await getHotProducts(params)
 				} else if (filterType === 'new') {
 					const params = { limit: 20 }
-					if (this.shopId) params.store_id = this.shopId
+					if (this.categoryId) params.category_id = this.categoryId
 					res = await getNewProducts(params)
 				} else if (filterType === 'discount') {
 					// 优惠商品来自活动接口
-					const campaignRes = await getActiveCampaigns({ type: 'discount' })
+					const campaignParams = { type: 'discount' }
+					const campaignRes = await getActiveCampaigns(campaignParams)
 					let discountProducts = []
 					if (campaignRes.code === 0 && campaignRes.data) {
-						const campaigns = campaignRes.data
+						const campaigns = Array.isArray(campaignRes.data) ? campaignRes.data : (campaignRes.data.items || [])
 						campaigns.forEach(c => {
 							if (c.products && c.products.length > 0) {
-								discountProducts = discountProducts.concat(c.products)
+								let prods = c.products
+								if (this.shopId) prods = prods.filter(p => p.store_id == this.shopId)
+								if (this.categoryId) prods = prods.filter(p => p.category_id == this.categoryId)
+								discountProducts = discountProducts.concat(prods)
 							}
 						})
 					}
 					if (!append) {
-						this.products = discountProducts
+						this.products = discountProducts.map(p => ({ ...p, image_url: fixMinioUrl(p.image_url) }))
 					} else {
-						this.products = [...this.products, ...discountProducts]
+						this.products = [...this.products, ...discountProducts.map(p => ({ ...p, image_url: fixMinioUrl(p.image_url) }))]
 					}
 					this.noMore = true
 					return
 				} else {
-					// 全部 - 从菜单获取
-					const params = { limit: 20 }
-					if (this.shopId) params.store_id = this.shopId
+					// 全部 - 按分类查询商品
+					const params = { page_size: 50 }
 					if (this.categoryId) params.category_id = this.categoryId
-					res = await getConsumerMenuItems(params.store_id || this.shopId, params)
+					res = await getProductsByCategory(params)
 				}
 
 				if (res) {
-					const items = res.data?.items || (Array.isArray(res.data) ? res.data : [])
-					if (!append) {
-						this.products = items
-					} else {
-						this.products = [...this.products, ...items]
+					let items = res.data?.items || (Array.isArray(res.data) ? res.data : [])
+					// 后端 hot/new 接口不响应 category_id/store_id，前端自行过滤
+					if (filterType === 'hot' || filterType === 'new') {
+						if (this.categoryId) items = items.filter(p => p.category_id == this.categoryId)
+						if (this.shopId) items = items.filter(p => p.store_id == this.shopId)
 					}
-					this.noMore = items.length < 20
+					if (!append) {
+						this.products = items.map(p => ({ ...p, image_url: fixMinioUrl(p.image_url) }))
+					} else {
+						this.products = [...this.products, ...items.map(p => ({ ...p, image_url: fixMinioUrl(p.image_url) }))]
+					}
+					this.noMore = items.length < 50
 				}
 			} catch (e) {
 				console.error('加载商品失败:', e)
@@ -271,14 +290,14 @@ export default {
 
 		handleBuyNow(item) {
 			if (item.is_sold_out) {
-				showToast('商品已售罄')
+				showToast(i18n.t('index.soldOut'))
 				return
 			}
 			const productData = {
 				id: item.id,
-				name: item.name,
+				name: item["name_" + i18n.getLanguage()] || item.name || item.name_en,
 				price: item.price,
-				image: item.image_url || '/static/logo.png',
+				image: item.image_url || '/static/images/img-placeholder.svg',
 				quantity: 1,
 				store_id: this.shopId
 			}
@@ -473,13 +492,12 @@ export default {
 }
 
 .buy-btn {
-	position: absolute;
-	bottom: 8px;
-	right: 8px;
-	background-color: #F2B131;
-	padding: 6px 12px;
-	border-radius: 16px;
-}
+		margin-left: auto;
+		background-color: #F2B131;
+		padding: 4px 10px;
+		border-radius: 12px;
+		flex-shrink: 0;
+	}
 
 .buy-btn-text {
 	font-size: 12px;
@@ -494,7 +512,6 @@ export default {
 .product-name {
 	font-size: 14px;
 	font-weight: 600;
-	color: #000000CC;
 }
 
 .product-price-row {
@@ -541,9 +558,16 @@ export default {
 	justify-content: center;
 }
 
-.empty-text {
-	font-size: 14px;
-	color: #949494;
+.empty-title {
+	font-size: 15px;
+	color: #333;
+	font-weight: 500;
+	margin-bottom: 6px;
+}
+
+	.empty-desc {
+	font-size: 13px;
+	color: #999;
 }
 
 /* 底部占位 */

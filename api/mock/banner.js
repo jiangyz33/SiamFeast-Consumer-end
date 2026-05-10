@@ -7,7 +7,7 @@ const mockHomeBanners = [
 	{
 		id: 1,
 		title: '新品上市',
-		image_url: '/static/logo.png',
+		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/new-products/index',
 		position: 'HOME',
@@ -22,7 +22,7 @@ const mockHomeBanners = [
 	{
 		id: 2,
 		title: '限时优惠',
-		image_url: '/static/logo.png',
+		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/discount/index',
 		position: 'HOME',
@@ -37,7 +37,7 @@ const mockHomeBanners = [
 	{
 		id: 3,
 		title: '积分商城',
-		image_url: '/static/logo.png',
+		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/points-mall/index',
 		position: 'HOME',
@@ -56,7 +56,7 @@ const mockMallBanners = [
 	{
 		id: 10,
 		title: '新人专享',
-		image_url: '/static/logo.png',
+		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/newbie-gift/index',
 		position: 'MALL',
@@ -71,7 +71,7 @@ const mockMallBanners = [
 	{
 		id: 11,
 		title: '热销推荐',
-		image_url: '/static/logo.png',
+		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/hot-products/index',
 		position: 'MALL',
@@ -86,7 +86,7 @@ const mockMallBanners = [
 	{
 		id: 12,
 		title: '满减活动',
-		image_url: '/static/logo.png',
+		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/discount/index',
 		position: 'MALL',
@@ -101,7 +101,7 @@ const mockMallBanners = [
 	{
 		id: 13,
 		title: '拼团优惠',
-		image_url: '/static/logo.png',
+		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/group/index',
 		position: 'MALL',

@@ -15,7 +15,16 @@ export function getOrderDelivery(orderId) {
 		return mockGetOrderDelivery(orderId)
 	}
 	// 配送接口可能不存在（堂食/自提订单），静默失败不弹错误提示
-	return get(`/deliveries/orders/${orderId}/delivery`, {}, { silent: true }).catch(() => ({ code: -1, data: null }))
+	return get(`/orders/${orderId}/delivery`, {}, { silent: true }).catch(() => ({ code: -1, data: null }))
+}
+
+/**
+ * 获取我的配送列表
+ * @param {Object} params 查询参数
+ * @returns {Promise}
+ */
+export function getMyDeliveries(params = {}) {
+	return get('/my-deliveries', params)
 }
 
 export const deliveryApi = {
