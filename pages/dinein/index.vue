@@ -547,7 +547,7 @@ export default {
 				}
 
 					// Step 3: Load categories from global categories API
-					this.loadFallbackCategories()
+					await this.loadFallbackCategories()
 					if (!this.isHostel && this.categories.length > 0) {
 						this.activeCategory = 0
 					}
