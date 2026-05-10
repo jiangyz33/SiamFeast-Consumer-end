@@ -191,6 +191,16 @@ export function getBusinessTypes() {
 	return get('/business-types', {}, { silent: true })
 }
 
+/**
+ * 获取门店列表（C端，公开，无需认证）
+ * GET /public/stores
+ * @param {Object} params
+ * @returns {Promise}
+ */
+export function getPublicStores(params = {}) {
+	return get('/public/stores', params)
+}
+
 // 导出模块对象
 export const storeApi = {
 	searchAll,
@@ -203,7 +213,8 @@ export const storeApi = {
 	updateStoreConfig,
 	deleteStore,
 	getNearbyStores,
-	getBusinessTypes
+	getBusinessTypes,
+	getPublicStores
 }
 
 export default storeApi
