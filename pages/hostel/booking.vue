@@ -37,7 +37,7 @@
 						<picker mode="date" :value="checkIn" :start="todayStr" @change="onCheckInChange">
 							<view class="date-block">
 								<text class="date-label">{{ i18n.t("hostel.checkInDate") }}</text>
-								<text class="date-value" :class="{&quot;date-placeholder&quot;: !checkIn}">{{ checkIn || i18n.t("hostel.selectDate") }}</text>
+								<text class="date-value" :class='{"date-placeholder": !checkIn}'>{{ checkIn || i18n.t("hostel.selectDate") }}</text>
 							</view>
 						</picker>
 						<view class="date-arrow">
@@ -49,7 +49,7 @@
 						<picker mode="date" :value="checkOut" :start="checkIn || todayStr" @change="onCheckOutChange">
 							<view class="date-block">
 								<text class="date-label">{{ i18n.t("hostel.checkOutDate") }}</text>
-								<text class="date-value" :class="{&quot;date-placeholder&quot;: !checkOut}">{{ checkOut || i18n.t("hostel.selectDate") }}</text>
+								<text class="date-value" :class='{"date-placeholder": !checkOut}'>{{ checkOut || i18n.t("hostel.selectDate") }}</text>
 							</view>
 						</picker>
 					</view>
@@ -66,15 +66,15 @@
 				</view>
 				<view class="form-group">
 					<text class="form-label">{{ i18n.t("hostel.guestName") }}</text>
-					<input class="form-input" v-model="guestInfo.name" placeholder="{{ i18n.t("hostel.guestNamePlaceholder") }}" />
+					<input class="form-input" v-model="guestInfo.name" :placeholder="i18n.t('hostel.guestNamePlaceholder')" />
 				</view>
 				<view class="form-group">
 					<text class="form-label">{{ i18n.t("hostel.guestPhone") }}</text>
-					<input class="form-input" v-model="guestInfo.phone" placeholder="{{ i18n.t("hostel.guestPhonePlaceholder") }}" type="number" />
+					<input class="form-input" v-model="guestInfo.phone" :placeholder="i18n.t('hostel.guestPhonePlaceholder')" type="number" />
 				</view>
 				<view class="form-group">
 					<text class="form-label">{{ i18n.t("hostel.guestIdNumber") }}</text>
-					<input class="form-input" v-model="guestInfo.id_number" placeholder="{{ i18n.t("hostel.guestIdPlaceholder") }}" />
+					<input class="form-input" v-model="guestInfo.id_number" :placeholder="i18n.t('hostel.guestIdPlaceholder')" />
 				</view>
 				<view class="form-group">
 					<text class="form-label">{{ i18n.t("hostel.guestCount") }}</text>
@@ -95,7 +95,7 @@
 				<view class="section-header">
 					<text class="section-title">{{ i18n.t("hostel.remark") }}</text>
 				</view>
-				<textarea class="remark-input" v-model="remark" placeholder="{{ i18n.t("hostel.remarkPlaceholder") }}" maxlength="200"></textarea>
+				<textarea class="remark-input" v-model="remark" :placeholder="i18n.t('hostel.remarkPlaceholder')" maxlength="200"></textarea>
 			</view>
 
 			<!-- 费用明细 -->
