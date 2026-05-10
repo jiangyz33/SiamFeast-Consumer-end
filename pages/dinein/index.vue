@@ -327,7 +327,7 @@ import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 import { getStore } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
-import { getConsumerCategories, getConsumerMenuItems, getStoreMenuCategories } from '@/api/services/menu.js'
+import { getConsumerCategories, getConsumerMenuItems, } from '@/api/services/menu.js'
 import { getAvailableRooms } from '@/api/services/hostel.js'
 
 export default {
@@ -546,34 +546,8 @@ export default {
 					console.error('loadProducts error:', e)
 				}
 
-					// Step 3: Load store menu categories (门店自定义菜单分组)
-					try {
-						const smcRes = await getStoreMenuCategories(this.shopInfo.id)
-						if (smcRes.code === 0 && smcRes.data) {
-							const smcData = Array.isArray(smcRes.data) ? smcRes.data : (smcRes.data.items || [])
-							// Filter categories that have products
-							const usedCatIds = new Set(this.allProducts.map(p => p.store_menu_category_id).filter(Boolean))
-							const catsWithProducts = smcData.filter(c => usedCatIds.has(c.id))
-							if (catsWithProducts.length > 0) {
-								this.categories = catsWithProducts.map(c => ({
-									id: c.id,
-									nameKey: c.name,
-									name_en: c.name_en || '',
-									name_th: c.name_th || '',
-									name: c.name,
-									sortOrder: c.sort_order
-								}))
-							} else {
-								// Fallback: use global categories if no store menu categories
-								this.loadFallbackCategories()
-							}
-						} else {
-							this.loadFallbackCategories()
-						}
-					} catch (e) {
-						console.error('loadStoreMenuCategories error:', e)
-						this.loadFallbackCategories()
-					}
+					// Step 3: Load categories from global categories API
+					this.loadFallbackCategories()
 					if (!this.isHostel && this.categories.length > 0) {
 						this.activeCategory = 0
 					}

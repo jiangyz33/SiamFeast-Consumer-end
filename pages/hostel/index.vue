@@ -261,7 +261,7 @@ import appStore from '@/store/index.js'
 import { getRooms, getAvailableRooms } from '@/api/services/hostel.js'
 import { getStore } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
-import { getConsumerCategories, getConsumerMenuItems, getStoreMenuCategories } from '@/api/services/menu.js'
+import { getConsumerCategories, getConsumerMenuItems, } from '@/api/services/menu.js'
 import { showToast } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 
@@ -509,29 +509,8 @@ export default {
 						})
 					}
 
-					// Step 2: Load store menu categories (门店自定义菜单分组)
-					try {
-						const smcRes = await getStoreMenuCategories(this.shopInfo.id)
-						if (smcRes.code === 0 && smcRes.data) {
-							const smcData = Array.isArray(smcRes.data) ? smcRes.data : (smcRes.data.items || [])
-							if (smcData.length > 0) {
-								this.categories = smcData.map(c => ({
-									id: c.id,
-									name: c.name,
-									name_en: c.name_en || '',
-									name_th: c.name_th || ''
-								}))
-							} else {
-								// Fallback to global categories
-								await this.loadFallbackCategories(storeBusinessTypes)
-							}
-						} else {
-							await this.loadFallbackCategories(storeBusinessTypes)
-						}
-					} catch (e) {
-						console.error('loadStoreMenuCategories error:', e)
+						// Step 2: Load categories from global categories API
 						await this.loadFallbackCategories(storeBusinessTypes)
-					}
 					// 动态构建 tabs: 客房 + 各分类
 					this.tabs = [
 						{ name: '客房', key: 'room' },
