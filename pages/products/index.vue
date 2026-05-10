@@ -133,6 +133,7 @@ export default {
 			searchKeyword: '',
 			isSearchMode: false,
 			categoryId: null,
+				businessType: null,
 			categoryName: '',
 			page: 1
 		}
@@ -160,6 +161,9 @@ export default {
 		}
 		if (options.categoryId) {
 			this.categoryId = decodeURIComponent(options.categoryId)
+		}
+		if (options.businessType) {
+			this.businessType = decodeURIComponent(options.businessType)
 		}
 		if (options.categoryName) {
 			this.categoryName = decodeURIComponent(options.categoryName)
@@ -233,6 +237,7 @@ export default {
 					// 后端 hot/new 接口不响应 category_id/store_id，前端自行过滤
 					if (filterType === 'hot' || filterType === 'new') {
 						if (this.categoryId) items = items.filter(p => p.category_id == this.categoryId)
+						if (this.businessType) items = items.filter(p => p.business_type == this.businessType)
 						if (this.shopId) items = items.filter(p => p.store_id == this.shopId)
 					}
 					if (!append) {

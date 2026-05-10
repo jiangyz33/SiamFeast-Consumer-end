@@ -203,7 +203,7 @@ import LanguageModal from '@/components/language-modal.vue'
 import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
 import { getStore, getStores } from '@/api/services/store.js'
-import { getConsumerCategories } from '@/api/services/menu.js'
+import { getBusinessTypes } from '@/api/services/store.js'
 import { getMallBanners } from '@/api/services/banner.js'
 import { getGlobalNotice } from '@/api/services/notice.js'
 
@@ -269,7 +269,7 @@ export default {
 				const [bannerRes, noticeRes, catRes, storesRes] = await Promise.allSettled([
 					getMallBanners(),
 					getGlobalNotice(),
-					getConsumerCategories(),
+					getBusinessTypes(),
 					getStores({}, { silent: true })
 				])
 
@@ -289,43 +289,26 @@ export default {
 					}
 				}
 
-				// 分类列表
+				// 经营分类列表
 				if (catRes.status === 'fulfilled' && catRes.value.code === 0 && catRes.value.data) {
-					const catRaw = catRes.value.data
-					const catItems = Array.isArray(catRaw) ? catRaw : (catRaw.items || [])
-					const apiCategories = catItems.map(c => {
-						const rawIcon = c.icon || c.icon_url || ''
-						const icon = rawIcon ? fixMinioUrl(rawIcon) : '/static/images/store-placeholder.svg'
-						return {
-							id: c.id,
-							name: c.name,
-							name_en: c.name_en || '',
-							name_th: c.name_th || '',
-							icon: icon,
-							business_type: c.business_type || ''
-						}
-					})
-
-					// Deduplicate by name
-					const seen = new Map()
-					for (const cat of apiCategories) {
-						const key = (cat.name_en || cat.name || '').toLowerCase()
-						if (!seen.has(key)) {
-							seen.set(key, cat)
-						}
-					}
-					const dedupedCategories = [...seen.values()]
-
-					// 在前面加上新人礼包入口，后面加更多
+					const btItems = Array.isArray(catRes.value.data) ? catRes.value.data : []
+					const apiCategories = btItems.filter(bt => bt.is_active !== false && bt.code !== 'HOSTEL_ROOM').map(bt => ({
+						id: bt.code,
+						name: bt.name,
+						name_en: bt.name_en || '',
+						name_th: bt.name_th || '',
+						code: bt.code,
+						icon: '/static/images/store-placeholder.svg'
+					}))
 					this.categories = [
 						{ id: 'newbie', name: i18n.t('member.newUserPack'), icon: '/static/icons/newbie-gift.svg' },
-						...dedupedCategories,
+						...apiCategories,
 						{ id: 'more', name: i18n.t('common.more') || '更多', icon: '/static/icons/more-categories.svg' }
 					]
 				} else {
 					this.categories = [
-						{ id: 'newbie', name: '新人礼包', icon: '/static/icons/newbie-gift.svg' },
-						{ id: 'more', name: '更多', icon: '/static/icons/more-categories.svg' }
+						{ id: 'newbie', name: i18n.t('member.newUserPack'), icon: '/static/icons/newbie-gift.svg' },
+						{ id: 'more', name: i18n.t('common.more') || '更多', icon: '/static/icons/more-categories.svg' }
 					]
 				}
 
@@ -409,9 +392,9 @@ export default {
 			} else if (cat && cat.id === 'more') {
 				// 更多分类 - 暂无
 				showToast(this.i18n.t('common.noData'))
-			} else if (cat && cat.id) {
+			} else if (cat && cat.code) {
 				uni.navigateTo({
-					url: `/pages/products/index?categoryId=${cat.id}&categoryName=${encodeURIComponent(cat.name)}`
+					url: `/pages/products/index?businessType=${cat.code}&categoryName=${encodeURIComponent(cat["name_" + i18n.getLanguage()] || cat.name)}`
 				})
 			}
 		},

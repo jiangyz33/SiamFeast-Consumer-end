@@ -182,6 +182,15 @@ export function searchStores(params = {}) {
 	return get('/stores', params)
 }
 
+/**
+ * 获取经营分类列表（C端）
+ * GET /business-types
+ * @returns {Promise}
+ */
+export function getBusinessTypes() {
+	return get('/business-types', {}, { silent: true })
+}
+
 // 导出模块对象
 export const storeApi = {
 	searchAll,
@@ -193,7 +202,8 @@ export const storeApi = {
 	updateStoreStatus,
 	updateStoreConfig,
 	deleteStore,
-	getNearbyStores
+	getNearbyStores,
+	getBusinessTypes
 }
 
 export default storeApi
