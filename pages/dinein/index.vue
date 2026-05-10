@@ -46,7 +46,7 @@
 			</view>
 
 				<!-- category tabs -->
-				<scroll-view class="category-tabs" scroll-x :show-scrollbar="false">
+				<view class="category-tabs">
 					<view
 						v-if="isHostel"
 						class="category-tab"
@@ -64,7 +64,7 @@
 					>
 						<text class="category-tab-text">{{ item['name_' + i18n.getLanguage()] || item.nameKey }}</text>
 					</view>
-				</scroll-view>
+				</view>
 
 
 				<!-- room list (hostel mode, room tab selected) -->
@@ -587,9 +587,6 @@ export default {
 					}
 
 					// Build category objects
-					console.log('[DEBUG] allProducts count:', this.allProducts.length, 'catIds:', this.allProducts.map(p => p.category_id))
-					console.log('[DEBUG] catGroups size:', catGroups.size, 'keys:', [...catGroups.keys()])
-					console.log('[DEBUG] catNameMap has:', [...catNameMap.keys()])
 					this.categories = [...catGroups.entries()].map(([cid, prods]) => {
 						const catInfo = catNameMap.get(cid)
 						const name = catInfo?.name || prods[0]?.category_name || ''
@@ -605,7 +602,6 @@ export default {
 							sortOrder: catInfo?.sort_order || 0
 						}
 					}).sort((a, b) => a.sortOrder - b.sortOrder)
-					console.log('[DEBUG] final categories:', JSON.stringify(this.categories.map(c => ({id: c.id, name: c.name, name_en: c.name_en}))))
 				},
 
 		// Map store business_types (JSONB array) to category business_type filter
@@ -1243,6 +1239,7 @@ export default {
 	flex-wrap: nowrap;
 	white-space: nowrap;
 	align-items: center;
+	justify-content: space-around;
 	padding: 0 16px;
 	gap: 0;
 	height: 44px;
