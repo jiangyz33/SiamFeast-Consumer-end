@@ -11,7 +11,7 @@
 			</view>
 		</view>
 
-			<!-- Logo区域 -->
+		<!-- Logo区域 -->
 		<view class="logo-section">
 			<view class="logo-wrapper">
 				<image class="logo" src="/static/logo.png" mode="aspectFill"></image>
@@ -25,7 +25,12 @@
 			<view class="input-section">
 				<!-- 手机号输入框 -->
 				<view class="input-field" :style="{ borderColor: phoneFocused ? '#F2B131' : '#E0E0E0' }">
-					<text class="phone-prefix">+66</text>
+					<view class="country-picker" @click="showCountryPicker = true">
+						<text class="country-flag">{{ selectedCountry.flag }}</text>
+						<text class="country-code">{{ selectedCountry.code }}</text>
+						<text class="picker-arrow">&#9662;</text>
+					</view>
+					<view class="phone-divider"></view>
 					<input
 						class="input"
 						type="text"
@@ -96,13 +101,39 @@
 			<view class="agreement">
 				<view class="agreement-check" @click="agreed = !agreed">
 					<view class="checkbox" :class="{ 'checkbox-active': agreed }">
-						<text v-if="agreed" class="check-icon">✓</text>
+						<text v-if="agreed" class="check-icon">&#10003;</text>
 					</view>
 				</view>
 				<text class="agreement-text">{{ t('login.agreementPrefix') }}</text>
 				<text class="agreement-link" @click="openAgreement('terms')">{{ t('login.terms') }}</text>
 				<text class="agreement-text">{{ t('login.and') }}</text>
 				<text class="agreement-link" @click="openAgreement('privacy')">{{ t('login.privacy') }}</text>
+			</view>
+		</view>
+
+		<!-- 国家选择弹窗 -->
+		<view class="picker-mask" v-if="showCountryPicker" @click="showCountryPicker = false">
+			<view class="picker-sheet" @click.stop>
+				<view class="picker-header">
+					<text class="picker-title">{{ t('login.selectCountry') }}</text>
+					<view class="picker-close" @click="showCountryPicker = false">
+						<text class="close-text">&#10005;</text>
+					</view>
+				</view>
+				<scroll-view class="picker-list" scroll-y>
+					<view
+						v-for="(c, i) in countries"
+						:key="i"
+						class="picker-item"
+						:class="{ 'picker-item-active': selectedCountry.code === c.code }"
+						@click="selectCountry(c)"
+					>
+						<text class="picker-flag">{{ c.flag }}</text>
+						<text class="picker-name">{{ c.name }}</text>
+						<text class="picker-code">{{ c.code }}</text>
+						<text v-if="selectedCountry.code === c.code" class="picker-check">&#10003;</text>
+					</view>
+				</scroll-view>
 			</view>
 		</view>
 
@@ -113,9 +144,31 @@
 
 <script>
 import { validatePhone, showToast } from '@/utils/index.js'
-import { loginByPassword } from '@/api/index.js'
+import { loginByPassword, setCountryCode } from '@/api/services/auth.js'
 import store from '@/store/index.js'
 import i18n from '@/i18n/index.js'
+
+const COUNTRY_LIST = [
+	{ code: '+66',  flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand',  name_zh: '泰国',  name_th: 'ประเทศไทย' },
+	{ code: '+86',  flag: '\u{1F1E8}\u{1F1F3}', name: 'China',     name_zh: '中国',  name_th: 'จีน' },
+	{ code: '+852', flag: '\u{1F1ED}\u{1F1F0}', name: 'Hong Kong', name_zh: '香港',  name_th: 'ฮ่องกง' },
+	{ code: '+853', flag: '\u{1F1F2}\u{1F1F4}', name: 'Macau',     name_zh: '澳门',  name_th: 'มาเกา' },
+	{ code: '+886', flag: '\u{1F1F9}\u{1F1FC}', name: 'Taiwan',    name_zh: '台湾',  name_th: 'ไต้วัน' },
+	{ code: '+65',  flag: '\u{1F1F8}\u{1F1EC}', name: 'Singapore', name_zh: '新加坡', name_th: 'สิงคโปร์' },
+	{ code: '+60',  flag: '\u{1F1F2}\u{1F1FE}', name: 'Malaysia',  name_zh: '马来西亚', name_th: 'มาเลเซีย' },
+	{ code: '+84',  flag: '\u{1F1FB}\u{1F1F3}', name: 'Vietnam',   name_zh: '越南',  name_th: 'เวียดนาม' },
+	{ code: '+95',  flag: '\u{1F1F2}\u{1F1E6}', name: 'Myanmar',   name_zh: '缅甸',  name_th: 'พม่า' },
+	{ code: '+855', flag: '\u{1F1F0}\u{1F1ED}', name: 'Cambodia',  name_zh: '柬埔寨', name_th: 'กัมพูชา' },
+	{ code: '+856', flag: '\u{1F1F1}\u{1F1E6}', name: 'Laos',      name_zh: '老挝',  name_th: 'ลาว' },
+	{ code: '+62',  flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia', name_zh: '印尼',  name_th: 'อินโดนีเซีย' },
+	{ code: '+63',  flag: '\u{1F1F5}\u{1F1ED}', name: 'Philippines', name_zh: '菲律宾', name_th: 'ฟิลิปปินส์' },
+	{ code: '+82',  flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea', name_zh: '韩国', name_th: 'เกาหลีใต้' },
+	{ code: '+81',  flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan',     name_zh: '日本',  name_th: 'ญี่ปุ่น' },
+	{ code: '+91',  flag: '\u{1F1EE}\u{1F1F3}', name: 'India',     name_zh: '印度',  name_th: 'อินเดีย' },
+	{ code: '+1',   flag: '\u{1F1FA}\u{1F1F8}', name: 'USA',       name_zh: '美国',  name_th: 'อเมริกา' },
+	{ code: '+44',  flag: '\u{1F1EC}\u{1F1E7}', name: 'UK',        name_zh: '英国',  name_th: 'อังกฤษ' },
+	{ code: '+61',  flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia', name_zh: '澳大利亚', name_th: 'ออสเตรเลีย' },
+]
 
 export default {
 	data() {
@@ -129,16 +182,19 @@ export default {
 			loading: false,
 			phoneFocused: false,
 			passwordFocused: false,
-				langVersion: 0
+			langVersion: 0,
+			showCountryPicker: false,
+			selectedCountry: COUNTRY_LIST[0],
+			countries: COUNTRY_LIST
 		}
 	},
 	computed: {
 		currentLangLabel() {
-					this.langVersion; const lang = i18n.getLanguage()
-				const labels = { zh: '中文', en: 'EN', th: 'ไทย' };
-				return labels[lang] || 'EN';
-			},
-			canSubmit() {
+			this.langVersion; const lang = i18n.getLanguage()
+			const labels = { zh: '中文', en: 'EN', th: 'ไทย' };
+			return labels[lang] || 'EN';
+		},
+		canSubmit() {
 			if (!validatePhone(this.phone)) return false
 			if (!this.agreed) return false
 			return this.password.length >= 6
@@ -147,17 +203,23 @@ export default {
 	onLoad() {
 		const systemInfo = uni.getSystemInfoSync()
 		this.statusBarHeight = systemInfo.statusBarHeight || 20
-				uni.$on("languageChanged", () => { this.langVersion++ })
-		},
-		onUnload() {
-			uni.$off("languageChanged")
-		},
+		uni.$on("languageChanged", () => { this.langVersion++ })
+		// Set default country code
+		setCountryCode(this.selectedCountry.code)
+	},
+	onUnload() {
+		uni.$off("languageChanged")
+	},
 	methods: {
-			t(key, params) {
-				this.langVersion; // reactive dependency
-				return i18n.t(key, params)
-			},
-		// 处理登录
+		t(key, params) {
+			this.langVersion;
+			return i18n.t(key, params)
+		},
+		selectCountry(c) {
+			this.selectedCountry = c
+			setCountryCode(c.code)
+			this.showCountryPicker = false
+		},
 		async handleLogin() {
 			if (!this.canSubmit || this.loading) return
 
@@ -181,7 +243,6 @@ export default {
 					return
 				}
 
-				// 保存登录信息
 				if (res.data && res.data.access_token) {
 					store.setToken(res.data.access_token)
 					if (res.data.user) {
@@ -191,7 +252,6 @@ export default {
 
 				showToast(this.t('login.loginSuccess'))
 
-				// 跳转到首页
 				setTimeout(() => {
 					uni.switchTab({
 						url: '/pages/index/index'
@@ -205,34 +265,30 @@ export default {
 			}
 		},
 
-		// 验证码登录
 		goSmsLogin() {
 			if (!validatePhone(this.phone)) {
 				showToast(this.t('login.phoneRequired'))
 				return
 			}
 			uni.navigateTo({
-				url: '/pages/login/verify?phone=' + encodeURIComponent(this.phone) + '&type=login'
+				url: '/pages/login/verify?phone=' + encodeURIComponent(this.phone) + '&type=login&cc=' + encodeURIComponent(this.selectedCountry.code)
 			})
 		},
 
-		// 语言切换
-			switchLanguage() {
-				const langs = ['zh', 'en', 'th'];
-				const current = i18n.getLanguage();
-				const nextIdx = (langs.indexOf(current) + 1) % langs.length;
-				i18n.setLanguage(langs[nextIdx]);
-				showToast(this.t('language.switchSuccess'));
-			},
+		switchLanguage() {
+			const langs = ['zh', 'en', 'th'];
+			const current = i18n.getLanguage();
+			const nextIdx = (langs.indexOf(current) + 1) % langs.length;
+			i18n.setLanguage(langs[nextIdx]);
+			showToast(this.t('language.switchSuccess'));
+		},
 
-			// 注册
-			goRegister() {
-				uni.navigateTo({
-					url: '/pages/login/verify?type=register'
-				})
-			},
+		goRegister() {
+			uni.navigateTo({
+				url: '/pages/login/verify?type=register&cc=' + encodeURIComponent(this.selectedCountry.code)
+			})
+		},
 
-			// 社交登录
 		socialLogin(platform) {
 			if (!this.agreed) {
 				showToast(this.t('login.agreementRequired'))
@@ -241,7 +297,6 @@ export default {
 			showToast(`${platform} login coming soon`)
 		},
 
-		// 打开协议
 		openAgreement(type) {
 			uni.navigateTo({
 				url: `/pages/agreement/index?type=${type}`
@@ -264,25 +319,22 @@ export default {
 }
 
 .nav-bar {
-		height: 88rpx;
-		display: flex;
-		align-items: center;
-		justify-content: flex-end;
-		padding: 0 32rpx;
-	}
+	height: 88rpx;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding: 0 32rpx;
+}
 
-	.lang-switch {
-	}
+.lang-text {
+	font-size: 26rpx;
+	color: #828282;
+	padding: 12rpx 24rpx;
+	border: 2rpx solid #E0E0E0;
+	border-radius: 32rpx;
+}
 
-	.lang-text {
-		font-size: 26rpx;
-		color: #828282;
-		padding: 12rpx 24rpx;
-		border: 2rpx solid #E0E0E0;
-		border-radius: 32rpx;
-	}
-
-	.logo-section {
+.logo-section {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -321,10 +373,6 @@ export default {
 	flex-direction: column;
 }
 
-.input-section {
-	/* 输入框区域 */
-}
-
 .input-field {
 	display: flex;
 	align-items: center;
@@ -335,6 +383,38 @@ export default {
 	padding: 0 32rpx;
 	margin-bottom: 32rpx;
 	transition: border-color 0.3s;
+}
+
+/* 国家区号选择器 */
+.country-picker {
+	display: flex;
+	align-items: center;
+	gap: 6rpx;
+	flex-shrink: 0;
+	padding-right: 12rpx;
+}
+
+.country-flag {
+	font-size: 32rpx;
+}
+
+.country-code {
+	font-size: 28rpx;
+	color: #282332;
+	font-weight: 500;
+}
+
+.picker-arrow {
+	font-size: 18rpx;
+	color: #828282;
+}
+
+.phone-divider {
+	width: 2rpx;
+	height: 36rpx;
+	background-color: #E0E0E0;
+	margin-right: 16rpx;
+	flex-shrink: 0;
 }
 
 .input {
@@ -372,11 +452,12 @@ export default {
 	color: rgba(0, 0, 0, 0.6);
 }
 
-.switch-login {
+.login-links {
 	display: flex;
-	justify-content: flex-end;
+	justify-content: space-between;
+	align-items: center;
 	margin-top: 20rpx;
-	padding-right: 8rpx;
+	padding: 0 8rpx;
 }
 
 .switch-text {
@@ -384,26 +465,13 @@ export default {
 	color: #019EFF;
 }
 
-.login-links {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-top: 20rpx;
-		padding: 0 8rpx;
-	}
+.register-text {
+	font-size: 26rpx;
+	color: #F2B131;
+	font-weight: 500;
+}
 
-	.register-link {
-		display: flex;
-		align-items: center;
-	}
-
-	.register-text {
-		font-size: 26rpx;
-		color: #F2B131;
-		font-weight: 500;
-	}
-
-	.divider {
+.divider {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -442,14 +510,6 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-}
-
-.social-btn.google {
-	border-color: #E0E0E0;
-}
-
-.social-btn.facebook {
-	border-color: #E0E0E0;
 }
 
 .social-icon-img {
@@ -500,6 +560,94 @@ export default {
 .agreement-link {
 	font-size: 24rpx;
 	color: #019EFF;
+}
+
+/* 国家选择弹窗 */
+.picker-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.4);
+	z-index: 999;
+	display: flex;
+	align-items: center;
+}
+
+.picker-sheet {
+	width: 100%;
+	background-color: #FFFFFF;
+	border-radius: 24rpx;
+	margin-top: 35vh;
+	max-height: 70vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.picker-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 28rpx 32rpx;
+	border-bottom: 2rpx solid #F0F0F0;
+}
+
+.picker-title {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #3C3C3C;
+}
+
+.picker-close {
+	width: 48rpx;
+	height: 48rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.close-text {
+	font-size: 28rpx;
+	color: #828282;
+}
+
+.picker-list {
+	max-height: 60vh;
+}
+
+.picker-item {
+	display: flex;
+	align-items: center;
+	padding: 24rpx 32rpx;
+	border-bottom: 1rpx solid #F5F5F5;
+}
+
+.picker-item-active {
+	background-color: #FFF8E1;
+}
+
+.picker-flag {
+	font-size: 40rpx;
+	margin-right: 20rpx;
+}
+
+.picker-name {
+	flex: 1;
+	font-size: 28rpx;
+	color: #3C3C3C;
+}
+
+.picker-code {
+	font-size: 28rpx;
+	color: #828282;
+	margin-right: 16rpx;
+}
+
+.picker-check {
+	font-size: 28rpx;
+	color: #F2B131;
+	font-weight: 600;
 }
 
 .safe-area-bottom {

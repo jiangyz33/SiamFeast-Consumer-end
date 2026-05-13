@@ -87,7 +87,7 @@
                     :key="item.id"
                     @click="handleProductClick(item)"
                 >
-                    <image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+                    <image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
                     <view class="product-info">
                         <text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
                         <view class="product-footer">
@@ -118,7 +118,7 @@
                     :key="item.id"
                     @click="handleProductClick(item)"
                 >
-                    <image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+                    <image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
                     <view class="product-info">
                         <text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
                         <view class="product-footer">
@@ -188,7 +188,7 @@
 </template>
 
 <script>
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 import UpgradeAnimation from '@/components/upgrade-animation.vue'
 import { getAddressList } from '@/api/services/address.js'
@@ -201,6 +201,7 @@ import {
 	getBalanceBenefits,
 	exchangeBenefit
 } from '@/api/services/member.js'
+import { getMyCoupons } from '@/api/services/coupon.js'
 
 export default {
     components: {
@@ -249,6 +250,7 @@ export default {
         this.loadData()
     },
     methods: {
+		fixMinioUrl,
         initPage() {
             const systemInfo = uni.getSystemInfoSync()
             this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -260,32 +262,30 @@ export default {
 
         async loadData() {
             try {
-                const [progressRes, pointsRes, balanceRes, pointsBenefitsRes, balanceBenefitsRes, memberInfoRes, addressRes] = await Promise.allSettled([
+                const [progressRes, pointsRes, balanceRes, pointsBenefitsRes, balanceBenefitsRes, couponsRes, addressRes] = await Promise.allSettled([
                     getMemberProgress(),
                     getMemberPoints(),
                     getMemberBalance(),
                     getPointsBenefits(),
                     getBalanceBenefits(),
-                    getMemberInfo(),
+                    getMyCoupons({ status: 'UNUSED' }),
                     getAddressList()
                 ])
 
                 if (progressRes.status === 'fulfilled' && progressRes.value.code === 0 && progressRes.value.data) {
                     const d = progressRes.value.data
-                    this.consumedAmount = d.current_spent || 0
-                    this.totalAmount = d.required_for_next || 200
+                    this.consumedAmount = d.current_spent || d.total_spent || 0
+                    this.totalAmount = d.threshold || d.required_for_next || 200
                     const isBackendPlatinum = d.current_tier === 'PLATINUM'
                     const hasMetGoal = this.consumedAmount >= this.totalAmount
                     const hasSeenAnimation = this.hasSeenUpgradeAnimation()
-                    console.log('[points-mall] progress:', JSON.stringify(d), 'isBackendPlatinum:', isBackendPlatinum, 'hasMetGoal:', hasMetGoal, 'hasSeenAnimation:', hasSeenAnimation)
-                    // Backend platinum OR user has seen animation before = show platinum directly
-                    if (isBackendPlatinum || hasSeenAnimation) {
-                        this.currentLevel = 1
-                    } else if (hasMetGoal) {
-                        // Goal met but animation not seen = play animation
+                    const shouldShowPlatinum = isBackendPlatinum || hasMetGoal
+                    if (shouldShowPlatinum && !hasSeenAnimation) {
                         this.currentLevel = 0
                         this.showUpgradeAnimation = true
                         this.markUpgradeAnimationShown()
+                    } else if (shouldShowPlatinum) {
+                        this.currentLevel = 1
                     } else {
                         this.currentLevel = 0
                     }
@@ -296,8 +296,9 @@ export default {
                 if (balanceRes.status === 'fulfilled' && balanceRes.value.code === 0 && balanceRes.value.data) {
                     this.userBalance = balanceRes.value.data.balance || 0
                 }
-                if (memberInfoRes.status === 'fulfilled' && memberInfoRes.value.code === 0 && memberInfoRes.value.data) {
-                    this.newUserCoupons = memberInfoRes.value.data.new_user_coupons || 0
+                if (couponsRes.status === 'fulfilled' && couponsRes.value.code === 0 && couponsRes.value.data) {
+                    const couponItems = couponsRes.value.data.items || couponsRes.value.data || []
+                    this.newUserCoupons = Array.isArray(couponItems) ? couponItems.length : 0
                 }
                 if (pointsBenefitsRes.status === 'fulfilled' && pointsBenefitsRes.value.code === 0 && pointsBenefitsRes.value.data) {
                     this.pointsBenefits = pointsBenefitsRes.value.data.items || []

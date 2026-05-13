@@ -22,7 +22,7 @@
 					@click="goDetail(item)"
 				>
 					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					</view>
 
 					<view class="product-info">
@@ -40,7 +40,7 @@
 						<view class="product-footer">
 							<view class="price-info">
 								<view class="group-tag">
-									<text class="group-tag-text">{{ i18n.t('groupBuy.discountRate', { rate: item.discount_rate }) }}</text>
+									<text class="group-tag-text">{{ i18n.t('groupBuy.discountRate', { rate: formatDiscount(item.discount_rate) }) }}</text>
 								</view>
 								<text class="price-symbol">฿</text>
 								<text class="price-num">{{ item.group_price }}</text>
@@ -98,6 +98,15 @@ export default {
 		this.loadProducts()
 	},
 	methods: {
+		fixMinioUrl,
+		formatDiscount(rate) {
+			if (!rate) return ''
+			const lang = i18n.locale || 'zh'
+			if (lang === 'zh') {
+				return (rate * 10).toFixed(rate % 0.1 === 0 ? 0 : 1)
+			}
+			return Math.round((1 - rate) * 100)
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20

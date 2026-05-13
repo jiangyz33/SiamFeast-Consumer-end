@@ -1,29 +1,5 @@
 <template>
 	<view class="google-map-wrapper">
-		<!-- #ifdef APP-PLUS -->
-		<map
-			class="map-native"
-			:latitude="latitude"
-			:longitude="longitude"
-			:markers="nativeMarkers"
-			:zoom="zoom"
-			:show-location="showUserLocation"
-			@markertap="onMarkerTap"
-			@tap="onMapTap"
-			@regionchange="onRegionChange"
-		></map>
-		<!-- #endif -->
-
-		<!-- #ifdef H5 -->
-		<view class="map-h5" :id="mapId" ref="mapContainer">
-			<!-- 地图加载中占位 -->
-			<view class="map-loading" v-if="!mapReady">
-				<image class="map-loading-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-				<text class="map-loading-text">Map loading...</text>
-			</view>
-		</view>
-		<!-- #endif -->
-
 		<!-- #ifdef MP-WEIXIN -->
 		<map
 			class="map-native"
@@ -38,7 +14,15 @@
 		></map>
 		<!-- #endif -->
 
-		<!-- 地图中心定位针（拖动选点时显示） -->
+		<!-- #ifndef MP-WEIXIN -->
+		<view class="map-h5" :id="mapId" ref="mapContainer">
+			<view class="map-loading" v-if="!mapReady">
+				<image class="map-loading-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
+				<text class="map-loading-text">Map loading...</text>
+			</view>
+		</view>
+		<!-- #endif -->
+
 		<view class="center-pin" v-if="enablePickMode && showCenterPin">
 			<image class="pin-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 		</view>
@@ -75,7 +59,6 @@ export default {
 			type: String,
 			default: 'google-map-container'
 		},
-		// 是否启用地图拖动选点模式
 		enablePickMode: {
 			type: Boolean,
 			default: false
@@ -84,9 +67,8 @@ export default {
 	data() {
 		return {
 			mapReady: false,
-			h5Map: null,
-			h5Markers: [],
-			scriptLoaded: false,
+			gmap: null,
+			gmarkers: [],
 			showCenterPin: false,
 			dragTimer: null
 		}
@@ -116,64 +98,46 @@ export default {
 	watch: {
 		markers: {
 			handler(newVal) {
-				// #ifdef H5
-				if (this.h5Map) {
-					this.updateH5Markers(newVal)
-				}
-				// #endif
+				if (this.gmap) this.updateMarkers(newVal)
 			},
 			deep: true
 		},
 		latitude() {
-			// #ifdef H5
-			if (this.h5Map) {
-				this.h5Map.setCenter({ lat: this.latitude, lng: this.longitude })
+			if (this.gmap) {
+				this.gmap.setCenter({ lat: this.latitude, lng: this.longitude })
 			}
-			// #endif
 		},
 		enablePickMode(val) {
 			this.showCenterPin = val
-			// #ifdef H5
-			if (val && this.h5Map) {
-				this.setupPickMode()
-			}
-			// #endif
+			if (val && this.gmap) this.setupPickMode()
 		}
 	},
 	mounted() {
-		// #ifdef H5
-		this.initH5Map()
+		// #ifndef MP-WEIXIN
+		this.initGoogleMap()
 		// #endif
 	},
 	beforeUnmount() {
-		// #ifdef H5
-		this.cleanupH5Map()
-		// #endif
-		if (this.dragTimer) {
-			clearTimeout(this.dragTimer)
-		}
+		this.cleanupMap()
+		if (this.dragTimer) clearTimeout(this.dragTimer)
 	},
 	methods: {
-		// #ifdef H5
-		/**
-		 * H5：初始化 Google Maps JS API
-		 */
-		initH5Map() {
+		// #ifndef MP-WEIXIN
+		initGoogleMap() {
 			if (!GOOGLE_MAPS_API_KEY) {
 				console.warn('Google Maps API Key not configured')
 				return
 			}
+			if (typeof window === 'undefined') return
 
 			if (window.google && window.google.maps) {
-				this.createH5Map()
+				this.createMap()
 				return
 			}
 
-			const callbackName = 'googleMapsInit_' + this._uid
+			const callbackName = 'googleMapsInit_' + (this._uid || Date.now())
 			window[callbackName] = () => {
-				this.scriptLoaded = true
-				this.createH5Map()
-				// 通知父组件 Google Maps 已加载完成
+				this.createMap()
 				window.dispatchEvent(new Event('google-maps-ready'))
 			}
 
@@ -184,11 +148,11 @@ export default {
 			document.head.appendChild(script)
 		},
 
-		createH5Map() {
+		createMap() {
 			const container = document.getElementById(this.mapId)
 			if (!container) return
 
-			this.h5Map = new google.maps.Map(container, {
+			this.gmap = new google.maps.Map(container, {
 				center: { lat: this.latitude, lng: this.longitude },
 				zoom: this.zoom,
 				disableDefaultUI: true,
@@ -199,105 +163,74 @@ export default {
 			})
 
 			this.mapReady = true
-			this.updateH5Markers(this.markers)
+			this.updateMarkers(this.markers)
 
-			// 地图点击
-			this.h5Map.addListener('click', (e) => {
+			this.gmap.addListener('click', (e) => {
 				this.$emit('map-click', {
 					latitude: e.latLng.lat(),
 					longitude: e.latLng.lng()
 				})
 			})
 
-			// 拖动选点：监听中心点变化
-			if (this.enablePickMode) {
-				this.setupPickMode()
-			}
-
-			// 通知外部 Google Maps 就绪
+			if (this.enablePickMode) this.setupPickMode()
 			window.dispatchEvent(new Event('google-maps-ready'))
 		},
 
-		updateH5Markers(markers) {
-			this.h5Markers.forEach(m => m.setMap(null))
-			this.h5Markers = []
-
+		updateMarkers(markers) {
+			this.gmarkers.forEach(m => m.setMap(null))
+			this.gmarkers = []
 			markers.forEach((m, index) => {
 				const marker = new google.maps.Marker({
 					position: { lat: m.latitude, lng: m.longitude },
-					map: this.h5Map,
+					map: this.gmap,
 					title: m.title || '',
 					label: m.label || undefined
 				})
-
 				marker.addListener('click', () => {
-					this.$emit('marker-click', {
-						id: m.id || index,
-						...m
-					})
+					this.$emit('marker-click', { id: m.id || index, ...m })
 				})
-
-				this.h5Markers.push(marker)
+				this.gmarkers.push(marker)
 			})
 		},
 
-		cleanupH5Map() {
-			this.h5Markers.forEach(m => m.setMap(null))
-			this.h5Markers = []
-			this.h5Map = null
+		cleanupMap() {
+			this.gmarkers.forEach(m => m.setMap(null))
+			this.gmarkers = []
+			this.gmap = null
 		},
 
 		setupPickMode() {
-			if (!this.h5Map) return
+			if (!this.gmap) return
 			this.showCenterPin = true
-			this.h5Map.addListener('dragstart', () => {
-				this.showCenterPin = false
-			})
-			this.h5Map.addListener('idle', () => {
+			this.gmap.addListener('dragstart', () => { this.showCenterPin = false })
+			this.gmap.addListener('idle', () => {
 				this.showCenterPin = true
-				const center = this.h5Map.getCenter()
+				const center = this.gmap.getCenter()
 				this.emitDragEnd(center.lat(), center.lng())
 			})
 		},
 		// #endif
 
-		/**
-		 * 外部调用：平移地图到指定坐标并缩放
-		 * @param {number} lat 纬度
-		 * @param {number} lng 经度
-		 * @param {number} [zoom] 缩放级别
-		 */
 		panTo(lat, lng, zoom) {
-			// #ifdef H5
-			if (this.h5Map) {
-				this.h5Map.panTo({ lat, lng })
-				if (zoom) this.h5Map.setZoom(zoom)
+			// #ifndef MP-WEIXIN
+			if (this.gmap) {
+				this.gmap.panTo({ lat, lng })
+				if (zoom) this.gmap.setZoom(zoom)
 			}
 			// #endif
 		},
 
-		/**
-		 * 防抖发送 drag-end 事件
-		 */
 		emitDragEnd(lat, lng) {
 			if (this.dragTimer) clearTimeout(this.dragTimer)
 			this.dragTimer = setTimeout(() => {
-				this.$emit('drag-end', {
-					latitude: lat,
-					longitude: lng
-				})
+				this.$emit('drag-end', { latitude: lat, longitude: lng })
 			}, 500)
 		},
 
-		/**
-		 * App/小程序：标记点击
-		 */
 		onMarkerTap(e) {
 			const markerId = e.detail?.markerId ?? e.markerId
 			const marker = this.markers.find((m, i) => (m.id || i) === markerId)
-			if (marker) {
-				this.$emit('marker-click', marker)
-			}
+			if (marker) this.$emit('marker-click', marker)
 		},
 
 		onMapTap(e) {
@@ -307,21 +240,14 @@ export default {
 			})
 		},
 
-		/**
-		 * App/小程序：地图区域变化（拖动选点）
-		 */
 		onRegionChange(e) {
 			if (this.enablePickMode && e.type === 'end') {
 				const center = e.detail?.centerLocation
 				if (center) {
-					if (e.causedBy === 'gesture') {
-						this.showCenterPin = true
-					}
+					if (e.causedBy === 'gesture') this.showCenterPin = true
 					this.emitDragEnd(center.latitude, center.longitude)
 				}
 			}
-
-			// 非选点模式也支持 drag-end
 			if (!this.enablePickMode && e.type === 'end' && e.causedBy === 'gesture') {
 				this.$emit('drag-end', {
 					latitude: e.detail?.centerLocation?.latitude,
@@ -339,18 +265,15 @@ export default {
 	height: 100%;
 	position: relative;
 }
-
 .map-native {
 	width: 100%;
 	height: 100%;
 }
-
 .map-h5 {
 	width: 100%;
 	height: 100%;
 	position: relative;
 }
-
 .map-loading {
 	position: absolute;
 	top: 0;
@@ -364,19 +287,15 @@ export default {
 	background-color: #F3F3F3;
 	z-index: 1;
 }
-
 .map-loading-icon {
 	width: 32px;
 	height: 32px;
 	margin-bottom: 8px;
 }
-
 .map-loading-text {
 	font-size: 14px;
 	color: #999999;
 }
-
-/* 拖动选点中心针 */
 .center-pin {
 	position: absolute;
 	top: 50%;
@@ -386,7 +305,6 @@ export default {
 	pointer-events: none;
 	transition: transform 0.2s ease;
 }
-
 .pin-icon {
 	width: 32px;
 	height: 32px;

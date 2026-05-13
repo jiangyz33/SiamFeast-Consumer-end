@@ -333,6 +333,7 @@ import { getPaymentMethods } from '@/api/services/payment.js'
 import { createPayment } from '@/api/services/payment.js'
 import i18n from '@/i18n/index.js'
 import { createOrder, getCoinBalance, calculateCoinDeduct } from '@/api/services/order.js'
+import { createGroupBuyOrder } from '@/api/services/groupbuy.js'
 import { showToast } from '@/utils/index.js'
 import appStore from '@/store/index.js'
 import { getStore } from '@/api/services/store.js'
@@ -665,41 +666,58 @@ export default {
 			this.submitting = true
 
 			try {
-				const orderData = {
-					store_id: this.shopInfo.id,
-					order_type: this.shopInfo.business_types?.[0] || 'SEAFOOD_NOODLE',
-					order_source: ORDER_SOURCE_MAP[this.orderType] || ORDER_SOURCE_MAP[this.deliveryType],
-					items: this.cartItems.map(item => ({
-						menu_item_id: item.id,
-						item_name: item.name || '',
-						quantity: item.quantity,
-						unit_price: item.price,
-						specs: item.specs || {},
-						remark: ''
-					})),
-					remark: this.remark,
-					table_number: this.orderType === 'dinein' ? (this.cartItems[0]?.table_number || '') : '',
-					extra_data: {
-
-							store_name: this.shopInfo.name || '',
-						store_address: this.shopInfo.address || ''
+				let orderRes
+				if (this.orderType === 'groupbuy') {
+					const groupItem = this.cartItems[0]
+					const gbData = {
+						group_buy_item_id: groupItem.id,
+						quantity: groupItem.quantity
 					}
-				}
+					if (this.deliveryType === 'delivery' && this.addressInfo) {
+						gbData.delivery_type = 'delivery'
+						gbData.address_id = this.addressInfo.id
+					} else {
+						gbData.delivery_type = 'pickup'
+					}
+					gbData.remark = this.remark
+					orderRes = await createGroupBuyOrder(gbData)
+				} else {
+					const orderData = {
+						store_id: this.shopInfo.id,
+					order_type: this.shopInfo.business_types?.[0] || 'SEAFOOD_NOODLE',
+						order_source: ORDER_SOURCE_MAP[this.orderType] || ORDER_SOURCE_MAP[this.deliveryType],
+						items: this.cartItems.map(item => ({
+							menu_item_id: item.id,
+							item_name: item.name || '',
+							quantity: item.quantity,
+							unit_price: item.price,
+							specs: item.specs || {},
+							remark: ''
+						})),
+						remark: this.remark,
+						table_number: this.orderType === 'dinein' ? (this.cartItems[0]?.table_number || '') : '',
+						extra_data: {
 
-				if (this.selectedCoupon) {
-					orderData.coupon_id = this.selectedCoupon.id
-				}
+								store_name: this.shopInfo.name || '',
+							store_address: this.shopInfo.address || ''
+					}
+					}
 
-				if (this.useCoins && this.coinDeductAmount > 0) {
-					orderData.use_coins = true
-					orderData.coins_to_use = this.coinBalance
-				}
+					if (this.selectedCoupon) {
+						orderData.coupon_id = this.selectedCoupon.id
+					}
 
-				if (this.deliveryType === 'delivery' && this.addressInfo) {
-					orderData.address_id = this.addressInfo.id
-				}
+					if (this.useCoins && this.coinDeductAmount > 0) {
+						orderData.use_coins = true
+						orderData.coins_to_use = this.coinBalance
+					}
 
-				const orderRes = await createOrder(orderData)
+					if (this.deliveryType === 'delivery' && this.addressInfo) {
+						orderData.address_id = this.addressInfo.id
+					}
+
+					orderRes = await createOrder(orderData)
+				}
 
 				if (orderRes.code === 0 && orderRes.data) {
 					const orderId = orderRes.data.id || orderRes.data.order_id

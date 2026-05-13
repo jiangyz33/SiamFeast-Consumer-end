@@ -90,9 +90,40 @@
 			</view>
 
 			<!-- 订单类型 -->
-			<view class="order-type-section" v-if="orderData.order_type">
-				<view class="section-card">
-					<view class="order-type-row">
+							<!-- Room info -->
+				<view class="room-section" v-if="hostelBooking">
+					<view class="section-card">
+						<view class="section-title">
+							<text class="title-text">{{ i18n.t("orderDetail.roomInfo") }}</text>
+						</view>
+						<view class="room-info-list">
+							<view class="room-info-row" v-if="hostelBooking.room_name">
+								<text class="room-label">{{ i18n.t("orderDetail.roomName") }}</text>
+								<text class="room-value">{{ hostelBooking["room_name_" + i18n.getLanguage()] || hostelBooking.room_name }}</text>
+							</view>
+							<view class="room-info-row" v-if="hostelBooking.room_type">
+								<text class="room-label">{{ i18n.t("orderDetail.roomType") }}</text>
+								<text class="room-value">{{ hostelBooking.room_type }}</text>
+							</view>
+							<view class="room-info-row" v-if="hostelBooking.check_in">
+								<text class="room-label">{{ i18n.t("orderDetail.checkInDate") }}</text>
+								<text class="room-value">{{ formatDate(hostelBooking.check_in) }}</text>
+							</view>
+							<view class="room-info-row" v-if="hostelBooking.check_out">
+								<text class="room-label">{{ i18n.t("orderDetail.checkOutDate") }}</text>
+								<text class="room-value">{{ formatDate(hostelBooking.check_out) }}</text>
+							</view>
+							<view class="room-info-row" v-if="hostelBooking.nights">
+								<text class="room-label">{{ i18n.t("orderDetail.nightsCount", {n: hostelBooking.nights}) }}</text>
+								<text class="room-value" v-if="hostelBooking.guests">{{ i18n.t("orderDetail.guestsCount", {n: hostelBooking.guests}) }}</text>
+							</view>
+						</view>
+					</view>
+				</view>
+
+				<view class="order-type-section" v-if="orderData.order_type">
+					<view class="section-card">
+						<view class="order-type-row">
 						<text class="order-type-label">{{ i18n.t("orderDetail.orderTypeLabel") }}</text>
 						<text class="order-type-value">{{ formatOrderType(orderData.order_type) }}</text>
 					</view>
@@ -110,7 +141,7 @@
 					</view>
 					<view class="products-list">
 						<view class="product-item" v-for="(item, index) in orderData.items" :key="index">
-							<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+							<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 							<view class="product-info">
 							<text class="product-name">{{ getItemName(item) }}</text>
 						<view class="product-specs" v-if="hasSpecs(item)">
@@ -221,8 +252,10 @@
 
 <script>
 import { getOrderDetail } from '@/api/services/order.js'
+import { getStore } from '@/api/services/store.js'
+import { getBooking } from '@/api/services/hostel.js'
 
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 
 const STATUS_I18N_KEYS = {
@@ -250,7 +283,8 @@ const ORDER_TYPE_I18N = {
 	'SEAFOOD_NOODLE': 'order.seafoodNoodle',
 	'DINE_IN': 'order.dineIn',
 	'TAKEAWAY': 'order.takeaway',
-	'DELIVERY': 'order.delivery'
+	'DELIVERY': 'order.delivery',
+	'GROUP_BUY': 'order.groupBuy'
 }
 
 const ORDER_SOURCE_I18N = {
@@ -269,8 +303,10 @@ export default {
 			orderId: '',
 			loading: true,
 			orderData: {},
+			storePhone: '',
 			deliveryInfo: null,
-				pickupCode: ""
+				pickupCode: "",
+				hostelBooking: null
 		}
 	},
 	computed: {
@@ -293,6 +329,7 @@ export default {
 		this.loadOrderDetail()
 	},
 	methods: {
+		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -317,6 +354,26 @@ export default {
 					try { this.pickupCode = uni.getStorageSync("pickup_code_" + this.orderId) || "" } catch(e) {}
 					// Parse extra_data if it is a JSON string
 					if (this.orderData.extra_data && typeof this.orderData.extra_data === "string") { try { this.orderData.extra_data = JSON.parse(this.orderData.extra_data) } catch(e) {} }
+					// Load hostel booking room info
+					const orderType = (this.orderData.order_type || '').toUpperCase()
+					if (orderType.includes('HOSTEL')) {
+						try {
+							const bkRes = await getBooking(this.orderId)
+							if (bkRes.code === 0 && bkRes.data) {
+								this.hostelBooking = bkRes.data
+							}
+						} catch(e) { console.error('Load hostel booking failed:', e) }
+					}
+					// Load store phone for contact
+					const sid = this.orderData.store_id || this.orderData.shop_id
+					if (sid) {
+						try {
+							const sRes = await getStore(sid)
+							if (sRes.code === 0 && sRes.data) {
+								this.storePhone = sRes.data.phone || ''
+							}
+						} catch(e) {}
+					}
 				}
 
 			} catch (e) {
@@ -338,11 +395,14 @@ export default {
 			const langMessages = i18n.state.messages[lang] || {}
 			const specLabels = (langMessages.productDetail && langMessages.productDetail.specLabels) || {}
 			const specOptions = (langMessages.productDetail && langMessages.productDetail.specOptions) || {}
-			return Object.entries(specs).map(([key, val]) => {
-				const label = specLabels[key] || key
-				const optionLabel = specOptions[val] || val
-				return `${label}：${optionLabel}`
-			}).join(' / ')
+			const skipKeys = ['pricing', 'remark', 'topping_ids', 'quantity', 'group_price', 'original_price', 'group_buy_item_id', 'is_group_buy']
+			return Object.entries(specs)
+				.filter(([k, v]) => !skipKeys.includes(k) && v !== null && v !== undefined && v !== '' && typeof v !== 'object')
+				.map(([key, val]) => {
+					const label = specLabels[key] || key
+					const optionLabel = specOptions[val] || val
+					return `${label}：${optionLabel}`
+				}).join(' / ')
 		},
 
 		formatOrderSource(source) {
@@ -363,7 +423,11 @@ export default {
 
 		hasSpecs(item) {
 			const specs = item.specs || item.specs_config
-			return specs && Object.keys(specs).length > 0
+			if (!specs) return false
+			return Object.entries(specs).some(([k, v]) => {
+				if (k === "pricing" || k === "remark" || k === "topping_ids" || k === "quantity" || k === "group_price" || k === "original_price" || k === "group_buy_item_id" || k === "is_group_buy") return false
+				return v !== null && v !== undefined && v !== "" && typeof v !== "object"
+			})
 		},
 
 		formatOrderType(type) {
@@ -375,9 +439,12 @@ export default {
 		},
 
 		handleContact() {
-			if (this.deliveryInfo && this.deliveryInfo.shop && this.deliveryInfo.shop.phone) {
+			const phone = this.storePhone
+				|| (this.deliveryInfo && this.deliveryInfo.shop && this.deliveryInfo.shop.phone)
+				|| ''
+			if (phone) {
 				uni.makePhoneCall({
-					phoneNumber: this.deliveryInfo.shop.phone,
+					phoneNumber: phone,
 					fail: () => {
 						showToast(this.i18n.t('orderDetail.callFailed'))
 					}
@@ -393,7 +460,7 @@ export default {
 					id: item.id,
 					name: item.item_name,
 					price: item.unit_price,
-					image: item.image_url || '/static/images/img-placeholder.svg',
+					image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 					quantity: item.quantity,
 					store_id: this.orderData.store_id || this.orderData.shop_id || ''
 				}))
@@ -652,7 +719,34 @@ export default {
 	color: #00000099;
 }
 
-.order-type-section {
+.room-section {
+		padding-top: 10px;
+	}
+
+	.room-info-list {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.room-info-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.room-label {
+		font-size: 12px;
+		color: #00000099;
+	}
+
+	.room-value {
+		font-size: 12px;
+		color: #000000CC;
+		font-weight: 500;
+	}
+
+	.order-type-section {
 	padding-top: 10px;
 }
 

@@ -3,42 +3,40 @@
  */
 import { get, post } from '../request.js'
 
-const groupbuyApi = {
-	/**
-	 * 获取拼团商品列表
-	 * @param {Object} params - { store_id, page, page_size }
-	 */
-	getProducts(params = {}) {
-		return get('/group-buy/products', params)
-	},
-
-	/**
-	 * 获取拼团商品详情
-	 * @param {number} id - 拼团商品 ID
-	 */
-	getProductDetail(id) {
-		return get(`/group-buy/products/${id}`)
-	},
-
-	/**
-	 * 通过分享码获取拼团信息
-	 * @param {string} shareCode - 分享码
-	 */
-	getByShareCode(shareCode) {
-		return get(`/group-buy/share/${shareCode}`)
-	},
-
-	/**
-	 * 创建拼团订单
-	 * @param {Object} data - { group_buy_item_id, quantity }
-	 */
-	createOrder(data) {
-		return post('/group-buy/orders', data)
-	}
+/**
+ * 获取拼团商品列表
+ * GET /group-buy/products
+ * @param {Object} params - { store_id, page, page_size }
+ * @returns {Promise}
+ */
+export function getGroupBuyProducts(params = {}) {
+	return get('/group-buy/products', params)
 }
 
-export const getGroupBuyProducts = groupbuyApi.getProducts
-export const getGroupBuyProductDetail = groupbuyApi.getProductDetail
-export const getGroupBuyByShareCode = groupbuyApi.getByShareCode
-export const createGroupBuyOrder = groupbuyApi.createOrder
+/**
+ * 获取拼团商品详情
+ * GET /group-buy/products/:id
+ * @param {number} id - 拼团商品 ID
+ * @returns {Promise}
+ */
+export function getGroupBuyProductDetail(id) {
+	return get(`/group-buy/products/${id}`)
+}
+
+/**
+ * 创建拼团订单
+ * POST /group-buy/orders
+ * @param {Object} data - { group_buy_item_id, quantity }
+ * @returns {Promise}
+ */
+export function createGroupBuyOrder(data) {
+	return post('/group-buy/orders', data)
+}
+
+export const groupbuyApi = {
+	getGroupBuyProducts,
+	getGroupBuyProductDetail,
+	createGroupBuyOrder
+}
+
 export default groupbuyApi

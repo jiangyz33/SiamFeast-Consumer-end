@@ -306,9 +306,6 @@ export default {
 		 */
 		async loadMemberData() {
 			try {
-				const UPGRADE_SHOWN_KEY = 'siamfeast_upgrade_shown_platinum'
-				let hasSeenAnimation = false
-				try { hasSeenAnimation = !!uni.getStorageSync(UPGRADE_SHOWN_KEY) } catch(e) {}
 
 					const [userRes, infoRes, couponsRes, progressRes] = await Promise.allSettled([
 						getUserInfo(),
@@ -338,9 +335,10 @@ export default {
 					const consumed = p.total_spent || p.current_spent || 0
 					const required = p.threshold || p.required_for_next || 200
 					const isPlatinum = p.current_tier === 'PLATINUM'
-					console.log('[index] progress:', JSON.stringify(p), 'isPlatinum:', isPlatinum, 'consumed >= required:', consumed >= required, 'hasSeenAnimation:', hasSeenAnimation)
 					// Backend platinum OR user has seen animation = show platinum directly
-					if (isPlatinum || hasSeenAnimation) {
+					const hasMetGoal = consumed >= required
+					const shouldShowPlatinum = isPlatinum || hasMetGoal
+					if (shouldShowPlatinum) {
 						this.memberInfo = { ...this.memberInfo, membership_tier: 'PLATINUM' }
 					}
 				}

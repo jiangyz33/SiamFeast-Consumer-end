@@ -92,7 +92,7 @@
 
 <script>
 import CustomTabbar from '@/components/custom-tabbar.vue'
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
 import { getUserOrders, getOrderDetail } from '@/api/services/order.js'
 import { getStore } from '@/api/services/store.js'
 import { createPayment } from '@/api/services/payment.js'
@@ -216,7 +216,7 @@ export default {
 							...o,
 							order_type_text: orderLabel,
 							detail_items: detail?.items || [],
-							store_logo: storeInfo?.logo_url || storeInfo?.logo || '',
+							store_logo: fixMinioUrl(storeInfo?.logo_url || storeInfo?.logo) || '',
 							store_name_loc: storeInfo ? (storeInfo["name_" + lang] || storeInfo.name) : ''
 						}
 					})
@@ -308,7 +308,7 @@ export default {
 					id: item.id,
 					name: item.item_name_en && i18n.getLanguage() !== "zh" ? (i18n.getLanguage() === "th" ? (item.item_name_th || item.item_name_en || item.item_name) : (item.item_name_en || item.item_name)) : item.item_name,
 					price: item.unit_price,
-					image: item.image_url || '/static/images/img-placeholder.svg',
+					image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 					quantity: item.quantity,
 					store_id: order.store_id || order.shop_id || ''
 				}))

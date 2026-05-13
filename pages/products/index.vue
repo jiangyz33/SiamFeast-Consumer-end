@@ -38,25 +38,65 @@
 					class="store-card"
 					@click="handleStoreClick(store)"
 				>
-					<view class="store-card-left">
-						<image class="store-logo" :src="fixMinioUrl(store.logo_url || store.logo || '') || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
+					<!-- Banner 区域 -->
+					<view class="sc-banner">
+						<image
+							class="sc-banner-img"
+							:src="getStoreBanner(store)"
+							mode="aspectFill"
+						></image>
+						<view class="sc-banner-overlay">
+							<view class="sc-banner-top">
+								<text class="sc-store-name">{{ store['name_' + lang] || store.name }}</text>
+								<view class="sc-status-badge" :class="store.status === 'OPEN' ? 'sc-status-open' : 'sc-status-closed'">
+									<text class="sc-status-text">{{ store.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
+								</view>
+							</view>
+							<view class="sc-banner-tags" v-if="store.business_types && store.business_types.length">
+								<text class="sc-tag" v-for="(bt, bi) in store.business_types" :key="bi">{{ getBusinessTypeName(bt) }}</text>
+							</view>
+						</view>
 					</view>
-					<view class="store-card-right">
-						<view class="store-card-header">
-							<text class="store-card-name">{{ store['name_' + i18n.getLanguage()] || store.name }}</text>
-							<view class="store-status" :class="store.status === 'OPEN' ? 'status-open' : 'status-closed'">
-								<text class="store-status-text">{{ store.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
-							</view>
+
+					<!-- 信息区域 -->
+					<view class="sc-info">
+						<view class="sc-info-row" v-if="store.formatted_address || store.address">
+							<image class="sc-info-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
+							<text class="sc-info-text">{{ store.formatted_address || store.address }}</text>
 						</view>
-						<text class="store-address">{{ store.formatted_address || store.address }}</text>
-						<view class="store-card-tags" v-if="store.business_types && store.business_types.length > 0">
-							<text class="store-tag" v-for="(bt, bi) in store.business_types" :key="bi">{{ getBusinessTypeName(bt) }}</text>
+						<view class="sc-info-row" v-if="store.business_hours">
+							<image class="sc-info-icon" src="/static/icons/clock.svg" mode="aspectFit"></image>
+							<text class="sc-info-text">{{ store.business_hours }}</text>
 						</view>
-						<view class="store-card-footer">
-							<text class="store-hours">{{ store.business_hours || '' }}</text>
-							<view class="store-enter-btn">
-								<text class="store-enter-text">{{ i18n.t('mine.enterStore') }}</text>
+					</view>
+
+					<!-- 商品预览区域 -->
+					<view class="sc-products" v-if="store._items && store._items.length > 0">
+						<view class="sc-products-header">
+							<text class="sc-products-title">{{ i18n.t('products.hotItems') || '招牌菜品' }}</text>
+							<text class="sc-products-count">{{ store._items.length }} {{ i18n.t('products.items') || '款' }}</text>
+						</view>
+						<scroll-view class="sc-products-scroll" scroll-x>
+							<view class="sc-products-list">
+								<view
+									class="sc-product-item"
+									v-for="(prod, pi) in store._items.slice(0, 8)"
+									:key="pi"
+									@click.stop="handleProductClick(prod, store)"
+								>
+									<image class="sc-product-img" :src="fixMinioUrl(prod.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+									<text class="sc-product-name">{{ prod['name_' + lang] || prod.name || prod.name_en }}</text>
+									<text class="sc-product-price">฿{{ prod.price }}</text>
+								</view>
 							</view>
+						</scroll-view>
+					</view>
+
+					<!-- 进入店铺按钮 -->
+					<view class="sc-action">
+						<view class="sc-enter-btn">
+							<text class="sc-enter-text">{{ i18n.t('mine.enterStore') }}</text>
+							<image class="sc-enter-arrow" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 				</view>
@@ -103,7 +143,7 @@
 						@click="handleProductClick(item)"
 					>
 						<view class="product-image-wrapper">
-							<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+							<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 							<view class="product-shop">
 								<view class="shop-logo-wrapper">
 									<image class="shop-logo" :src="storeLogo || '/static/images/banner-placeholder.svg'" mode="aspectFill"></image>
@@ -153,12 +193,14 @@ import { fixMinioUrl, showToast } from '@/utils/index.js'
 import { searchProducts, getHotProducts, getNewProducts, getProductsByCategory } from '@/api/services/products.js'
 import { getActiveCampaigns } from '@/api/services/campaign.js'
 import { getPublicStores } from '@/api/services/store.js'
+import { getConsumerMenuItems } from '@/api/services/menu.js'
 
 export default {
 	components: { CustomTabbar },
 	data() {
 		return {
 			i18n: i18n,
+			lang: i18n.getLanguage(),
 			statusBarHeight: 20,
 			contentHeight: 500,
 			activeFilter: 0,
@@ -180,7 +222,6 @@ export default {
 			businessType: null,
 			categoryName: '',
 			page: 1,
-			// 门店列表模式
 			isStoreMode: false,
 			stores: []
 		}
@@ -190,13 +231,14 @@ export default {
 			if (!this.searchKeyword.trim()) return this.stores
 			const kw = this.searchKeyword.trim().toLowerCase()
 			return this.stores.filter(s => {
-				const name = (s['name_' + i18n.getLanguage()] || s.name || '').toLowerCase()
+				const name = (s['name_' + this.lang] || s.name || '').toLowerCase()
 				const addr = (s.formatted_address || s.address || '').toLowerCase()
 				return name.includes(kw) || addr.includes(kw)
 			})
 		}
 	},
 	onLoad(options) {
+		this.lang = i18n.getLanguage()
 		this.initPage()
 		if (options && options.shopId) {
 			this.shopId = options.shopId
@@ -256,15 +298,46 @@ export default {
 				if (res.code === 0 && res.data) {
 					items = Array.isArray(res.data) ? res.data : (res.data.items || [])
 				}
-				// 按门店的 business_types 过滤匹配当前分类的门店
-				this.stores = items.filter(s =>
+				// Filter stores matching current business type
+				const matched = items.filter(s =>
 					s.business_types && s.business_types.includes(this.businessType)
 				)
+				// Fetch products for each store in parallel
+				const storesWithItems = await Promise.all(
+					matched.map(async (store) => {
+						try {
+							const menuRes = await getConsumerMenuItems(store.id, { page_size: 10 })
+							let prods = []
+							if (menuRes.code === 0 && menuRes.data) {
+								prods = Array.isArray(menuRes.data) ? menuRes.data : (menuRes.data.items || [])
+							}
+							prods = prods.map(p => ({ ...p, image_url: fixMinioUrl(p.image_url) }))
+							return { ...store, _items: prods }
+						} catch (e) {
+							return { ...store, _items: [] }
+						}
+					})
+				)
+				this.stores = storesWithItems
 			} catch (e) {
 				console.error('加载门店失败:', e)
 			} finally {
 				this.loading = false
 			}
+		},
+
+		getStoreBanner(store) {
+			// Try store images array first, then logo, then placeholder
+			if (store.images && store.images.length > 0) {
+				const img = store.images[0]
+				if (typeof img === 'string') return fixMinioUrl(img)
+				if (img.url) return fixMinioUrl(img.url)
+				if (img.image_url) return fixMinioUrl(img.image_url)
+			}
+			if (store.logo_url || store.logo) {
+				return fixMinioUrl(store.logo_url || store.logo)
+			}
+			return '/static/images/banner-placeholder.svg'
 		},
 
 		getBusinessTypeName(code) {
@@ -284,6 +357,12 @@ export default {
 		handleStoreClick(store) {
 			uni.navigateTo({
 				url: `/pages/dinein/index?shopId=${store.id}`
+			})
+		},
+
+		handleProductClick(item, store) {
+			uni.navigateTo({
+				url: `/pages/product-detail/index?productId=${item.id}&shopId=${store ? store.id : this.shopId || ''}`
 			})
 		},
 
@@ -390,12 +469,6 @@ export default {
 			uni.navigateBack()
 		},
 
-		handleProductClick(item) {
-			uni.navigateTo({
-				url: `/pages/product-detail/index?productId=${item.id}&shopId=${this.shopId || ''}`
-			})
-		},
-
 		handleBuyNow(item) {
 			if (item.is_sold_out) {
 				showToast(i18n.t('index.soldOut'))
@@ -403,9 +476,9 @@ export default {
 			}
 			const productData = {
 				id: item.id,
-				name: item["name_" + i18n.getLanguage()] || item.name || item.name_en,
+				name: item["name_" + this.lang] || item.name || item.name_en,
 				price: item.price,
-				image: item.image_url || '/static/images/img-placeholder.svg',
+				image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 				quantity: 1,
 				store_id: this.shopId
 			}
@@ -647,133 +720,212 @@ export default {
 	margin-left: auto;
 }
 
-/* 门店列表模式 */
+/* ========= 新门店卡片样式 ========= */
 .store-list {
 	padding: 12px 16px;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 12px;
 }
 
 .store-card {
 	background-color: #FFFFFF;
-	border-radius: 10px;
-	padding: 12px;
-	display: flex;
-	gap: 12px;
-}
-
-.store-card-left {
-	width: 80px;
-	height: 80px;
-	flex-shrink: 0;
-	border-radius: 8px;
+	border-radius: 12px;
 	overflow: hidden;
-	background-color: #F5F5F5;
 }
 
-.store-logo {
-	width: 80px;
-	height: 80px;
+/* Banner */
+.sc-banner {
+	position: relative;
+	height: 140px;
 }
 
-.store-card-right {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
+.sc-banner-img {
+	width: 100%;
+	height: 100%;
 }
 
-.store-card-header {
+.sc-banner-overlay {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 30px 12px 10px;
+	background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0) 100%);
+}
+
+.sc-banner-top {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 8px;
 }
 
-.store-card-name {
-	font-size: 15px;
-	font-weight: 600;
-	color: #3C3C3C;
+.sc-store-name {
+	font-size: 17px;
+	font-weight: 700;
+	color: #FFFFFF;
 	flex: 1;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.store-status {
-	padding: 2px 8px;
+.sc-status-badge {
+	padding: 2px 10px;
 	border-radius: 10px;
 	flex-shrink: 0;
 }
 
-.status-open {
-	background-color: #E8F5E9;
+.sc-status-open {
+	background-color: rgba(76, 175, 80, 0.85);
 }
 
-.status-closed {
-	background-color: #F5F5F5;
+.sc-status-closed {
+	background-color: rgba(158, 158, 158, 0.85);
 }
 
-.store-status-text {
+.sc-status-text {
 	font-size: 11px;
+	font-weight: 500;
+	color: #FFFFFF;
+}
+
+.sc-banner-tags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 6px;
+}
+
+.sc-tag {
+	font-size: 10px;
+	color: #F2B131;
+	background-color: rgba(242, 177, 49, 0.2);
+	padding: 2px 8px;
+	border-radius: 4px;
 	font-weight: 500;
 }
 
-.status-open .store-status-text {
-	color: #4CAF50;
+/* Info section */
+.sc-info {
+	padding: 10px 12px 6px;
 }
 
-.status-closed .store-status-text {
-	color: #949494;
+.sc-info-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 4px;
 }
 
-.store-address {
+.sc-info-icon {
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+}
+
+.sc-info-text {
 	font-size: 12px;
 	color: #949494;
-	margin-top: 4px;
+	flex: 1;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.store-card-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
-	margin-top: 6px;
+/* Products preview */
+.sc-products {
+	padding: 6px 12px 0;
 }
 
-.store-tag {
-	font-size: 10px;
-	color: #F2B131;
-	background-color: #FFF8E1;
-	padding: 2px 6px;
-	border-radius: 4px;
-}
-
-.store-card-footer {
+.sc-products-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	margin-top: 6px;
+	margin-bottom: 8px;
 }
 
-.store-hours {
+.sc-products-title {
+	font-size: 13px;
+	font-weight: 600;
+	color: #3C3C3C;
+}
+
+.sc-products-count {
 	font-size: 11px;
 	color: #949494;
 }
 
-.store-enter-btn {
-	background-color: #F2B131;
-	padding: 4px 14px;
-	border-radius: 14px;
+.sc-products-scroll {
+	white-space: nowrap;
 }
 
-.store-enter-text {
-	font-size: 12px;
-	font-weight: 500;
+.sc-products-list {
+	display: flex;
+	gap: 8px;
+	padding-bottom: 4px;
+}
+
+.sc-product-item {
+	width: 72px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.sc-product-img {
+	width: 72px;
+	height: 72px;
+	border-radius: 8px;
+	background-color: #F5F5F5;
+}
+
+.sc-product-name {
+	font-size: 10px;
+	color: #3C3C3C;
+	margin-top: 4px;
+	width: 72px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: center;
+}
+
+.sc-product-price {
+	font-size: 11px;
+	font-weight: 600;
+	color: #F2B131;
+	margin-top: 2px;
+}
+
+/* Action button */
+.sc-action {
+	padding: 10px 12px 12px;
+	border-top: 1px solid #F5F5F5;
+	margin-top: 8px;
+}
+
+.sc-enter-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #F2B131;
+	border-radius: 20px;
+	padding: 8px 0;
+	gap: 4px;
+}
+
+.sc-enter-text {
+	font-size: 14px;
+	font-weight: 600;
 	color: #FFFFFF;
+}
+
+.sc-enter-arrow {
+	width: 16px;
+	height: 16px;
 }
 
 /* 加载提示 */

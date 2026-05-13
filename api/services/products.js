@@ -227,10 +227,21 @@ function mockGetProductsByCategory(params = {}) {
 	})
 }
 
+/**
+ * 获取优惠专区菜品列表
+ * GET /public/discount-menu-items
+ * @param {Object} params - { page, page_size, category_id, keyword, store_id, business_type, lat, lng, sort }
+ * @returns {Promise}
+ */
+export function getDiscountMenuItems(params = {}) {
+	return get('/public/discount-menu-items', params)
+}
+
 export const productsApi = {
 	searchProducts,
 	getNewProducts,
-	getHotProducts
+	getHotProducts,
+	getDiscountMenuItems
 }
 
 export default productsApi

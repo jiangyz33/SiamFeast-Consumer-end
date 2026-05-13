@@ -63,7 +63,7 @@
 					<view class="rank-badge" v-if="index < 3">
 						<text class="rank-text">{{ index + 1 }}</text>
 					</view>
-					<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+					<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					<view class="product-info">
 						<view class="product-content">
 							<text class="product-name">{{ item.name || item.name_en }}</text>
@@ -168,6 +168,7 @@ export default {
 			this.loadProducts()
 	},
 	methods: {
+		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -260,7 +261,7 @@ export default {
 				id: item.id,
 				name: item["name_" + i18n.getLanguage()] || item.name || item.name_en,
 				price: item.price,
-				image: item.image_url || '/static/images/img-placeholder.svg',
+				image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 				quantity: 1,
 				store_id: this.shopId
 			}

@@ -20,7 +20,12 @@
 			<view class="form-section">
 				<!-- 手机号 -->
 				<view class="input-field" :style="{ borderColor: phoneFocused ? '#F2B131' : '#E0E0E0' }">
-					<text class="phone-prefix">+66</text>
+					<view class="country-picker" @click="showCountryPicker = true">
+						<text class="country-flag">{{ selectedCountry.flag }}</text>
+						<text class="country-code">{{ selectedCountry.code }}</text>
+						<text class="picker-arrow">&#9662;</text>
+					</view>
+					<view class="phone-divider"></view>
 					<input
 						class="input"
 						type="text"
@@ -89,7 +94,7 @@
 			<view class="agreement">
 				<view class="agreement-check" @click="agreed = !agreed">
 					<view class="checkbox" :class="{ 'checkbox-active': agreed }">
-						<text v-if="agreed" class="check-icon">✓</text>
+						<text v-if="agreed" class="check-icon">&#10003;</text>
 					</view>
 				</view>
 				<text class="agreement-text">{{ i18n.t('login.agreementPrefix') }}</text>
@@ -104,7 +109,7 @@
 			<view class="title-section">
 				<text class="main-title">{{ i18n.t('login.enterCode') }}</text>
 				<text class="sub-title">{{ i18n.t('login.codeSent') }}</text>
-				<text class="phone-number">{{ formatPhone }}</text>
+				<text class="phone-number">{{ selectedCountry.flag }} {{ selectedCountry.code }} {{ formatPhone }}</text>
 			</view>
 
 			<!-- 验证码输入区域 -->
@@ -139,7 +144,7 @@
 				<text v-else class="resend-text" @click="resendCode">{{ i18n.t('login.resend') }}</text>
 			</view>
 
-			<!-- 调试提示（开发环境显示验证码） -->
+			<!-- 调试提示 -->
 			<view class="debug-hint" v-if="debugCode">
 				<text class="debug-text">Code: {{ debugCode }}</text>
 			</view>
@@ -156,6 +161,32 @@
 			</view>
 		</view>
 
+		<!-- 国家选择弹窗 -->
+		<view class="picker-mask" v-if="showCountryPicker" @click="showCountryPicker = false">
+			<view class="picker-sheet" @click.stop>
+				<view class="picker-header">
+					<text class="picker-title">{{ i18n.t('login.selectCountry') }}</text>
+					<view class="picker-close" @click="showCountryPicker = false">
+						<text class="close-text">&#10005;</text>
+					</view>
+				</view>
+				<scroll-view class="picker-list" scroll-y>
+					<view
+						v-for="(c, i) in countries"
+						:key="i"
+						class="picker-item"
+						:class="{ 'picker-item-active': selectedCountry.code === c.code }"
+						@click="selectCountry(c)"
+					>
+						<text class="picker-flag">{{ c.flag }}</text>
+						<text class="picker-name">{{ c.name }}</text>
+						<text class="picker-code">{{ c.code }}</text>
+						<text v-if="selectedCountry.code === c.code" class="picker-check">&#10003;</text>
+					</view>
+				</scroll-view>
+			</view>
+		</view>
+
 		<!-- 安全区域底部 -->
 		<view class="safe-area-bottom"></view>
 	</view>
@@ -163,9 +194,31 @@
 
 <script>
 import { formatPhoneWithDash, validatePhone, showToast } from '@/utils/index.js'
-import { sendCode, loginByCode, register } from '@/api/index.js'
+import { sendCode, loginByCode, register, setCountryCode } from '@/api/services/auth.js'
 import i18n from '@/i18n/index.js'
 import store from '@/store/index.js'
+
+const COUNTRY_LIST = [
+	{ code: '+66',  flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand',    name_zh: '泰国',    name_th: 'ประเทศไทย' },
+	{ code: '+86',  flag: '\u{1F1E8}\u{1F1F3}', name: 'China',       name_zh: '中国',    name_th: 'จีน' },
+	{ code: '+852', flag: '\u{1F1ED}\u{1F1F0}', name: 'Hong Kong',   name_zh: '香港',    name_th: 'ฮ่องกง' },
+	{ code: '+853', flag: '\u{1F1F2}\u{1F1F4}', name: 'Macau',       name_zh: '澳门',    name_th: 'มาเกา' },
+	{ code: '+886', flag: '\u{1F1F9}\u{1F1FC}', name: 'Taiwan',      name_zh: '台湾',    name_th: 'ไต้วัน' },
+	{ code: '+65',  flag: '\u{1F1F8}\u{1F1EC}', name: 'Singapore',   name_zh: '新加坡',  name_th: 'สิงคโปร์' },
+	{ code: '+60',  flag: '\u{1F1F2}\u{1F1FE}', name: 'Malaysia',    name_zh: '马来西亚', name_th: 'มาเลเซีย' },
+	{ code: '+84',  flag: '\u{1F1FB}\u{1F1F3}', name: 'Vietnam',     name_zh: '越南',    name_th: 'เวียดนาม' },
+	{ code: '+95',  flag: '\u{1F1F2}\u{1F1E6}', name: 'Myanmar',     name_zh: '缅甸',    name_th: 'พม่า' },
+	{ code: '+855', flag: '\u{1F1F0}\u{1F1ED}', name: 'Cambodia',    name_zh: '柬埔寨',  name_th: 'กัมพูชา' },
+	{ code: '+856', flag: '\u{1F1F1}\u{1F1E6}', name: 'Laos',        name_zh: '老挝',    name_th: 'ลาว' },
+	{ code: '+62',  flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia',   name_zh: '印尼',    name_th: 'อินโดนีเซีย' },
+	{ code: '+63',  flag: '\u{1F1F5}\u{1F1ED}', name: 'Philippines', name_zh: '菲律宾',  name_th: 'ฟิลิปปินส์' },
+	{ code: '+82',  flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea', name_zh: '韩国',    name_th: 'เกาหลีใต้' },
+	{ code: '+81',  flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan',       name_zh: '日本',    name_th: 'ญี่ปุ่น' },
+	{ code: '+91',  flag: '\u{1F1EE}\u{1F1F3}', name: 'India',       name_zh: '印度',    name_th: 'อินเดีย' },
+	{ code: '+1',   flag: '\u{1F1FA}\u{1F1F8}', name: 'USA',         name_zh: '美国',    name_th: 'อเมริกา' },
+	{ code: '+44',  flag: '\u{1F1EC}\u{1F1E7}', name: 'UK',          name_zh: '英国',    name_th: 'อังกฤษ' },
+	{ code: '+61',  flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia',   name_zh: '澳大利亚', name_th: 'ออสเตรเลีย' },
+]
 
 export default {
 	data() {
@@ -193,7 +246,10 @@ export default {
 			phoneFocused: false,
 			pwdFocused: false,
 			pwd2Focused: false,
-			inviteFocused: false
+			inviteFocused: false,
+			showCountryPicker: false,
+			selectedCountry: COUNTRY_LIST[0],
+			countries: COUNTRY_LIST
 		}
 	},
 	computed: {
@@ -225,6 +281,14 @@ export default {
 		}
 		this.loginType = options.type || 'login'
 
+		// Restore selected country code from login page
+		if (options.cc) {
+			const cc = decodeURIComponent(options.cc)
+			const found = COUNTRY_LIST.find(c => c.code === cc)
+			if (found) this.selectedCountry = found
+		}
+		setCountryCode(this.selectedCountry.code)
+
 		if (this.isRegister && options.password) {
 			this.password = decodeURIComponent(options.password)
 		}
@@ -232,7 +296,6 @@ export default {
 			this.inviteCode = decodeURIComponent(options.inviteCode)
 		}
 
-		// Login mode or register with phone pre-filled: go straight to code input
 		if (!this.isRegister || this.phone) {
 			this.codeSent = true
 			this.startCountdown()
@@ -255,7 +318,11 @@ export default {
 			})
 		},
 
-		// ===== Register step 1: send code =====
+		selectCountry(c) {
+			this.selectedCountry = c
+			setCountryCode(c.code)
+			this.showCountryPicker = false
+		},
 
 		async handleSendCode() {
 			if (!this.canGoNext || this.sendingCode) return
@@ -286,8 +353,6 @@ export default {
 				this.sendingCode = false
 			}
 		},
-
-		// ===== Code input =====
 
 		focusInput() {
 			this.inputFocus = true
@@ -345,8 +410,6 @@ export default {
 			this.startCountdown()
 		},
 
-		// ===== Verify =====
-
 		async handleVerify() {
 			if (this.code.length < this.codeLength) return
 			if (this.loading) return
@@ -355,7 +418,6 @@ export default {
 			try {
 				let res
 
-				// Both register and login use sms-login (auto-registers new users)
 				res = await loginByCode(this.phone, this.code)
 
 				if (res.code !== 0) {
@@ -472,11 +534,36 @@ export default {
 	color: #282332;
 }
 
-.phone-prefix {
+/* 国家区号选择器 */
+.country-picker {
+	display: flex;
+	align-items: center;
+	gap: 6rpx;
+	flex-shrink: 0;
+	padding-right: 12rpx;
+}
+
+.country-flag {
+	font-size: 32rpx;
+}
+
+.country-code {
 	font-size: 28rpx;
 	color: #282332;
 	font-weight: 500;
+}
+
+.picker-arrow {
+	font-size: 18rpx;
+	color: #828282;
+}
+
+.phone-divider {
+	width: 2rpx;
+	height: 36rpx;
+	background-color: #E0E0E0;
 	margin-right: 16rpx;
+	flex-shrink: 0;
 }
 
 .pwd-toggle {
@@ -654,6 +741,94 @@ export default {
 	font-size: 32rpx;
 	font-weight: 700;
 	color: rgba(0, 0, 0, 0.6);
+}
+
+/* 国家选择弹窗 */
+.picker-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.4);
+	z-index: 999;
+	display: flex;
+	align-items: center;
+}
+
+.picker-sheet {
+	width: 100%;
+	background-color: #FFFFFF;
+	border-radius: 24rpx;
+	margin-top: 35vh;
+	max-height: 70vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.picker-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 28rpx 32rpx;
+	border-bottom: 2rpx solid #F0F0F0;
+}
+
+.picker-title {
+	font-size: 32rpx;
+	font-weight: 600;
+	color: #3C3C3C;
+}
+
+.picker-close {
+	width: 48rpx;
+	height: 48rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.close-text {
+	font-size: 28rpx;
+	color: #828282;
+}
+
+.picker-list {
+	max-height: 60vh;
+}
+
+.picker-item {
+	display: flex;
+	align-items: center;
+	padding: 24rpx 32rpx;
+	border-bottom: 1rpx solid #F5F5F5;
+}
+
+.picker-item-active {
+	background-color: #FFF8E1;
+}
+
+.picker-flag {
+	font-size: 40rpx;
+	margin-right: 20rpx;
+}
+
+.picker-name {
+	flex: 1;
+	font-size: 28rpx;
+	color: #3C3C3C;
+}
+
+.picker-code {
+	font-size: 28rpx;
+	color: #828282;
+	margin-right: 16rpx;
+}
+
+.picker-check {
+	font-size: 28rpx;
+	color: #F2B131;
+	font-weight: 600;
 }
 
 .safe-area-bottom {

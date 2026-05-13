@@ -28,12 +28,12 @@
 					</view>
 					<text class="shop-time">{{ i18n.t('dinein.businessHours') }}：{{ shopInfo.businessHours }}</text>
 						<text class="delivery-badge" v-if="shopInfo.delivery_enabled">{{ i18n.t('dinein.deliverySupported') }}</text>
-					<view class="shop-distance">
-						<text class="distance-item">{{ i18n.t('dinein.distance') }}{{ shopInfo.distance }}</text>
+					<view class="shop-distance" v-if="shopInfo.distance">
+						<text class="distance-item">{{ i18n.t('dinein.distance') }} {{ shopInfo.distance }}</text>
 						<text class="distance-divider">|</text>
-						<text class="distance-item">{{ i18n.t('dinein.bikeTime') }}{{ shopInfo.bikeTime }}</text>
+						<text class="distance-item">{{ i18n.t('dinein.bikeTime') }} {{ shopInfo.bikeTime }}</text>
 						<text class="distance-divider">|</text>
-						<text class="distance-item">{{ i18n.t('dinein.walkTime') }}{{ shopInfo.walkTime }}</text>
+						<text class="distance-item">{{ i18n.t('dinein.walkTime') }} {{ shopInfo.walkTime }}</text>
 					</view>
 					<view class="shop-address">
 						<image class="address-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
@@ -319,7 +319,7 @@
 </template>
 
 <script>
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl, calcDistance, getUserLocation } from '@/utils/index.js'
 import { shareShop, shareProduct, ShareType } from '@/utils/share.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import ShareModal from '@/components/share-modal.vue'
@@ -432,7 +432,7 @@ export default {
 					name_th: currentStore.name_th || '',
 					fullName: currentStore.name,
 					banner: currentStore.banner || '/static/images/banner-placeholder.svg',
-					logo: currentStore.logo_url || currentStore.logo || '/static/images/store-placeholder.svg',
+					logo: fixMinioUrl(currentStore.logo_url || currentStore.logo) || '/static/images/store-placeholder.svg',
 					phone: currentStore.phone || '',
 					formatted_address: currentStore.formatted_address || '',
 					latitude: currentStore.latitude,
@@ -444,6 +444,7 @@ export default {
 					walkTime: currentStore.walkTime || '',
 					address: currentStore.address || ''
 				}
+				this.updateShopDistance()
 			} else if (options.shopName) {
 				this.shopInfo.name = decodeURIComponent(options.shopName)
 				this.shopInfo.fullName = decodeURIComponent(options.shopName)
@@ -465,6 +466,22 @@ export default {
 					})
 				}
 			},
+
+			async updateShopDistance() {
+				if (!this.shopInfo.latitude || !this.shopInfo.longitude) return
+				try {
+					const loc = await getUserLocation()
+					const info = calcDistance(loc.latitude, loc.longitude, this.shopInfo.latitude, this.shopInfo.longitude)
+					if (info) {
+						this.$set(this.shopInfo, 'distance', info.distanceText)
+						this.$set(this.shopInfo, 'bikeTime', info.bikeText)
+						this.$set(this.shopInfo, 'walkTime', info.walkText)
+					}
+				} catch(e) {
+					console.warn('getLocation failed:', e)
+				}
+			},
+
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -496,8 +513,8 @@ export default {
 						name_en: s.name_en || '',
 						name_th: s.name_th || '',
 						fullName: s.name,
-						banner: s.background_image_url || s.banner_image || s.banner || '/static/images/banner-placeholder.svg',
-						logo: s.logo_url || s.logo || '/static/images/store-placeholder.svg',
+						banner: fixMinioUrl(s.background_image_url || s.banner_image || s.banner) || '/static/images/banner-placeholder.svg',
+						logo: fixMinioUrl(s.logo_url || s.logo) || '/static/images/store-placeholder.svg',
 						phone: s.phone || '',
 						formatted_address: s.formatted_address || '',
 						latitude: s.latitude,
@@ -512,6 +529,7 @@ export default {
 						address: s.address || '',
 						business_types: storeBusinessTypes
 					}
+					this.updateShopDistance()
 
 					// Detect hotel/hostel type - enable room tab
 					const hostelTypes = ["HOTEL", "HOSTEL_ROOM", "HOSTEL_HOTPOT", "HOSTEL_COFFEE"]
@@ -646,7 +664,7 @@ export default {
 				description: localizedDesc || '',
 				price: item.price,
 				originalPrice: item.original_price || item.originalPrice || null,
-				image: (item.image_url && !item.image_url.includes('example.com')) ? item.image_url : '/static/images/img-placeholder.svg',
+				image: fixMinioUrl((item.image_url && !item.image_url.includes('example.com')) ? item.image_url : '/static/images/img-placeholder.svg'),
 				category_id: item.category_id,
 				category_name: item.category_name || '',
 				category_name_en: item.category_name_en || '',
@@ -680,7 +698,7 @@ export default {
 							capacity: r.max_guests || r.capacity || 0,
 							bed_count: r.bed_count || 0,
 							is_available: r.status === 'AVAILABLE' || r.is_available === true,
-							image: r.cover_image || r.image || '/static/images/img-placeholder.svg',
+							image: fixMinioUrl(r.cover_image || r.image) || '/static/images/img-placeholder.svg',
 							description: r.description || ''
 						}))
 					}
@@ -829,29 +847,34 @@ export default {
 			this.doAddToCart(item, 1, {})
 		},
 
+	
 		buildSpecGroups(specs) {
 			const lang = i18n.state.language
 			const messages = i18n.state.messages[lang] || {}
 			const labels = (messages.productDetail && messages.productDetail.specLabels) || {}
 			const options = (messages.productDetail && messages.productDetail.specOptions) || {}
-			const specConfig = {
-				temperature: { labelKey: 'temperature', options: ['hot', 'ice'] },
-				sugar: { labelKey: 'sugar', options: ['full', 'half', 'little', 'none'] },
-				size: { labelKey: 'size', options: ['small', 'medium', 'large'] },
-				spice_level: { labelKey: 'spice_level', options: ['mild', 'medium_spice', 'hot_spice', 'extra_hot'] }
+			const labelMap = {
+				spec: labels.spec || labels.size || '\u89c4\u683c',
+				combo: labels.combo || '\u5957\u9910',
+				flavor: labels.flavor || labels.spice_level || '\u53e3\u5473',
+				toppings: labels.toppings || '\u52a0\u6599',
+				temperature: labels.temperature || '\u6e29\u5ea6',
+				sugar: labels.sugar || '\u7cd6\u5ea6',
+				size: labels.size || '\u4efd\u91cf',
+				spice_level: labels.spice_level || '\u8fa3\u5ea6'
 			}
 			const groups = []
 			const selected = {}
 			for (const [key, values] of Object.entries(specs)) {
+				if (key === 'pricing' || key === 'remark') continue
 				if (!values || values.length === 0) continue
-				const config = specConfig[key]
-				if (!config) continue
+				const label = labelMap[key] || labels[key] || key
 				groups.push({
 					key,
-					label: labels[config.labelKey] || key,
-					options: values.map(v => ({ value: v, label: options[v] || v }))
+					label,
+					options: values.map(v => ({ value: typeof v === 'object' ? v.id || v.value : v, label: typeof v === 'object' ? (v.name || v.label || v.value) : (options[v] || v) }))
 				})
-				selected[key] = values[0]
+				selected[key] = groups[groups.length - 1].options[0].value
 			}
 			this.specGroups = groups
 			this.selectedSpecs = selected

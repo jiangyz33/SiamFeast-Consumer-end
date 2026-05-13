@@ -262,7 +262,7 @@ import { getRooms, getAvailableRooms } from '@/api/services/hostel.js'
 import { getStore } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
 import { getConsumerCategories, getConsumerMenuItems, } from '@/api/services/menu.js'
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 
 export default {
@@ -436,7 +436,7 @@ export default {
 						room_size: r.area_sqm || r.room_size || 0,
 						description: r.description || '',
 						is_available: r.status === 'AVAILABLE' || r.is_available === true,
-						image: r.cover_image || r.image || '/static/images/img-placeholder.svg',
+						image: fixMinioUrl(r.cover_image || r.image) || '/static/images/img-placeholder.svg',
 						tags: r.amenities || r.tags || []
 					}))
 				}
@@ -453,7 +453,7 @@ export default {
 							base_price: r.base_price || r.price_per_night || 0,
 							capacity: r.max_guests || r.capacity || 0,
 							is_available: r.status === 'AVAILABLE' || r.is_available === true,
-							image: r.cover_image || r.image || '/static/images/img-placeholder.svg',
+							image: fixMinioUrl(r.cover_image || r.image) || '/static/images/img-placeholder.svg',
 							description: r.description || ''
 						}))
 					}
@@ -487,7 +487,7 @@ export default {
 							...this.shopInfo,
 							name: s.name,
 							fullName: s.name,
-							banner: s.banner_image || s.background_image_url || '/static/images/banner-placeholder.svg',
+							banner: fixMinioUrl(s.banner_image || s.background_image_url) || '/static/images/banner-placeholder.svg',
 							phone: s.phone || '',
 							address: s.formatted_address || s.address || this.shopInfo.address,
 							businessHours: s.config
@@ -562,7 +562,7 @@ export default {
 						name: item["name_" + i18n.getLanguage()] || item.name || item.name_en,
 						description: item.description || '',
 						price: item.price,
-						image: item.image_url || '/static/images/img-placeholder.svg',
+						image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 						category_id: item.category_id,
 						store_menu_category_id: item.store_menu_category_id,
 						business_type: item.business_type || '',

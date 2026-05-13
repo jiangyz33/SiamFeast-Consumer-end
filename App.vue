@@ -12,6 +12,9 @@ export default {
 		// 初始化状态
 		store.init()
 
+
+		// 隐藏原生 tabBar，使用自定义 tabBar
+		try { uni.hideTabBar().catch(() => {}) } catch(e) {}
 		// 检测是否是分享链接
 		this.checkShareLink()
 	},

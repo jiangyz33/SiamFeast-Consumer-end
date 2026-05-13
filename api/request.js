@@ -4,7 +4,7 @@
 import { API_BASE_URL, REQUEST_TIMEOUT, TOKEN_KEY, RESPONSE_CODE } from './config.js'
 import { getErrorMessage } from '../utils/index.js'
 
-const MINIO_BASE = 'http://106.12.91.224:9000'
+const MINIO_BASE = 'http://106.13.161.35:9000'
 const IMAGE_KEYS = ['image_url', 'logo_url', 'avatar_url', 'banner_url', 'icon_url', 'cover_url', 'img_url', 'photo_url', 'background_image_url', 'banner_image', 'thumb_url']
 
 /**
@@ -25,7 +25,7 @@ function fixImageUrls(obj) {
 			} else if (!val.startsWith('http') && !val.startsWith('/static') && !val.startsWith('data:')) {
 				obj[key] = MINIO_BASE + '/sf-uploads/' + val
 			} else if (val.includes('localhost:9000')) {
-				obj[key] = val.replace('localhost:9000', '106.12.91.224:9000')
+				obj[key] = val.replace('localhost:9000', '106.13.161.35:9000')
 			}
 		} else if (typeof val === 'object' && val !== null) {
 			fixImageUrls(val)

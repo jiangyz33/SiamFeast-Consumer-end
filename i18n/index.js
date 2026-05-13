@@ -92,7 +92,7 @@ const messages = {
 				barbecue: '烧烤',
 				hostel: '民宿',
 				hostelHotpot: '民宿火锅',
-				hostelCoffee: '民宿咖啡'
+				hostelCoffee: '民宿咖啡',
 			},
 		},
 		hostel: {
@@ -180,7 +180,11 @@ const messages = {
 				temperature: '温度',
 				sugar: '糖度',
 				size: '杯型',
-				spice_level: '辣度'
+				spice_level: '辣度',
+				spec: '规格',
+				combo: '套餐',
+				flavor: '口味',
+				toppings: '加料'
 			},
 			specOptions: {
 				hot: '热',
@@ -243,6 +247,15 @@ const messages = {
 		order: {
 			title: '我的订单',
 			all: '全部',
+			hotpot: '火锅自助',
+			hotpotPerItem: '火锅计件',
+			malatang: '麻辣烫',
+			seafoodNoodle: '海鲜面',
+			groupBuy: '拼团',
+			standardFood: '标准餐饮',
+			hostel: '民宿',
+			hostelHotpot: '民宿火锅',
+			hostelCoffee: '民宿咖啡',
 			pending: '待付款',
 			preparing: '制作中',
 			ready: '待取餐',
@@ -316,7 +329,14 @@ const messages = {
 			payPaypal: 'PayPal',
 			payCoin: '金币抵扣',
 			payCoupon: '优惠券支付',
-				pickupCode: '取餐码'
+				pickupCode: '取餐码',
+				roomInfo: '房间信息',
+				roomType: '房型',
+				roomName: '房间名',
+				checkInDate: '入住日期',
+				checkOutDate: '退房日期',
+				nightsCount: '{n}晚',
+				guestsCount: '{n}人'
 		},
 		mine: {
 			title: '我的',
@@ -377,6 +397,7 @@ const messages = {
 			resendHint: '后重新发送',
 			codeSentToast: '验证码已发送',
 			codeSendFailed: '验证码发送失败',
+				selectCountry: '选择国家/地区',
 			registerFailed: '注册失败',
 			registerSuccess: '注册成功'
 		},
@@ -531,7 +552,9 @@ const messages = {
 				productList: '商品列表',
 				searchProducts: '搜索商品',
 				sold: '已售',
-				units: '份'
+				units: '份',
+				hotItems: '招牌菜品',
+				items: '款'
 			},
 		newProducts: {
 			title: '新品上市',
@@ -559,8 +582,8 @@ const messages = {
 			soldOut: '已售罄',
 			ended: '活动已结束',
 			personGroup: '{n}人团',
-			remainCount: '剩余{count}份',
-			limitPerUser: '限购{max}份',
+			remainCount: '剩余',
+			limitPerUser: '限购',
 			shareCode: '分享码',
 			copyLink: '复制链接',
 			copySuccess: '链接已复制',
@@ -569,6 +592,12 @@ const messages = {
 			totalLabel: '合计',
 			discountRate: '{rate}折',
 			progressSold: '已售{sold}/{total}',
+		},
+		discount: {
+			searchPlaceholder: "搜索优惠菜品",
+			noProducts: "暂无优惠菜品",
+			noProductsDesc: "当前没有优惠活动",
+				off: "折",
 		},
 		error: {
 			unauthenticated: '请重新登录',
@@ -798,7 +827,11 @@ const messages = {
 				temperature: 'Temperature',
 				sugar: 'Sugar',
 				size: 'Size',
-				spice_level: 'Spice Level'
+				spice_level: 'Spice Level',
+				spec: 'Size/Spec',
+				combo: 'Combo',
+				flavor: 'Flavor',
+				toppings: 'Toppings'
 			},
 			specOptions: {
 				hot: 'Hot',
@@ -861,6 +894,14 @@ const messages = {
 		order: {
 			title: 'My Orders',
 			all: 'All',
+			hotpot: 'Hotpot Buffet',
+			hotpotPerItem: 'Hotpot A La Carte',
+			malatang: 'Malatang',
+			seafoodNoodle: 'Seafood Noodles',
+			standardFood: 'Standard Food',
+			hostel: 'Hostel',
+			hostelHotpot: 'Hostel Hotpot',
+			hostelCoffee: 'Hostel Cafe',
 			pending: 'Pending',
 			preparing: 'Preparing',
 			ready: 'Ready',
@@ -890,6 +931,7 @@ const messages = {
 			hotpot: 'Hotpot',
 			malatang: 'Malatang',
 			seafoodNoodle: 'Seafood Noodle',
+			groupBuy: 'Group Buy',
 		},
 		orderDetail: {
 			title: 'Order Details',
@@ -934,7 +976,14 @@ const messages = {
 			payPaypal: 'PayPal',
 			payCoin: 'Coins',
 			payCoupon: 'Coupon',
-				pickupCode: 'Pickup Code'
+				pickupCode: 'Pickup Code',
+				roomInfo: 'Room Info',
+				roomType: 'Room Type',
+				roomName: 'Room Name',
+				checkInDate: 'Check-in',
+				checkOutDate: 'Check-out',
+				nightsCount: '{n} nights',
+				guestsCount: '{n} guests'
 		},
 		mine: {
 			title: 'Me',
@@ -995,6 +1044,7 @@ const messages = {
 			resendHint: 'to resend',
 			codeSentToast: 'Code sent',
 			codeSendFailed: 'Failed to send code',
+				selectCountry: 'Select Country',
 			registerFailed: 'Registration failed',
 			registerSuccess: 'Registration successful'
 		},
@@ -1149,7 +1199,9 @@ const messages = {
 				productList: 'Product List',
 				searchProducts: 'Search products',
 				sold: 'Sold ',
-				units: ''
+				units: '',
+				hotItems: 'Featured',
+				items: ' items'
 			},
 		newProducts: {
 			title: 'New Arrivals',
@@ -1177,8 +1229,8 @@ const messages = {
 			soldOut: 'Sold Out',
 			ended: 'Ended',
 			personGroup: '{n}-Person Group',
-			remainCount: '{count} left',
-			limitPerUser: 'Max {max} per user',
+			remainCount: 'Remaining',
+			limitPerUser: 'Limit',
 			shareCode: 'Share Code',
 			copyLink: 'Copy Link',
 			copySuccess: 'Link copied',
@@ -1187,6 +1239,12 @@ const messages = {
 			totalLabel: 'Total',
 			discountRate: '{rate}% off',
 			progressSold: '{sold}/{total} sold',
+		},
+		discount: {
+			searchPlaceholder: "Search discount items",
+			noProducts: "No discount items",
+			noProductsDesc: "No discounts available right now",
+				off: "% off",
 		},
 				error: {
 			unauthenticated: 'Please login again',
@@ -1447,7 +1505,11 @@ const messages = {
 				temperature: 'อุณหภูมิ',
 				sugar: 'ระดับความหวาน',
 				size: 'ขนาด',
-				spice_level: 'ระดับความเผ็ด'
+				spice_level: 'ระดับความเผ็ด',
+				spec: 'ขนาด/สเปค',
+				combo: 'เซ็ตอาหาร',
+				flavor: 'รสชาติ',
+				toppings: 'เครื่องเทหล่า'
 			},
 			specOptions: {
 				hot: 'ร้อน',
@@ -1510,6 +1572,14 @@ const messages = {
 		order: {
 			title: 'คำสั่งซื้อของฉัน',
 			all: 'ทั้งหมด',
+			hotpot: 'บุฟเฟต์หมํ้ไฟ',
+			hotpotPerItem: 'หมํ้ไฟตามรายการ',
+			malatang: 'มาลาทัง',
+			seafoodNoodle: 'ก๊วยเตี๋ยวทะเล',
+			standardFood: 'อาหารทั่วไป',
+			hostel: 'โฮสเทล',
+			hostelHotpot: 'หมํ้ไฟโฮสเทล',
+			hostelCoffee: 'คาเฟ่โฮสเทล',
 			pending: 'รอชำระเงิน',
 			preparing: 'กำลังทำ',
 			ready: 'พร้อมรับ',
@@ -1539,6 +1609,7 @@ const messages = {
 			hotpot: 'หม้อไฟ',
 			malatang: 'มาลาทัง',
 			seafoodNoodle: 'ก๋วยเตี๋ยวทะเล',
+			groupBuy: 'รวม order',
 		},
 		orderDetail: {
 			title: 'รายละเอียดคำสั่งซื้อ',
@@ -1583,7 +1654,14 @@ const messages = {
 			payPaypal: 'PayPal',
 			payCoin: 'เหรียญ',
 			payCoupon: 'คูปอง',
-				pickupCode: 'รหัสรับอาหาร'
+				pickupCode: 'รหัสรับอาหาร',
+				roomInfo: 'ข้อมูลห้องพัก',
+				roomType: 'ประเภทห้อง',
+				roomName: 'ชื่อห้อง',
+				checkInDate: 'เช็คอิน',
+				checkOutDate: 'เช็คเอาท์',
+				nightsCount: '{n} คืน',
+				guestsCount: '{n} คน'
 		},
 		mine: {
 			title: 'ของฉัน',
@@ -1644,6 +1722,7 @@ const messages = {
 			resendHint: 'เพื่อส่งอีกครั้ง',
 			codeSentToast: 'ส่งรหัสแล้ว',
 			codeSendFailed: 'ส่งรหัสไม่สำเร็จ',
+				selectCountry: 'เลือกประเทศ',
 			registerFailed: 'สมัครไม่สำเร็จ',
 			registerSuccess: 'สมัครสำเร็จ'
 		},
@@ -1798,7 +1877,9 @@ const messages = {
 				productList: 'รายการสินค้า',
 				searchProducts: 'ค้นหาสินค้า',
 				sold: 'ขายแล้ว ',
-				units: 'ชิ้น'
+				units: 'ชิ้น',
+				hotItems: 'เมนูแนะนำ',
+				items: ' รายการ'
 			},
 		newProducts: {
 			title: 'สินค้าใหม่',
@@ -1826,16 +1907,22 @@ const messages = {
 			soldOut: 'หมดแล้ว',
 			ended: 'สิ้นสุดแล้ว',
 			personGroup: '{n} คน',
-			remainCount: 'เหลือ {count} ชิ้น',
-			limitPerUser: 'จำกัด {max} ชิ้น/คน',
+			remainCount: 'เหลือ',
+			limitPerUser: 'จำกัด',
 			shareCode: 'รหัสแชร์',
 			copyLink: 'คัดลอกลิงก์',
 			copySuccess: 'คัดลอกลิงก์แล้ว',
-			noProducts: 'ไม่มีสินค้ารวม order',
+			noProducts: 'ไม่มีสินค้าสำหรับรวม order',
 			quantityLabel: 'จำนวน',
 			totalLabel: 'รวม',
 			discountRate: 'ลด {rate}%',
 			progressSold: 'ขายแล้ว {sold}/{total}',
+		},
+		discount: {
+			searchPlaceholder: "ค้นหาสินค้าลดราคา",
+			noProducts: "ไม่มีสินค้าลดราคา",
+			noProductsDesc: "ไม่มีสินค้าลดราคาในขณะนี้",
+				off: "ส่วนลด",
 		},
 				error: {
 			unauthenticated: 'กรุณาเข้าสู่ระบบอีกครั้ง',

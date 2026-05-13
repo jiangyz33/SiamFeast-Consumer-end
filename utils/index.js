@@ -199,21 +199,24 @@ export function deepClone(obj) {
 
 /**
  * 修正 MinIO URL
- * 1. 相对路径 /minio-files/sf-uploads/... → http://106.12.91.224:9000/sf-uploads/...
- * 2. localhost:9000 → 106.12.91.224:9000
+ * 1. 相对路径 /minio-files/sf-uploads/... → http://106.13.161.35:9000/sf-uploads/...
+ * 2. localhost:9000 → 106.13.161.35:9000
  * @param {string} url 原始 URL
  * @returns {string} 修正后的 URL
  */
 export function fixMinioUrl(url) {
 	if (!url) return url
+	if (url.includes('106.12.91.224:9000')) {
+		return url.replace('106.12.91.224:9000', '106.13.161.35:9000')
+	}
 	if (url.startsWith('/minio-files/')) {
-		return 'http://106.12.91.224:9000/' + url.replace('/minio-files/', '')
+		return 'http://106.13.161.35:9000/' + url.replace('/minio-files/', '')
 	}
 	if (url.startsWith('/') && !url.startsWith('/static')) {
-		return 'http://106.12.91.224:9000' + url
+		return 'http://106.13.161.35:9000' + url
 	}
 	if (url.includes('localhost:9000')) {
-		return url.replace('localhost:9000', '106.12.91.224:9000')
+		return url.replace('localhost:9000', '106.13.161.35:9000')
 	}
 	return url
 }
@@ -244,6 +247,56 @@ export function getLocalDesc(obj, lang) {
 	if (l === 'en') return obj.description_en || obj.description || obj.description_th || ''
 	if (l === 'th') return obj.description_th || obj.description || obj.description_en || ''
 	return obj.description || obj.description_en || obj.description_th || ''
+}
+
+/**
+ * Map backend error codes to i18n-friendly messages
+ * @param {Object} error - error object with code/message fields
+ * @returns {string} user-friendly error message
+ */
+/**
+ * Haversine formula to calculate distance between two GPS coordinates
+ * @param {number} lat1 - Latitude of point 1
+ * @param {number} lng1 - Longitude of point 1
+ * @param {number} lat2 - Latitude of point 2
+ * @param {number} lng2 - Longitude of point 2
+ * @returns {Object} { distanceKm, distanceText, walkMinutes, bikeMinutes, walkText, bikeText }
+ */
+export function calcDistance(lat1, lng1, lat2, lng2) {
+	const R = 6371
+	const toRad = d => d * Math.PI / 180
+	const dLat = toRad(lat2 - lat1)
+	const dLng = toRad(lng2 - lng1)
+	const a = Math.sin(dLat / 2) ** 2 +
+		Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
+	const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+	const distanceKm = R * c
+
+	const distanceText = distanceKm < 1
+		? Math.round(distanceKm * 1000) + 'm'
+		: distanceKm.toFixed(1) + 'km'
+
+	const walkMinutes = Math.round(distanceKm / 5 * 60)
+	const bikeMinutes = Math.round(distanceKm / 15 * 60)
+
+	const walkText = walkMinutes < 60 ? walkMinutes + 'min' : (walkMinutes / 60).toFixed(1) + 'h'
+	const bikeText = bikeMinutes < 60 ? bikeMinutes + 'min' : (bikeMinutes / 60).toFixed(1) + 'h'
+
+	return { distanceKm, distanceText, walkMinutes, bikeMinutes, walkText, bikeText }
+}
+
+/**
+ * Get user's current GPS location (gcj02 coordinate system)
+ * @returns {Promise<{latitude: number, longitude: number}>}
+ */
+export function getUserLocation() {
+	return new Promise((resolve, reject) => {
+		uni.getLocation({
+			type: 'gcj02',
+			success: res => resolve({ latitude: res.latitude, longitude: res.longitude }),
+			fail: err => reject(err)
+		})
+	})
 }
 
 /**

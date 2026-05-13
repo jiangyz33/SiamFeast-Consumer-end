@@ -17,7 +17,7 @@
 				<input
 					class="search-input"
 					v-model="searchKeyword"
-					:placeholder="i18n.t('common.pleaseSelect') || '搜索'"
+					:placeholder="i18n.t('discount.searchPlaceholder') || '搜索优惠菜品'"
 					confirm-type="search"
 					@confirm="handleSearch"
 				/>
@@ -37,42 +37,54 @@
 						@click="switchTab(index)"
 					>
 						<image class="tab-icon" :src="tab.icon || '/static/images/store-placeholder.svg'" mode="aspectFit"></image>
-						<text class="tab-text">{{ tab["name_" + i18n.getLanguage()] || tab.name }}</text>
+						<text class="tab-text">{{ tab["name_" + lang] || tab.name }}</text>
 					</view>
 				</view>
 			</scroll-view>
 		</view>
 
 		<!-- 商品列表 -->
-		<scroll-view class="product-list" scroll-y :style="{ height: contentHeight + 'px' }" @scrolltolower="loadMore">
+		<scroll-view
+			class="product-list"
+			scroll-y
+			:style="{ height: contentHeight + 'px' }"
+			@scrolltolower="loadMore"
+			refresher-enabled
+			:refresher-triggered="refreshing"
+			@refresherrefresh="onRefresh"
+		>
 			<view class="list-container">
 				<view
 					v-for="item in products"
-					:key="item.id"
+					:key="item.menu_item_id"
 					class="product-card"
 					@click="handleProductClick(item)"
 				>
 					<!-- 商品图片 -->
 					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<!-- 折扣角标 -->
+						<view class="discount-badge" v-if="item.discount_rate && item.discount_rate < 1">
+							<text class="badge-text">{{ formatDiscount(item.discount_rate) }}</text>
+						</view>
 					</view>
 
 					<!-- 商品信息 -->
 					<view class="product-info">
 						<view class="product-header">
-							<text class="shop-name">{{ item.shopName || currentStoreName }}</text>
-							<text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
+							<text class="store-name">{{ item["store_name_" + lang] || item.store_name }}</text>
+							<text class="product-name">{{ item["menu_item_name_" + lang] || item.menu_item_name }}</text>
+							<text class="category-tag" v-if='item["category_name_" + lang] || item.category_name'>{{ item["category_name_" + lang] || item.category_name }}</text>
 						</view>
 
 						<view class="product-footer">
 							<view class="price-info">
-								<text class="price-label">{{ i18n.t("checkout.discount") }}</text>
 								<text class="price-symbol">฿</text>
-								<text class="price-num">{{ item.price }}</text>
-								<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
+								<text class="price-num">{{ item.discount_price }}</text>
+								<text class="original-price" v-if="item.original_price && item.original_price > item.discount_price">฿{{ item.original_price }}</text>
 							</view>
-							<view class="sales-info">
-								<text class="sales-text">{{ i18n.t("mine.monthlySales") }}{{ item.sales_count || 0 }}</text>
+							<view class="discount-amount" v-if="item.discount_amount">
+								<text class="amount-text">-฿{{ item.discount_amount }}</text>
 							</view>
 						</view>
 					</view>
@@ -88,8 +100,8 @@
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="!loading && products.length === 0">
 				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
-				<text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
+				<text class="empty-title">{{ i18n.t("discount.noProducts") }}</text>
+				<text class="empty-desc">{{ i18n.t("discount.noProductsDesc") }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -105,9 +117,8 @@
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import appStore from '@/store/index.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
-	import i18n from '@/i18n/index.js'
-import { getActiveCampaigns } from '@/api/services/campaign.js'
-import { searchProducts } from '@/api/services/products.js'
+import i18n from '@/i18n/index.js'
+import { getDiscountMenuItems } from '@/api/services/products.js'
 import { getConsumerCategories } from '@/api/services/menu.js'
 
 export default {
@@ -117,30 +128,35 @@ export default {
 	data() {
 		return {
 			i18n: i18n,
+			langVersion: 0,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			activeTab: 0,
-			tabs: [{ name: '全部', id: null, icon: '/static/images/store-placeholder.svg' }],
+			tabs: [{ name: '全部', name_en: 'All', name_th: 'ทั้งหมด', id: null, icon: '/static/images/store-placeholder.svg' }],
 			products: [],
 			loading: false,
+			refreshing: false,
 			noMore: false,
-			shopId: null,
-			currentStoreName: '',
+			page: 1,
+			pageSize: 20,
+			totalPages: 0,
 			searchKeyword: '',
 			isSearchMode: false
 		}
 	},
+	computed: {
+		lang() {
+			this.langVersion
+			return i18n.getLanguage()
+		}
+	},
 	onLoad() {
 		this.initPage()
-		const currentStore = appStore.getCurrentStore()
-		if (currentStore) {
-			this.shopId = currentStore.id
-			this.currentStoreName = currentStore.name || ''
-		}
 		this.loadCategories()
 		this.loadProducts()
 	},
 	methods: {
+		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -150,107 +166,138 @@ export default {
 			this.contentHeight = systemInfo.windowHeight - headerHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
 		},
 
-			async loadCategories() {
-				try {
-					const res = await getConsumerCategories()
-					if (res.code === 0 && res.data) {
-						const catRaw = res.data
-						const catItems = Array.isArray(catRaw) ? catRaw : (catRaw.items || [])
-						const cats = catItems.map(c => {
-							const rawIcon = c.icon || c.icon_url || ''
-							const icon = rawIcon ? fixMinioUrl(rawIcon) : '/static/images/store-placeholder.svg'
-							return {
-								id: c.id,
-								name: c.name,
-								name_en: c.name_en || '',
-								name_th: c.name_th || '',
-								icon: icon
-							}
-						})
-						// Deduplicate
-						const seen = new Map()
-						for (const cat of cats) {
-							const key = (cat.name_en || cat.name || '').toLowerCase()
-							if (!seen.has(key)) seen.set(key, cat)
+		async loadCategories() {
+			try {
+				const res = await getConsumerCategories()
+				if (res.code === 0 && res.data) {
+					const catRaw = res.data
+					const catItems = Array.isArray(catRaw) ? catRaw : (catRaw.items || [])
+					const cats = catItems.map(c => {
+						const rawIcon = c.icon || c.icon_url || ''
+						const icon = rawIcon ? fixMinioUrl(rawIcon) : '/static/images/store-placeholder.svg'
+						return {
+							id: c.id,
+							name: c.name,
+							name_en: c.name_en || '',
+							name_th: c.name_th || '',
+							icon: icon
 						}
-						this.tabs = [
-							{ name: '全部', name_en: 'All', name_th: 'ทั้งหมด', id: null, icon: '/static/images/store-placeholder.svg' },
-							...seen.values()
-						]
+					})
+					// Deduplicate
+					const seen = new Map()
+					for (const cat of cats) {
+						const key = (cat.name_en || cat.name || '').toLowerCase()
+						if (!seen.has(key)) seen.set(key, cat)
 					}
-				} catch (e) {
-					console.error('加载分类失败:', e)
+					this.tabs = [
+						{ name: '全部', name_en: 'All', name_th: 'ทั้งหมด', id: null, icon: '/static/images/store-placeholder.svg' },
+						...seen.values()
+					]
 				}
-			},
+			} catch (e) {
+				console.error('加载分类失败:', e)
+			}
+		},
 
-		async loadProducts() {
+		async loadProducts(reset = true) {
 			if (this.loading) return
 			this.loading = true
+
+			if (reset) {
+				this.page = 1
+				this.products = []
+				this.noMore = false
+			}
+
 			try {
+				const params = {
+					page: this.page,
+					page_size: this.pageSize
+				}
+
+				// 分类筛选
+				const selectedTab = this.tabs[this.activeTab]
+				if (selectedTab && selectedTab.id) {
+					params.category_id = selectedTab.id
+				}
+
+				// 搜索关键词
 				if (this.isSearchMode && this.searchKeyword.trim()) {
-					// 搜索模式
-					const params = { keyword: this.searchKeyword.trim(), limit: 20 }
-					if (this.shopId) params.store_id = this.shopId
-					const res = await searchProducts(params)
-					const items = res.data?.items || []
-					this.products = items
-					this.noMore = true
+					params.keyword = this.searchKeyword.trim()
+				}
+
+				// 排序
+				if (this.currentSort) {
+					params.sort = this.currentSort
+				}
+
+				const res = await getDiscountMenuItems(params)
+
+				if (res.code === 0 && res.data) {
+					const data = res.data
+					const items = data.items || []
+
+					if (reset) {
+						this.products = items
+					} else {
+						this.products = this.products.concat(items)
+					}
+
+					this.totalPages = data.total_pages || 0
+					this.noMore = this.page >= this.totalPages || items.length < this.pageSize
 				} else {
-					// 从优惠活动获取商品
-					const params = { type: 'discount' }
-					const campaignRes = await getActiveCampaigns(params)
-					let discountProducts = []
-					if (campaignRes.code === 0 && campaignRes.data) {
-						const campaignData = campaignRes.data
-					const campaigns = Array.isArray(campaignData) ? campaignData : (campaignData.items || [])
-						campaigns.forEach(c => {
-							if (c.products && c.products.length > 0) {
-								discountProducts = discountProducts.concat(c.products)
-							}
-						})
-					}
-
-					// 按分类筛选
-					const selectedTab = this.tabs[this.activeTab]
-					if (selectedTab && selectedTab.id) {
-						discountProducts = discountProducts.filter(p => p.category_id === selectedTab.id)
-					}
-
-					this.products = discountProducts
+					if (reset) this.products = []
 					this.noMore = true
 				}
 			} catch (e) {
 				console.error('加载优惠商品失败:', e)
+				if (reset) this.products = []
+				this.noMore = true
 			} finally {
 				this.loading = false
+				this.refreshing = false
 			}
+		},
+
+		onRefresh() {
+			this.refreshing = true
+			this.loadProducts(true)
+		},
+
+		loadMore() {
+			if (this.loading || this.noMore) return
+			this.page++
+			this.loadProducts(false)
 		},
 
 		handleSearch() {
 			if (!this.searchKeyword.trim()) {
 				this.isSearchMode = false
-				this.loadProducts()
+				this.loadProducts(true)
 				return
 			}
 			this.isSearchMode = true
-			this.loadProducts()
+			this.loadProducts(true)
 		},
 
 		clearSearch() {
 			this.searchKeyword = ''
 			this.isSearchMode = false
-			this.loadProducts()
+			this.loadProducts(true)
 		},
 
 		switchTab(index) {
 			if (this.activeTab === index) return
 			this.activeTab = index
 			this.isSearchMode = false
-			this.loadProducts()
+			this.loadProducts(true)
 		},
 
-		loadMore() {
-			// 优惠商品暂不翻页
+		formatDiscount(rate) {
+			if (!rate || rate >= 1) return ''
+			// 0.6655 -> "6.7折"
+			const val = Math.round(rate * 100) / 10
+			return val + i18n.t('discount.off')
 		},
 
 		goBack() {
@@ -259,7 +306,7 @@ export default {
 
 		handleProductClick(item) {
 			uni.navigateTo({
-				url: `/pages/product-detail/index?productId=${item.id}&shopId=${this.shopId || ''}`
+				url: `/pages/product-detail/index?productId=${item.menu_item_id}&shopId=${item.store_id || ''}`
 			})
 		}
 	}
@@ -408,11 +455,27 @@ export default {
 	width: 100px;
 	height: 100px;
 	flex-shrink: 0;
+	position: relative;
 }
 
 .product-image {
 	width: 100%;
 	height: 100%;
+}
+
+.discount-badge {
+	position: absolute;
+	top: 4px;
+	left: 4px;
+	background: linear-gradient(135deg, #FF4D4F, #FF2C6F);
+	border-radius: 4px;
+	padding: 2px 6px;
+}
+
+.badge-text {
+	font-size: 10px;
+	color: #FFFFFF;
+	font-weight: 600;
 }
 
 .product-info {
@@ -429,8 +492,8 @@ export default {
 	gap: 2px;
 }
 
-.shop-name {
-	font-size: 12px;
+.store-name {
+	font-size: 11px;
 	color: #00000099;
 }
 
@@ -443,12 +506,21 @@ export default {
 	white-space: nowrap;
 }
 
+.category-tag {
+	font-size: 10px;
+	color: #DA3300;
+	background-color: rgba(218, 51, 0, 0.08);
+	padding: 1px 6px;
+	border-radius: 3px;
+	align-self: flex-start;
+}
+
 .product-footer {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	margin-top: auto;
-	padding: 4px;
+	padding: 4px 6px;
 	background: linear-gradient(90deg, rgba(255, 212, 212, 0.1) 0%, rgba(255, 0, 0, 0.1) 100%);
 	border-radius: 4px;
 }
@@ -457,11 +529,6 @@ export default {
 	display: flex;
 	align-items: baseline;
 	gap: 2px;
-}
-
-.price-label {
-	font-size: 12px;
-	color: #DA3300;
 }
 
 .price-symbol {
@@ -483,14 +550,16 @@ export default {
 	margin-left: 4px;
 }
 
-.sales-info {
-	border-left: 1px solid #E0E0E0;
-	padding-left: 10px;
+.discount-amount {
+	background-color: #DA3300;
+	border-radius: 3px;
+	padding: 2px 6px;
 }
 
-.sales-text {
-	font-size: 12px;
-	color: #00000099;
+.amount-text {
+	font-size: 10px;
+	color: #FFFFFF;
+	font-weight: 500;
 }
 
 /* 加载提示 */
@@ -514,16 +583,13 @@ export default {
 	padding: 60px 0;
 }
 
-.empty-text {
-	font-size: 14px;
-	color: #00000099;
-}
 .empty-title {
 	font-size: 15px;
 	color: #333;
 	font-weight: 500;
 	margin-bottom: 6px;
 }
+
 .empty-desc {
 	font-size: 13px;
 	color: #999;

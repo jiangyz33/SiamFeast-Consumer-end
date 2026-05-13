@@ -7,9 +7,7 @@
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
 			<text class="nav-title">{{ i18n.t('groupBuy.title') }}</text>
-			<view class="nav-right" @click="handleShare">
-				<image class="share-icon" src="/static/icons/share.svg" mode="aspectFit"></image>
-			</view>
+
 		</view>
 
 		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
@@ -19,7 +17,7 @@
 
 			<view v-else-if="product" class="content-wrapper">
 				<!-- 商品图片 -->
-				<image class="hero-image" :src="product.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+				<image class="hero-image" :src="fixMinioUrl(product.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 
 				<!-- 价格区域 -->
 				<view class="price-section">
@@ -31,7 +29,7 @@
 							<text class="original-price-text">฿{{ product.original_price }}</text>
 						</view>
 						<view class="discount-tag" v-if="product.discount_rate">
-							<text class="discount-text">{{ product.discount_rate }}% OFF</text>
+							<text class="discount-text">{{ formatDiscountOff(product.discount_rate) }}</text>
 						</view>
 					</view>
 				</view>
@@ -45,15 +43,13 @@
 				<!-- 库存进度 -->
 				<view class="info-card">
 					<view class="quota-row">
-						<text class="quota-label">{{ i18n.t('groupBuy.remainCount') }}</text>
-						<text class="quota-value">{{ remainCount }}</text>
+						<text class="quota-label">{{ i18n.t('groupBuy.remainCount') }}{{ remainCount }}份</text>
 					</view>
 					<view class="progress-bar">
 						<view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
 					</view>
 					<view class="quota-row" v-if="product.max_per_user">
-						<text class="quota-label">{{ i18n.t('groupBuy.limitPerUser') }}</text>
-						<text class="quota-value">{{ product.max_per_user }}</text>
+						<text class="quota-label">{{ i18n.t('groupBuy.limitPerUser') }}{{ product.max_per_user }}份</text>
 					</view>
 				</view>
 
@@ -104,7 +100,7 @@
 
 <script>
 import i18n from '@/i18n/index.js'
-import { getGroupBuyProductDetail, getGroupBuyByShareCode, createGroupBuyOrder } from '@/api/services/groupbuy.js'
+import { getGroupBuyProductDetail } from '@/api/services/groupbuy.js'
 import { showToast, getErrorMessage, fixMinioUrl } from '@/utils/index.js'
 import appStore from '@/store/index.js'
 
@@ -153,11 +149,18 @@ export default {
 		this.initPage()
 		if (options && options.id) {
 			this.loadProduct(options.id)
-		} else if (options && options.share_code) {
-			this.loadByShareCode(options.share_code)
 		}
 	},
 	methods: {
+		fixMinioUrl,
+		formatDiscount(rate) {
+			if (!rate) return ''
+			return (rate * 10).toFixed(rate % 0.1 === 0 ? 0 : 1)
+		},
+		formatDiscountOff(rate) {
+			if (!rate) return ''
+			return Math.round((1 - rate) * 100) + '% OFF'
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -181,20 +184,6 @@ export default {
 			}
 		},
 
-		async loadByShareCode(code) {
-			this.loading = true
-			try {
-				const res = await getGroupBuyByShareCode(code)
-				if (res && res.code === 0 && res.data) {
-					this.product = this.normalizeProduct(res.data)
-				}
-			} catch (e) {
-				console.error('loadByShareCode error:', e)
-			} finally {
-				this.loading = false
-			}
-		},
-
 		normalizeProduct(p) {
 			return {
 				id: p.id,
@@ -207,7 +196,6 @@ export default {
 				total_quota: p.total_quota || 0,
 				sold_count: p.sold_count || 0,
 				max_per_user: p.max_per_user || 1,
-				share_code: p.share_code || '',
 				is_active: p.is_active !== false,
 				start_time: p.start_time || '',
 				end_time: p.end_time || ''
@@ -225,34 +213,28 @@ export default {
 			if (!this.canBuy || this.submitting) return
 			this.submitting = true
 			try {
-				const res = await createGroupBuyOrder({
-					group_buy_item_id: this.product.id,
-					quantity: this.quantity
-				})
-				if (res && res.code === 0 && res.data) {
-					const orderId = res.data.id || res.data.order_id
-					uni.redirectTo({
-						url: `/pages/payment-success/index?orderId=${orderId}&orderType=groupbuy`
-					})
-				} else {
-					const msg = (res && res.message) || this.i18n.t('common.error')
-					showToast(msg)
+				const product = this.product
+				const orderItem = {
+					id: product.id,
+					name: product.name,
+					price: product.group_price,
+					image: product.image_url,
+					quantity: this.quantity,
+					store_id: appStore.getCurrentStore()?.id || '',
+					is_group_buy: true
 				}
+				const params = [
+					'orderType=groupbuy',
+					'shopId=' + (appStore.getCurrentStore()?.id || ''),
+					'shopName=' + encodeURIComponent(appStore.getCurrentStore()?.name || ''),
+					'products=' + encodeURIComponent(JSON.stringify([orderItem]))
+				].join('&')
+				uni.navigateTo({ url: '/pages/checkout/index?' + params })
 			} catch (e) {
 				showToast(getErrorMessage(e))
 			} finally {
 				this.submitting = false
 			}
-		},
-
-		handleShare() {
-			if (!this.product || !this.product.share_code) return
-			uni.setClipboardData({
-				data: this.product.share_code,
-				success: () => {
-					showToast(this.i18n.t('groupBuy.copySuccess'))
-				}
-			})
 		},
 
 		goBack() {
@@ -309,11 +291,6 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-}
-
-.share-icon {
-	width: 20px;
-	height: 20px;
 }
 
 .content-scroll {

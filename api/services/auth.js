@@ -5,18 +5,26 @@ import { USE_MOCK, TOKEN_KEY } from '../config.js'
 import { get, post, put, patch, upload } from '../request.js'
 
 /**
- * 格式化手机号为后端要求的格式（带+66前缀）
- * 如果手机号已经以+开头则不处理，否则添加+66前缀
+ * 格式化手机号为后端要求的格式（带国际区号前缀）
+ * 如果手机号已经以+开头则不处理，否则添加 countryCode 前缀
  * @param {string} phone 手机号
+ * @param {string} [countryCode='+66'] 国际区号
  * @returns {string}
  */
-function formatPhoneForBackend(phone) {
+function formatPhoneForBackend(phone, countryCode = '+66') {
 	if (!phone) return phone
 	const trimmed = phone.trim()
 	if (trimmed.startsWith('+')) return trimmed
-	// 去掉开头的0，然后加+66
 	const digits = trimmed.replace(/^0+/, '')
-	return `+66${digits}`
+	return `${countryCode}${digits}`
+}
+
+// 当前选中的国际区号（各页面可设置）
+let _selectedCountryCode = '+66'
+export function setCountryCode(code) { _selectedCountryCode = code }
+export function getCountryCode() { return _selectedCountryCode }
+function formatWithCurrentCode(phone) {
+	return formatPhoneForBackend(phone, _selectedCountryCode)
 }
 import {
 	mockSendCode,
@@ -37,7 +45,7 @@ import {
  * @returns {Promise}
  */
 export function sendCode(phone, purpose = 'register') {
-	const formattedPhone = formatPhoneForBackend(phone)
+	const formattedPhone = formatWithCurrentCode(phone)
 	if (USE_MOCK) {
 		return mockSendCode(phone)
 	}
@@ -52,7 +60,7 @@ export function sendCode(phone, purpose = 'register') {
  * @returns {Promise}
  */
 export function loginByCode(phone, code) {
-	const formattedPhone = formatPhoneForBackend(phone)
+	const formattedPhone = formatWithCurrentCode(phone)
 	if (USE_MOCK) {
 		return mockLoginByCode(phone, code)
 	}
@@ -70,7 +78,7 @@ export function loginByCode(phone, code) {
  * @returns {Promise}
  */
 export function loginByPassword(phone, password) {
-	const formattedPhone = formatPhoneForBackend(phone)
+	const formattedPhone = formatWithCurrentCode(phone)
 	if (USE_MOCK) {
 		return mockLoginByPassword(phone, password)
 	}
@@ -97,7 +105,7 @@ export function register(data) {
 	// Backend has no separate register endpoint - sms-login auto-registers new users
 	// After login, set password via temp-login or user update
 	return post('/auth/sms-login', {
-		phone: formatPhoneForBackend(data.phone),
+		phone: formatWithCurrentCode(data.phone),
 		code: data.sms_code
 	})
 }

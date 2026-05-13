@@ -24,14 +24,20 @@ export function getPaymentMethods(storeId) {
 	return get('/payments/methods', { store_id: storeId }, { silent: true }).then(res => {
 		// 后端返回 [{method, is_enabled}]，前端需要 [{code, name}]
 		const rawMethods = Array.isArray(res.data) ? res.data : []
+		// Only show actual payment methods, exclude coupon/coin/internal types
+		const paymentOnly = ['cash_pos', 'CASH', 'visa', 'VISA', 'promptpay', 'PROMPT_PAY', 'credit_card', 'paypal']
 		const nameMap = {
-			cash_pos: '现金支付', visa: '信用卡', promptpay: 'PromptPay',
+			cash_pos: '现金支付', CASH: 'Cash',
+			visa: '信用卡', VISA: 'Visa',
+			credit_card: 'Credit Card',
+			promptpay: 'PromptPay', PROMPT_PAY: 'PromptPay',
+			paypal: 'PayPal',
 		}
 		return {
 			code: 0,
 			data: {
 				methods: rawMethods
-					.filter(m => m.is_enabled)
+					.filter(m => m.is_enabled && paymentOnly.includes(m.method))
 					.map(m => ({ code: m.method, name: nameMap[m.method] || m.method }))
 			}
 		}

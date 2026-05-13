@@ -23,7 +23,7 @@
 					@click="handleProductClick(item)"
 				>
 					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 						<view class="product-shop">
 							<view class="shop-logo-wrapper">
 								<image class="shop-logo" :src="item.storeLogo || '/static/images/banner-placeholder.svg'" mode="aspectFill"></image>
@@ -94,6 +94,7 @@ export default {
 		this.loadStores()
 	},
 	methods: {
+		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -183,7 +184,7 @@ export default {
 				id: item.id,
 				name: item['name_' + i18n.getLanguage()] || item.name,
 				price: item.price,
-				image: item.image_url || '/static/images/img-placeholder.svg',
+				image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 				quantity: 1,
 				store_id: item.store_id
 			}

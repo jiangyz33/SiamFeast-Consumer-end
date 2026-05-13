@@ -43,7 +43,7 @@
 					:key="banner.id"
 					@click="handleBannerClick(banner)"
 				>
-					<image class="banner-image" :src="banner.image_url" mode="aspectFill"></image>
+					<image class="banner-image" :src="fixMinioUrl(banner.image_url)" mode="aspectFill"></image>
 				</swiper-item>
 			</swiper>
 			<view v-else class="top-banner">
@@ -87,7 +87,7 @@
 						</view>
 					</view>
 					<view class="zone-content" v-if="discountProduct">
-						<image class="zone-image" :src="discountProduct.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<image class="zone-image" :src="fixMinioUrl(discountProduct.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 						<view class="zone-info">
 							<text class="zone-name">{{ discountProduct["name_" + i18n.getLanguage()] || discountProduct.name }}</text>
 							<view class="zone-price">
@@ -113,7 +113,7 @@
 						</view>
 					</view>
 					<view class="zone-content" v-if="groupProduct">
-						<image class="zone-image" :src="groupProduct.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<image class="zone-image" :src="fixMinioUrl(groupProduct.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 						<view class="zone-info">
 							<text class="zone-name">{{ groupProduct["name_" + i18n.getLanguage()] || groupProduct.name }}</text>
 							<view class="zone-price">
@@ -142,7 +142,7 @@
 					@click="handleStoreClick(store)"
 				>
 					<view class="store-card-main">
-						<image class="store-card-logo" :src="store.logo_url || store.logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
+						<image class="store-card-logo" :src="fixMinioUrl(store.logo_url || store.logo) || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
 						<view class="store-card-info">
 							<view class="store-card-header">
 								<text class="store-card-name">{{ store["name_" + i18n.getLanguage()] || store.name }}</text>
@@ -164,7 +164,8 @@
 					<view class="store-card-footer">
 						<view class="store-card-distance">
 							<image class="store-card-distance-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-							<text class="store-card-distance-text">{{ store.formatted_address || store.address }}</text>
+							<text class="store-card-distance-text" v-if="store.distance">{{ store.distance }}</text>
+							<text class="store-card-distance-text" v-else>{{ store.formatted_address || store.address }}</text>
 						</view>
 						<view class="store-card-actions">
 							<view class="store-card-enter">
@@ -197,7 +198,7 @@
 </template>
 
 <script>
-import { showToast, fixMinioUrl } from '@/utils/index.js'
+import { showToast, fixMinioUrl, calcDistance, getUserLocation } from '@/utils/index.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import LanguageModal from '@/components/language-modal.vue'
 import i18n from '@/i18n/index.js'
@@ -240,6 +241,7 @@ export default {
 		this.loadMallData()
 	},
 	methods: {
+		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -316,12 +318,12 @@ export default {
 				if (storesRes.status === 'fulfilled' && storesRes.value.code === 0 && storesRes.value.data) {
 					const data = storesRes.value.data
 					const list = Array.isArray(data) ? data : (data.items || [])
-					this.stores = list.map(store => ({
+					const storeList = list.map(store => ({
 						id: store.id,
 						name: store.name,
 						name_en: store.name_en || '',
 						name_th: store.name_th || '',
-						logo_url: store.logo_url || '',
+						logo_url: fixMinioUrl(store.logo_url) || '',
 						logo: store.logo || '/static/images/store-placeholder.svg',
 						phone: store.phone || '',
 						status: store.status || 'OPEN',
@@ -333,9 +335,27 @@ export default {
 						businessHours: store.config
 							? store.config.opening_time?.slice(0,5) + '-' + store.config.closing_time?.slice(0,5)
 							: '11:00-22:00',
-						distance: store.distance || '',
+						distance: '',
+						distanceKm: Infinity,
 						business_types: store.business_types || []
 					}))
+					// Calculate distance for each store
+					try {
+						const loc = await getUserLocation()
+						storeList.forEach(s => {
+							if (s.latitude && s.longitude) {
+								const info = calcDistance(loc.latitude, loc.longitude, s.latitude, s.longitude)
+								if (info) {
+									s.distance = info.distanceText
+									s.distanceKm = info.distanceKm
+								}
+							}
+						})
+						storeList.sort((a, b) => a.distanceKm - b.distanceKm)
+					} catch(e) {
+						console.warn('getLocation for mall failed:', e)
+					}
+					this.stores = storeList
 				}
 
 			} catch (e) {

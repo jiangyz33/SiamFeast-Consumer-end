@@ -29,7 +29,7 @@
 		<scroll-view v-else class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<!-- 商品图片 -->
 			<view class="product-image-section">
-				<image class="product-image" :src="product.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+				<image class="product-image" :src="fixMinioUrl(product.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 			</view>
 
 			<!-- 商品信息卡片 -->
@@ -113,7 +113,7 @@
 						class="recommend-item"
 						@click="handleRecommendClick(item)"
 					>
-						<image class="recommend-image" :src="item.image_url || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+						<image class="recommend-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 						<text class="recommend-name">{{ item['name_' + i18n.getLanguage()] || item.name || item.name_en }}</text>
 						<view class="recommend-price">
 							<text class="recommend-price-symbol">฿</text>
@@ -156,7 +156,7 @@
 </template>
 
 <script>
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
 import { shareProduct, ShareType } from '@/utils/share.js'
 import ShareModal from '@/components/share-modal.vue'
 import i18n from '@/i18n/index.js'
@@ -210,6 +210,7 @@ export default {
 		}
 	},
 	methods: {
+		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -239,7 +240,7 @@ export default {
 					footprintManager.addProductFootprint({
 						id: this.product.id,
 						name: this.product.name,
-						image: this.product.image_url,
+						image: fixMinioUrl(this.product.image_url),
 						price: this.product.price,
 						tags: this.product.tags,
 						shopId: this.shopId,
@@ -304,7 +305,7 @@ export default {
 						target_id: this.productId,
 						type: 'product',
 						name: this.product.name || '',
-						image_url: this.product.image_url || '',
+						image_url: fixMinioUrl(this.product.image_url) || '',
 						price: this.product.price || 0
 					})
 					if (res.code === 0) {
@@ -326,7 +327,7 @@ export default {
 					id: this.product.id || this.productId,
 					name: this.product.name || '',
 					price: this.product.price || 0,
-					image: this.product.image_url || '',
+					image: fixMinioUrl(this.product.image_url) || '',
 					quantity: 1,
 					specs: {},
 					store_id: this.shopId
@@ -347,7 +348,7 @@ export default {
 				id: this.product.id || this.productId,
 				name: this.product.name || '',
 				price: this.product.price || 0,
-				image: this.product.image_url || '',
+				image: fixMinioUrl(this.product.image_url) || '',
 				quantity: 1,
 				store_id: this.shopId
 			}
@@ -370,7 +371,7 @@ export default {
 						id: this.productId,
 						name: this.product.name || '',
 						price: this.product.price || 0,
-						image: this.product.image_url || ''
+						image: fixMinioUrl(this.product.image_url) || ''
 					},
 					{
 						id: this.shopId || 1,
@@ -384,7 +385,7 @@ export default {
 						id: this.productId,
 						name: this.product.name || '',
 						price: this.product.price || 0,
-						image: this.product.image_url || '',
+						image: fixMinioUrl(this.product.image_url) || '',
 						shopId: this.shopId || 1,
 						shopName: shopName
 					}

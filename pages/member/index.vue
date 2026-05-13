@@ -172,7 +172,7 @@ import { showToast, formatPhone, fixMinioUrl } from '@/utils/index.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import UpgradeAnimation from '@/components/upgrade-animation.vue'
 import i18n from '@/i18n/index.js'
-import { getMemberInfo, getMemberProgress } from '@/api/services/member.js'
+import { getMemberInfo, getMemberProgress, getMemberBalance, getMemberPoints } from '@/api/services/member.js'
 	import { getUserInfo } from '@/api/services/auth.js'
 import { getMyCoupons } from '@/api/services/coupon.js'
 import { getStores } from '@/api/services/store.js'
@@ -242,8 +242,6 @@ export default {
 					if (info.avatar_url) info.avatar_url = fixMinioUrl(info.avatar_url)
 					this.userInfo = info
 					store.setUserInfo(info)
-				this.userBalance = info.coin_balance || 0
-				this.userPoints = info.point_balance || 0
 				}
 			} catch(e) {
 				console.error('refreshUserInfo error:', e)
@@ -330,16 +328,18 @@ export default {
 			try {
 				const results = await Promise.allSettled([
 					getMemberProgress(),
+					getMemberBalance(),
+					getMemberPoints(),
 					getMyCoupons({ status: 'UNUSED' }),
 					getStores({ limit: 3 }),
 				])
 
-				const [progressRes, couponsRes, storesRes] = results;
+				const [progressRes, balanceRes, pointsRes, couponsRes, storesRes] = results;
 
 				// 会员等级进度
 				if (progressRes.status === 'fulfilled' && progressRes.value.code === 0 && progressRes.value.data) {
 					const d = progressRes.value.data
-					this.consumedAmount = d.total_spent || d.current_spent || 0
+					this.consumedAmount = d.current_spent || d.total_spent || 0
 					this.totalAmount = d.threshold || d.required_for_next || 200
 						const isBackendPlatinum = d.current_tier === 'PLATINUM'
 						const hasMetGoal = this.consumedAmount >= this.totalAmount
@@ -359,6 +359,16 @@ export default {
 
 
 
+				// 余额
+				if (balanceRes.status === 'fulfilled' && balanceRes.value.code === 0 && balanceRes.value.data) {
+					this.userBalance = balanceRes.value.data.balance || 0
+				}
+
+				// 积分
+				if (pointsRes.status === 'fulfilled' && pointsRes.value.code === 0 && pointsRes.value.data) {
+					this.userPoints = pointsRes.value.data.balance || 0
+				}
+
 				// 优惠券数量
 				if (couponsRes.status === 'fulfilled' && couponsRes.value.code === 0 && couponsRes.value.data) {
 					const items = couponsRes.value.data.items || couponsRes.value.data || []
@@ -373,7 +383,7 @@ export default {
 						name: s.name,
 						name_en: s.name_en || '',
 						name_th: s.name_th || '',
-						logo: s.logo || s.image_url || '/static/images/store-placeholder.svg',
+						logo: fixMinioUrl(s.logo || s.image_url) || '/static/images/store-placeholder.svg',
 						status: s.status || 'OPEN',
 						businessHours: s.business_hours || '',
 						tags: s.business_types || [s.name]

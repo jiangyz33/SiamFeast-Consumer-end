@@ -101,7 +101,7 @@
 				>
 					<view class="store-main">
 						<view class="store-left">
-							<image class="store-logo" :src="store.logo_url || store.logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
+							<image class="store-logo" :src="fixMinioUrl(store.logo_url || store.logo) || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
 						</view>
 						<view class="store-info">
 							<view class="store-header">
@@ -165,7 +165,7 @@
 </template>
 
 <script>
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl } from '@/utils/index.js'
 import {
 	getUserLocation,
 	reverseGeocode,
@@ -243,6 +243,7 @@ export default {
 	},
 	// #endif
 	methods: {
+		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -510,7 +511,7 @@ export default {
 					store_longitude: s.store_longitude || s.longitude,
 					name_en: s.name_en || '',
 					name_th: s.name_th || '',
-					logo_url: s.logo_url || '',
+					logo_url: fixMinioUrl(s.logo_url) || '',
 					logo: s.logo || '/static/images/store-placeholder.svg',
 					phone: s.phone || '',
 					formatted_address: s.formatted_address || '',
@@ -570,7 +571,7 @@ export default {
 				latitude: store.store_latitude,
 				longitude: store.store_longitude,
 				title: store.store_name,
-				iconPath: store.logo_url || '/static/images/store-placeholder.svg',
+				iconPath: fixMinioUrl(store.logo_url) || '/static/images/store-placeholder.svg',
 				width: 28,
 				height: 28,
 				callout: {
@@ -640,7 +641,7 @@ export default {
 					name_th: selectedStore.name_th || '',
 					latitude: selectedStore.store_latitude,
 					longitude: selectedStore.store_longitude,
-					logo_url: selectedStore.logo_url || '',
+					logo_url: fixMinioUrl(selectedStore.logo_url) || '',
 					logo: selectedStore.logo || '/static/images/store-placeholder.svg',
 					phone: selectedStore.phone || '',
 					formatted_address: selectedStore.formatted_address || '',
