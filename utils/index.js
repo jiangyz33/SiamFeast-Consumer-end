@@ -199,24 +199,29 @@ export function deepClone(obj) {
 
 /**
  * 修正 MinIO URL
- * 1. 相对路径 /minio-files/sf-uploads/... → http://106.13.161.35:9000/sf-uploads/...
- * 2. localhost:9000 → 106.13.161.35:9000
+ * 1. 相对路径 /minio-files/sf-uploads/... → http://34.15.175.23:9000/sf-uploads/...
+ * 2. localhost:9000 → 34.15.175.23:9000
  * @param {string} url 原始 URL
  * @returns {string} 修正后的 URL
  */
+const OLD_MINIO_HOSTS = ['106.12.91.224:9000', '106.13.161.35:9000', 'localhost:9000', '127.0.0.1:9000']
+const NEW_MINIO_BASE = 'http://34.15.175.23:9000'
+
 export function fixMinioUrl(url) {
 	if (!url) return url
-	if (url.includes('106.12.91.224:9000')) {
-		return url.replace('106.12.91.224:9000', '106.13.161.35:9000')
+	for (const old of OLD_MINIO_HOSTS) {
+		if (url.includes(old)) {
+			return url.replace(old, '34.15.175.23:9000')
+		}
 	}
 	if (url.startsWith('/minio-files/')) {
-		return 'http://106.13.161.35:9000/' + url.replace('/minio-files/', '')
+		return NEW_MINIO_BASE + '/' + url.replace('/minio-files/', '')
 	}
 	if (url.startsWith('/') && !url.startsWith('/static')) {
-		return 'http://106.13.161.35:9000' + url
+		return NEW_MINIO_BASE + url
 	}
-	if (url.includes('localhost:9000')) {
-		return url.replace('localhost:9000', '106.13.161.35:9000')
+	if (!url.startsWith('http') && !url.startsWith('/static') && !url.startsWith('data:')) {
+		return NEW_MINIO_BASE + '/sf-uploads/' + url
 	}
 	return url
 }

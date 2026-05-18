@@ -4,7 +4,8 @@
 import { API_BASE_URL, REQUEST_TIMEOUT, TOKEN_KEY, RESPONSE_CODE } from './config.js'
 import { getErrorMessage } from '../utils/index.js'
 
-const MINIO_BASE = 'http://106.13.161.35:9000'
+const MINIO_BASE = 'http://34.15.175.23:9000'
+const OLD_MINIO_HOSTS = ['106.12.91.224:9000', '106.13.161.35:9000', 'localhost:9000', '127.0.0.1:9000']
 const IMAGE_KEYS = ['image_url', 'logo_url', 'avatar_url', 'banner_url', 'icon_url', 'cover_url', 'img_url', 'photo_url', 'background_image_url', 'banner_image', 'thumb_url']
 
 /**
@@ -18,6 +19,8 @@ function fixImageUrls(obj) {
 		if (typeof val === 'string' && IMAGE_KEYS.includes(key)) {
 			if (val.includes('example.com')) {
 				obj[key] = ''
+			} else if (OLD_MINIO_HOSTS.some(h => val.includes(h))) {
+				let fixed = val; for (const h of OLD_MINIO_HOSTS) { fixed = fixed.replace(h, '34.15.175.23:9000') }; obj[key] = fixed
 			} else if (val.startsWith('/minio-files/')) {
 				obj[key] = MINIO_BASE + val.replace('/minio-files/', '/')
 			} else if (val.startsWith('/') && !val.startsWith('/static')) {
@@ -25,7 +28,7 @@ function fixImageUrls(obj) {
 			} else if (!val.startsWith('http') && !val.startsWith('/static') && !val.startsWith('data:')) {
 				obj[key] = MINIO_BASE + '/sf-uploads/' + val
 			} else if (val.includes('localhost:9000')) {
-				obj[key] = val.replace('localhost:9000', '106.13.161.35:9000')
+				obj[key] = val.replace('localhost:9000', '34.15.175.23:9000')
 			}
 		} else if (typeof val === 'object' && val !== null) {
 			fixImageUrls(val)

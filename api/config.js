@@ -6,7 +6,7 @@
 export const USE_MOCK = false
 
 // API 基础地址
-export const API_BASE_URL = 'http://106.13.161.35:8082/api/v1'
+export const API_BASE_URL = 'http://34.15.175.23:8082/api/v1'
 
 // 请求超时时间
 export const REQUEST_TIMEOUT = 30000
