@@ -12,7 +12,7 @@ export const API_BASE_URL = 'http://34.15.175.23:8082/api/v1'
 export const REQUEST_TIMEOUT = 30000
 
 // Google Maps 配置
-export const GOOGLE_MAPS_API_KEY = 'AIzaSyCncTTCnMqHvieNF-mxsPbrufYTHk3BQ_I'
+export const GOOGLE_MAPS_API_KEY = 'AIzaSyAyM66cLMc7pJ15UU2w5dvmeCco_vn0WkA'
 
 // Token 存储 key
 export const TOKEN_KEY = 'siamfeast_token'
