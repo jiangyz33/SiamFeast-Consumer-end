@@ -53,8 +53,8 @@ const messages = {
 			switchStore: '切换门店',
 			dineIn: '堂食',
 			dineInDesc: '优惠提前领',
-			mall: '商城',
-			mallDesc: '更多美食饮品',
+			mall: '外卖',
+			mallDesc: '外卖送到家',
 			memberLevel: '普通会员',
 			coupons: '优惠券',
 			coins: '金币',
@@ -292,7 +292,8 @@ const messages = {
 			storeInfo: '门店信息',
 			paymentInfo: '支付信息',
 			orderStatus: '订单状态',
-			productList: '商品列表',
+			all: '全部',
+				productList: '商品列表',
 			loading: '加载中...',
 			estDelivery: '预计{time}分钟送达',
 			tableNo: '桌号：{no}',
@@ -719,8 +720,8 @@ const messages = {
 			switchStore: 'Switch Store',
 			dineIn: 'Dine In',
 			dineInDesc: 'Get coupons early',
-			mall: 'Mall',
-			mallDesc: 'More food & drinks',
+			mall: 'Takeaway',
+			mallDesc: 'Delivery to your door',
 			memberLevel: 'Member',
 			coupons: 'Coupons',
 			coins: 'Coins',
@@ -1196,6 +1197,7 @@ const messages = {
 			all: 'All'
 		},
 			products: {
+				all: 'All',
 				productList: 'Product List',
 				searchProducts: 'Search products',
 				sold: 'Sold ',
@@ -1365,8 +1367,8 @@ const messages = {
 			switchStore: 'เปลี่ยนร้าน',
 			dineIn: 'ทานที่ร้าน',
 			dineInDesc: 'รับคูปองล่วงหน้า',
-			mall: 'ห้าง',
-			mallDesc: 'อาหารและเครื่องดื่มเพิ่มเติม',
+			mall: 'กลับบ้าน',
+			mallDesc: 'ส่งถึงบ้าน',
 			memberLevel: 'สมาชิก',
 			coupons: 'คูปอง',
 			coins: 'เหรียญ',
@@ -1462,15 +1464,15 @@ const messages = {
 		},
 		dinein: {
 			rating: 'คะแนน',
+			categories: {
+				discount: 'ส่วนลด',
+				group: 'รวม order',
+				dishes: 'เมนู'
+			},
 			businessHours: 'เวลาทำการ',
 			distance: 'ระยะทาง',
 			bikeTime: 'จักรยาน',
 			walkTime: 'เดิน',
-			categories: {
-				discount: 'โปรโมชั่น',
-				group: 'กรุ๊ป',
-				dishes: 'เมนู'
-			},
 			newCustomerOffer: 'โปรโมชั่นลูกค้าใหม่',
 			newCustomerDesc: 'ลด 10 บาท เมื่อซื้อครบ 50 · ทานที่ร้านเท่านั้น',
 			addToCart: 'เพิ่มลงตะกร้าแล้ว',
@@ -1484,12 +1486,8 @@ const messages = {
 				cartTitle: 'ตะกร้า',
 				clearCart: 'ล้าง',
 				cartEmpty: 'ตะกร้าว่างเปล่า',
-			categories: {
-				discount: 'ส่วนลด',
-				group: 'รวม order',
 				selectStoreTitle: 'เลือกสาขา',
 				selectStoreMsg: 'กรุณาเลือกสาขาก่อน'
-			}
 		},
 		productDetail: {
 			specs: 'ตัวเลือก',
@@ -1617,7 +1615,8 @@ const messages = {
 			storeInfo: 'ข้อมูลร้าน',
 			paymentInfo: 'ข้อมูลการชำระเงิน',
 			orderStatus: 'สถานะ',
-			productList: 'รายการสินค้า',
+			all: 'ทั้งหมด',
+				productList: 'รายการสินค้า',
 			loading: 'กำลังโหลด...',
 			estDelivery: 'คาดว่าจะส่งถึงใน {time} นาที',
 			tableNo: 'โต๊ะ: {no}',

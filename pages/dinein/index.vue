@@ -48,14 +48,6 @@
 				<!-- category tabs -->
 				<view class="category-tabs">
 					<view
-						v-if="isHostel"
-						class="category-tab"
-						:class="{ 'category-tab-active': activeCategory === -1 }"
-						@click="selectCategory(-1)"
-					>
-						<text class="category-tab-text">{{ i18n.t('hostel.rooms') }}</text>
-					</view>
-					<view
 						v-for="(item, index) in categories"
 						:key="index"
 						class="category-tab"
@@ -66,64 +58,8 @@
 					</view>
 				</view>
 
-
-				<!-- room list (hostel mode, room tab selected) -->
-				<view class="product-section" v-if="isHostel && activeCategory === -1">
-					<view class="hostel-date-bar" @click="openDatePicker">
-						<view class="hostel-date-item">
-							<text class='hostel-date-label'>{{ i18n.t('hostel.checkIn') }}</text>
-							<text class='hostel-date-value'>{{ hostelCheckIn || i18n.t('hostel.selectDate') }}</text>
-						</view>
-						<view class="hostel-date-night">
-							<text class='hostel-night-pill'>{{ hostelNights }}{{ i18n.t('hostel.nights') }}</text>
-						</view>
-						<view class="hostel-date-item">
-							<text class='hostel-date-label'>{{ i18n.t('hostel.checkOut') }}</text>
-							<text class='hostel-date-value'>{{ hostelCheckOut || i18n.t('hostel.selectDate') }}</text>
-						</view>
-					</view>
-					<view v-if="hostelRooms.length === 0 && !loading" class="hostel-empty">
-						<text class='hostel-empty-text'>{{ i18n.t('hostel.noRooms') }}</text>
-					</view>
-					<view v-for="room in hostelRooms" :key="room.id" class="room-card" @click="handleBookRoom(room)">
-						<view class="room-card-img">
-							<image class='room-card-image' :src="room.image || '/static/images/empty-room.svg'" mode='aspectFill'></image>
-							<view class="room-card-badge" v-if="!room.is_available">
-								<text class='room-card-badge-text'>{{ i18n.t('hostel.full') }}</text>
-							</view>
-						</view>
-						<view class="room-card-content">
-							<view class="room-name-row">
-								<text class="room-card-name">{{ room["name_" + i18n.getLanguage()] || room.name }}</text>
-								<view class="room-spec-chip" v-if="room.capacity">
-									<text class="room-spec-chip-text">{{ room.capacity }}{{ i18n.t("hostel.person") }}</text>
-								</view>
-							</view>
-							<text class="room-card-desc" v-if="room.description">{{ room["description_" + i18n.getLanguage()] || room.description }}</text>
-							<view class="room-card-specs">
-								<view class="room-spec-chip" v-if="room.bed_count">
-									<text class="room-spec-chip-text">{{ room.bed_count }}{{ i18n.t("hostel.beds") }}</text>
-								</view>
-								<view class="room-spec-chip" v-if="room.room_size">
-									<text class="room-spec-chip-text">{{ room.room_size }}m²</text>
-								</view>
-							</view>
-							<view class="room-card-footer">
-								<view class="room-card-price">
-									<text class="room-price-symbol">฿</text>
-									<text class="room-price-num">{{ room.base_price }}</text>
-									<text class="room-price-unit">/{{ i18n.t("hostel.perNight") }}</text>
-								</view>
-								<view class="room-book-btn" :class='{ "room-book-btn-disabled": !room.is_available }'>
-									<text class="room-book-btn-text">{{ room.is_available ? i18n.t("hostel.book") : i18n.t("hostel.full") }}</text>
-								</view>
-							</view>
-						</view>
-					</view>
-				</view>
-
 				<!-- product list (non-room tab) -->
-				<view class="product-section" v-if="!isHostel || activeCategory !== -1">
+				<view class="product-section">
 					<view
 						v-for="(item, index) in currentProducts"
 					:key="index"
@@ -224,49 +160,6 @@
 			@confirm="handleShareConfirm"
 		></share-modal>
 
-			<!-- date picker popup -->
-			<view class="dp-mask" v-if="showDatePicker" @click="closeDatePicker"></view>
-			<view class="dp-popup" :class="{ 'dp-popup-show': showDatePicker }" v-if="showDatePicker">
-				<view class="dp-header">
-					<text class="dp-title">{{ datePickerStep === 'checkin' ? i18n.t('hostel.checkIn') : i18n.t('hostel.checkOut') }}</text>
-					<view class="dp-close" @click="closeDatePicker">
-						<text class="dp-close-text">×</text>
-					</view>
-				</view>
-				<view class="dp-nav">
-					<view class="dp-nav-btn" @click="prevMonth">
-						<text class="dp-nav-arrow">‹</text>
-					</view>
-					<text class="dp-nav-label">{{ calendarYear }}/{{ String(calendarMonth).padStart(2, '0') }}</text>
-					<view class="dp-nav-btn" @click="nextMonth">
-						<text class="dp-nav-arrow">›</text>
-					</view>
-				</view>
-				<view class="dp-weekdays">
-					<text class="dp-weekday" v-for="d in weekDays" :key="d">{{ d }}</text>
-				</view>
-				<view class="dp-days">
-					<view
-						v-for="(day, idx) in calendarDays"
-						:key="idx"
-						class="dp-day"
-						:class="{
-							'dp-day-empty': !day,
-							'dp-day-selected': day && isDaySelected(day),
-							'dp-day-in-range': day && isDayInRange(day),
-							'dp-day-disabled': day && isDayDisabled(day)
-						}"
-						@click="selectDay(day)"
-					>
-						<text class="dp-day-text" v-if="day">{{ day }}</text>
-					</view>
-				</view>
-				<view class="dp-footer">
-					<view class="dp-confirm-btn" @click="confirmDatePicker">
-						<text class="dp-confirm-text">{{ i18n.t('common.confirm') }}</text>
-					</view>
-				</view>
-			</view>
 			<!-- 规格选择弹窗 -->
 			<view class="spec-mask" v-if="showSpecPopup" @click="closeSpecPopup"></view>
 			<view class="spec-popup" :class="{ 'spec-popup-show': showSpecPopup }" v-if="specProduct">
@@ -328,7 +221,6 @@ import i18n from '@/i18n/index.js'
 import { getStore } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
 import { getConsumerCategories, getConsumerMenuItems, } from '@/api/services/menu.js'
-import { getAvailableRooms } from '@/api/services/hostel.js'
 
 export default {
 	components: {
@@ -347,7 +239,7 @@ export default {
 			showShareModal: false,
 			showCartPopup: false,
 			loading: false,
-			isHostel: false,
+				orderType: 'dinein',
 			shareInfo: {
 				type: 'shop',
 				id: '',
@@ -374,14 +266,6 @@ export default {
 			specGroups: [],
 			selectedSpecs: {},
 			specQuantity: 1,
-			hostelRooms: [],
-			hostelCheckIn: '',
-			hostelCheckOut: '',
-			hostelNights: 0,
-				showDatePicker: false,
-				datePickerStep: 'checkin',
-				calendarYear: new Date().getFullYear(),
-				calendarMonth: new Date().getMonth() + 1,
 		}
 	},
 	computed: {
@@ -395,19 +279,9 @@ export default {
 				}
 				return this.allProducts.filter(p => p.store_menu_category_id === catId || p.category_id === catId)
 			},
-			weekDays() {
-				return i18n.t('common.weekDays')
-			},
-			calendarDays() {
-				const firstDay = new Date(this.calendarYear, this.calendarMonth - 1, 1).getDay()
-				const daysInMonth = new Date(this.calendarYear, this.calendarMonth, 0).getDate()
-				const days = []
-				for (let i = 0; i < firstDay; i++) days.push(0)
-				for (let i = 1; i <= daysInMonth; i++) days.push(i)
-				return days
-			},
 	},
 	onLoad(options) {
+			this.orderType = options.orderType || 'dinein'
 		this.initShopInfo(options)
 		this.initPage()
 		if (this.shopInfo.id) {
@@ -531,13 +405,6 @@ export default {
 					}
 					this.updateShopDistance()
 
-					// Detect hotel/hostel type - enable room tab
-					const hostelTypes = ["HOTEL", "HOSTEL_ROOM", "HOSTEL_HOTPOT", "HOSTEL_COFFEE"]
-					this.isHostel = storeBusinessTypes.some(t => hostelTypes.includes(t))
-					if (this.isHostel) {
-						this.activeCategory = -1
-						this.loadHostelRooms()
-					}
 				}
 
 				// 记录门店浏览足迹
@@ -566,7 +433,7 @@ export default {
 
 					// Step 3: Load categories from global categories API
 					await this.loadFallbackCategories()
-					if (!this.isHostel && this.categories.length > 0) {
+					if (this.categories.length > 0) {
 						this.activeCategory = 0
 					}
 
@@ -627,7 +494,7 @@ export default {
 
 			if (!businessTypes || !businessTypes.length) return null
 
-			// Match the first known food business_type (exclude hostel types)
+			// Match the first known food business_type
 
 			const foodTypes = ["HOTPOT_BUFFET", "HOTPOT_PER_ITEM", "MALA_TANG", "SEAFOOD_NOODLE", "STANDARD_FOOD"]
 
@@ -637,16 +504,8 @@ export default {
 
 			}
 
-			// Fallback: return first non-hostel type
-
-			const hostelTypes = ["HOSTEL_ROOM", "HOSTEL_HOTPOT", "HOSTEL_COFFEE"]
-
-			const nonHostel = businessTypes.find(t => !hostelTypes.includes(t))
-
-			return nonHostel || null
-
-		},
-
+			return null
+			},
 
 		normalizeProduct(item) {
 			const lang = i18n.getLanguage()
@@ -677,128 +536,6 @@ export default {
 				specs_config: item.specs_config || {}
 			}
 		},
-
-			async loadHostelRooms() {
-				if (!this.shopInfo.id) return
-				try {
-					const checkIn = this.hostelCheckIn || this.getDefaultDate(0)
-					const checkOut = this.hostelCheckOut || this.getDefaultDate(1)
-					const res = await getAvailableRooms(this.shopInfo.id, {
-						check_in_date: checkIn,
-						check_out_date: checkOut
-					})
-					if (res.code === 0 && res.data) {
-						const d = res.data
-						const rawHR = Array.isArray(d) ? d : (d.data || d.available_rooms || d.rooms || [])
-						this.hostelRooms = rawHR.map(r => ({
-							id: r.id,
-							name: r.room_type_name || r.name || ('Room ' + r.room_number),
-							room_number: r.room_number,
-							base_price: r.base_price,
-							capacity: r.max_guests || r.capacity || 0,
-							bed_count: r.bed_count || 0,
-							is_available: r.status === 'AVAILABLE' || r.is_available === true,
-							image: fixMinioUrl(r.cover_image || r.image) || '/static/images/img-placeholder.svg',
-							description: r.description || ''
-						}))
-					}
-				} catch (e) {
-					console.error('loadHostelRooms error:', e)
-					this.hostelRooms = []
-				}
-			},
-			getDefaultDate(offsetDays) {
-				const d = new Date()
-				d.setDate(d.getDate() + offsetDays)
-				return d.toISOString().slice(0, 10)
-			},
-				openDatePicker() {
-					this.datePickerStep = this.hostelCheckIn ? 'checkout' : 'checkin'
-					this.calendarYear = new Date().getFullYear()
-					this.calendarMonth = new Date().getMonth() + 1
-					this.showDatePicker = true
-				},
-				closeDatePicker() {
-					this.showDatePicker = false
-				},
-				prevMonth() {
-					if (this.calendarMonth === 1) {
-						this.calendarMonth = 12
-						this.calendarYear--
-					} else {
-						this.calendarMonth--
-					}
-				},
-				nextMonth() {
-					if (this.calendarMonth === 12) {
-						this.calendarMonth = 1
-						this.calendarYear++
-					} else {
-						this.calendarMonth++
-					}
-				},
-				isDayDisabled(day) {
-					const dateStr = this.calendarYear + '-' + String(this.calendarMonth).padStart(2,'0') + '-' + String(day).padStart(2,'0')
-					const today = new Date(); today.setHours(0,0,0,0)
-					const d = new Date(dateStr); d.setHours(0,0,0,0)
-					if (d < today) return true
-					if (this.datePickerStep === 'checkout' && this.hostelCheckIn) {
-						const cin = new Date(this.hostelCheckIn); cin.setHours(0,0,0,0)
-						if (d <= cin) return true
-					}
-					return false
-				},
-				isDaySelected(day) {
-					const dateStr = this.calendarYear + '-' + String(this.calendarMonth).padStart(2,'0') + '-' + String(day).padStart(2,'0')
-					if (this.datePickerStep === 'checkin' && this.hostelCheckIn === dateStr) return true
-					if (this.datePickerStep === 'checkout' && this.hostelCheckOut === dateStr) return true
-					return false
-				},
-				isDayInRange(day) {
-					if (!this.hostelCheckIn || !this.hostelCheckOut) return false
-					const dateStr = this.calendarYear + '-' + String(this.calendarMonth).padStart(2,'0') + '-' + String(day).padStart(2,'0')
-					const d = new Date(dateStr).getTime()
-					const cin = new Date(this.hostelCheckIn).getTime()
-					const cout = new Date(this.hostelCheckOut).getTime()
-					return d > cin && d < cout
-				},
-				selectDay(day) {
-					if (this.isDayDisabled(day)) return
-					const dateStr = this.calendarYear + '-' + String(this.calendarMonth).padStart(2,'0') + '-' + String(day).padStart(2,'0')
-					if (this.datePickerStep === 'checkin') {
-						this.hostelCheckIn = dateStr
-						this.hostelCheckOut = ''
-						this.datePickerStep = 'checkout'
-					} else {
-						this.hostelCheckOut = dateStr
-					}
-					this.updateNights()
-				},
-				updateNights() {
-					if (this.hostelCheckIn && this.hostelCheckOut) {
-						const cin = new Date(this.hostelCheckIn)
-						const cout = new Date(this.hostelCheckOut)
-						const diff = (cout - cin) / (1000 * 60 * 60 * 24)
-						this.hostelNights = Math.max(0, Math.round(diff))
-					} else {
-						this.hostelNights = 0
-					}
-				},
-				confirmDatePicker() {
-					this.showDatePicker = false
-					if (this.hostelCheckIn && this.hostelCheckOut && this.hostelNights > 0) {
-						this.loadHostelRooms()
-					}
-				},
-			handleBookRoom(room) {
-				if (!room.is_available) {
-					showToast(i18n.t('hostel.roomFull'))
-					return
-				}
-				uni.navigateTo({
-					url: `/pages/hostel/booking?roomId=${room.id}&roomName=${encodeURIComponent(room["name_" + i18n.getLanguage()] || room.name)}&roomPrice=${room.base_price}&checkIn=${this.hostelCheckIn}&checkOut=${this.hostelCheckOut}&nights=${this.hostelNights}&storeId=${this.shopInfo.id}&storeName=${encodeURIComponent(this.shopInfo["name_" + i18n.getLanguage()] || this.shopInfo.name)}&capacity=${room.capacity || 0}`
-				})
-			},
 
 		goBack() {
 			uni.navigateBack()
@@ -949,7 +686,7 @@ export default {
 		handleCartClick() {
 			const productsStr = encodeURIComponent(JSON.stringify(this.cartItems))
 			uni.navigateTo({
-				url: `/pages/checkout/index?orderType=dinein&shopId=${this.shopInfo.id || ''}&shopName=${encodeURIComponent(this.shopInfo.name)}&products=${productsStr}`
+				url: `/pages/checkout/index?orderType=${this.orderType}&shopId=${this.shopInfo.id || ''}&shopName=${encodeURIComponent(this.shopInfo.name)}&products=${productsStr}`
 			})
 		},
 
@@ -1302,171 +1039,6 @@ export default {
 	height: 3px;
 	background-color: #F2B131;
 	border-radius: 2px;
-}
-
-
-/* 民宿日期栏 */
-.hostel-date-bar {
-	display: flex;
-	align-items: center;
-	background-color: #FFFFFF;
-	border-radius: 12px;
-	padding: 14px 16px;
-	gap: 12px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
-}
-.hostel-date-item {
-	flex: 1;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-.hostel-date-label {
-	font-size: 11px;
-	color: #949494;
-	font-weight: 500;
-}
-.hostel-date-value {
-	font-size: 14px;
-	color: rgba(0, 0, 0, 0.85);
-	font-weight: 600;
-}
-.hostel-date-night {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-.hostel-night-pill {
-	font-size: 12px;
-	font-weight: 600;
-	color: #F2B131;
-	background-color: rgba(242, 177, 49, 0.12);
-	padding: 4px 12px;
-	border-radius: 12px;
-}
-.hostel-empty {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 60px 0;
-}
-.hostel-empty-text {
-	font-size: 14px;
-	color: #949494;
-}
-
-/* 客房卡片 */
-.room-card {
-	background-color: #FFFFFF;
-	border-radius: 14px;
-	overflow: hidden;
-	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-	transition: transform 0.2s, box-shadow 0.2s;
-}
-.room-card:active {
-	transform: scale(0.98);
-	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-}
-.room-card-img {
-	width: 100%;
-	height: 180px;
-	position: relative;
-}
-.room-card-image {
-	width: 100%;
-	height: 100%;
-}
-.room-card-badge {
-	position: absolute;
-	top: 10px;
-	right: 10px;
-	background-color: rgba(0, 0, 0, 0.6);
-	padding: 3px 10px;
-	border-radius: 10px;
-}
-.room-card-badge-text {
-	font-size: 11px;
-	color: #FFFFFF;
-	font-weight: 500;
-}
-.room-card-content {
-	padding: 14px 16px 16px;
-}
-.room-name-row {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	margin-bottom: 4px;
-}
-.room-card-name {
-	font-size: 16px;
-	font-weight: 700;
-	color: rgba(0, 0, 0, 0.88);
-}
-.room-card-desc {
-	font-size: 12px;
-	color: #949494;
-	display: block;
-	margin-bottom: 10px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-.room-card-specs {
-	display: flex;
-	gap: 8px;
-	margin-bottom: 14px;
-}
-.room-spec-chip {
-	background-color: #F7F7F7;
-	padding: 4px 10px;
-	border-radius: 6px;
-}
-.room-spec-chip-text {
-	font-size: 11px;
-	color: rgba(0, 0, 0, 0.55);
-	font-weight: 500;
-}
-.room-card-footer {
-	display: flex;
-	align-items: flex-end;
-	justify-content: space-between;
-}
-.room-card-price {
-	display: flex;
-	align-items: baseline;
-	gap: 2px;
-}
-.room-price-symbol {
-	font-size: 14px;
-	font-weight: 600;
-	color: #F2B131;
-}
-.room-price-num {
-	font-size: 24px;
-	font-weight: 700;
-	color: #F2B131;
-}
-.room-price-unit {
-	font-size: 12px;
-	color: #949494;
-}
-.room-book-btn {
-	background-color: #F2B131;
-	padding: 8px 24px;
-	border-radius: 18px;
-	transition: opacity 0.2s;
-}
-.room-book-btn:active {
-	opacity: 0.85;
-}
-.room-book-btn-disabled {
-	background-color: #D9D9D9;
-}
-.room-book-btn-text {
-	font-size: 14px;
-	font-weight: 600;
-	color: #FFFFFF;
 }
 
 /* 商品列表 */
@@ -1863,173 +1435,6 @@ export default {
 /* 底部占位 */
 .bottom-placeholder {
 	height: 120px;
-}
-
-
-
-/* date picker popup */
-.dp-mask {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.45);
-	z-index: 300;
-}
-.dp-popup {
-	position: fixed;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%) scale(0.9);
-	width: 340px;
-	max-width: 90vw;
-	background-color: #FFFFFF;
-	border-radius: 16px;
-	z-index: 301;
-	opacity: 0;
-	transition: transform 0.25s ease, opacity 0.3s ease;
-	overflow: hidden;
-}
-.dp-popup-show {
-	transform: translate(-50%, -50%) scale(1);
-	opacity: 1;
-}
-.dp-header {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	position: relative;
-	padding: 18px 16px 12px;
-}
-.dp-title {
-	font-size: 17px;
-	font-weight: 700;
-	color: rgba(0, 0, 0, 0.88);
-}
-.dp-close {
-	position: absolute;
-	right: 16px;
-	top: 16px;
-	width: 28px;
-	height: 28px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 14px;
-}
-.dp-close:active {
-	background-color: #F5F5F5;
-}
-.dp-close-text {
-	font-size: 22px;
-	color: #949494;
-	line-height: 1;
-}
-.dp-nav {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 24px;
-	padding: 8px 0 16px;
-}
-.dp-nav-btn {
-	width: 32px;
-	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 16px;
-}
-.dp-nav-btn:active {
-	background-color: #F5F5F5;
-}
-.dp-nav-arrow {
-	font-size: 20px;
-	color: rgba(0, 0, 0, 0.6);
-}
-.dp-nav-label {
-	font-size: 16px;
-	font-weight: 600;
-	color: rgba(0, 0, 0, 0.8);
-	min-width: 80px;
-	text-align: center;
-}
-.dp-weekdays {
-	display: flex;
-	padding: 0 12px;
-	margin-bottom: 8px;
-}
-.dp-weekday {
-	flex: 1;
-	text-align: center;
-	font-size: 12px;
-	color: #949494;
-	font-weight: 500;
-}
-.dp-days {
-	display: flex;
-	flex-wrap: wrap;
-	padding: 0 12px;
-}
-.dp-day {
-	width: 14.28%;
-	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: 22px;
-	transition: background-color 0.15s;
-}
-.dp-day:active {
-	background-color: #F5F5F5;
-}
-.dp-day-empty {
-	pointer-events: none;
-}
-.dp-day-text {
-	font-size: 15px;
-	color: rgba(0, 0, 0, 0.8);
-}
-.dp-day-selected {
-	background-color: #F2B131;
-}
-.dp-day-selected .dp-day-text {
-	color: #FFFFFF;
-	font-weight: 700;
-}
-.dp-day-in-range {
-	background-color: rgba(242, 177, 49, 0.12);
-}
-.dp-day-in-range .dp-day-text {
-	color: #F2B131;
-}
-.dp-day-disabled {
-	pointer-events: none;
-}
-.dp-day-disabled .dp-day-text {
-	color: #D9D9D9;
-}
-.dp-footer {
-	padding: 12px 16px;
-	padding-bottom: calc(12px + env(safe-area-inset-bottom));
-	border-top: 1px solid #F5F5F5;
-}
-.dp-confirm-btn {
-	height: 46px;
-	background-color: #F2B131;
-	border-radius: 23px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-.dp-confirm-btn:active {
-	opacity: 0.85;
-}
-.dp-confirm-text {
-	font-size: 16px;
-	font-weight: 600;
-	color: #FFFFFF;
 }
 
 /* 规格选择弹窗 */

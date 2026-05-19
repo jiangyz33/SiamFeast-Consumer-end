@@ -187,14 +187,6 @@ const store = {
 			console.error('clearCurrentStore error:', e)
 		}
 		},
-		isPureHostelStore() {
-			const s = this.getCurrentStore()
-			if (!s) return false
-			const types = s.business_types || []
-			if (!types.includes('HOSTEL_ROOM')) return false
-			const nonHostelTypes = ['HOTPOT_BUFFET', 'HOTPOT_PER_ITEM', 'MALA_TANG', 'SEAFOOD_NOODLE', 'HOSTEL_HOTPOT', 'HOSTEL_COFFEE', 'STANDARD_FOOD']
-			return !types.some(t => nonHostelTypes.includes(t))
-		},
 
 		getCart(storeId) {
 			try {

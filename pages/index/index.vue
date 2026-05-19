@@ -52,7 +52,7 @@
 				<image class="banner-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 			</view>
 
-			<!-- 堂食/商城 Tab切换 -->
+			<!-- 堂食/外卖 Tab切换 -->
 			<view class="main-tabs">
 				<view class="main-tabs-wrapper">
 					<view
@@ -505,13 +505,20 @@ export default {
 		switchMainTab(index) {
 			this.activeMainTab = index
 			if (index === 1) {
-				// 商城 - 跳转到商城页面
+				// 外卖 - 跳转到外卖门店列表
 				uni.navigateTo({
 					url: '/pages/mall/index'
 				})
 			} else {
-				// 堂食 - 跳转到堂食页面
-				uni.navigateTo({ url: "/pages/dinein/index?shopId=" + (this.currentStoreId || "") })
+				// 堂食
+				const store = appStore.getCurrentStore()
+				if (store && store.id && !store.delivery_enabled) {
+					// 已选择堂食店，直接进入点餐
+					uni.navigateTo({ url: '/pages/dinein/index?shopId=' + store.id })
+				} else {
+					// 未选择堂食店，进入堂食店铺列表
+					uni.navigateTo({ url: '/pages/dinein-stores/index' })
+				}
 			}
 		},
 

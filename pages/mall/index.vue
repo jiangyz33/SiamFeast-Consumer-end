@@ -294,7 +294,7 @@ export default {
 				// 经营分类列表
 				if (catRes.status === 'fulfilled' && catRes.value.code === 0 && catRes.value.data) {
 					const btItems = Array.isArray(catRes.value.data) ? catRes.value.data : []
-					const apiCategories = btItems.filter(bt => bt.is_active !== false && bt.code !== 'HOSTEL_ROOM').map(bt => ({
+					const apiCategories = btItems.filter(bt => bt.is_active !== false && !['HOSTEL_ROOM','HOSTEL_HOTPOT','HOSTEL_COFFEE'].includes(bt.code)).map(bt => ({
 						id: bt.code,
 						name: bt.name,
 						name_en: bt.name_en || '',
@@ -355,7 +355,7 @@ export default {
 					} catch(e) {
 						console.warn('getLocation for mall failed:', e)
 					}
-					this.stores = storeList
+					this.stores = storeList.filter(s => s.delivery_enabled)
 				}
 
 			} catch (e) {
@@ -438,7 +438,7 @@ export default {
 
 	handleStoreClick(store) {
 		uni.navigateTo({
-			url: `/pages/dinein/index?shopId=${store.id}`
+			url: `/pages/dinein/index?shopId=${store.id}&orderType=delivery`
 		})
 	},
 

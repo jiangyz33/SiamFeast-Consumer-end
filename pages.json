@@ -10,6 +10,15 @@
 			}
 		},
 		{
+			"path": "pages/dinein-stores/index",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
 			"path": "pages/mall/index",
 			"style": {
 				"navigationStyle": "custom",
