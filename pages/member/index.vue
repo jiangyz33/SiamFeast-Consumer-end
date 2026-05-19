@@ -215,6 +215,9 @@ export default {
 		this.statusBarHeight = systemInfo.statusBarHeight || 20
 	},
 	onShow() {
+			// #ifdef APP-PLUS
+			try { uni.hideTabBar({ animation: false }) } catch(e) {}
+			// #endif
 			uni.$emit('tabbarUpdate')
 			const cached = store.getUserInfo()
 			if (cached) this.userInfo = cached
@@ -225,7 +228,6 @@ export default {
 	methods: {
 		async refreshUserInfo() {
 			try {
-				// /member/info 有余额等会员数据，/users/me 有昵称头像
 				const [memberRes, userRes] = await Promise.all([
 					getMemberInfo().catch(() => null),
 					getUserInfo().catch(() => null)
@@ -233,6 +235,10 @@ export default {
 				let info = {}
 				if (memberRes && memberRes.code === 0 && memberRes.data) {
 					info = { ...memberRes.data }
+					if (info.coin_balance !== undefined) this.userBalance = info.coin_balance
+					else if (info.balance !== undefined) this.userBalance = info.balance
+					if (info.points_balance !== undefined) this.userPoints = info.points_balance
+					else if (info.points !== undefined) this.userPoints = info.points
 				}
 				if (userRes) {
 					const ud = userRes.data || userRes

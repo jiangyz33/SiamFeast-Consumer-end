@@ -168,6 +168,9 @@ export default {
 		this.contentHeight = systemInfo.windowHeight - headerHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
 	},
 	onShow() {
+			// #ifdef APP-PLUS
+			try { uni.hideTabBar({ animation: false }) } catch(e) {}
+			// #endif
 			uni.$emit('tabbarUpdate')
 			this.initTabs()
 		this.offset = 0

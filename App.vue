@@ -12,9 +12,26 @@ export default {
 		// 初始化状态
 		store.init()
 
+		// #ifdef APP-PLUS
+		// 禁用原生导航栏，避免双导航栏问题
+		const currentWebview = this.$scope.$getAppWebview()
+		if (currentWebview) {
+			const titleNView = currentWebview.getTitleNView()
+			if (titleNView) titleNView.hide()
+			currentWebview.addEventListener('titleUpdate', function() {
+				const nView = currentWebview.getTitleNView()
+				if (nView) nView.hide()
+			})
+		}
+		// #endif
 
 		// 隐藏原生 tabBar，使用自定义 tabBar
-		try { uni.hideTabBar().catch(() => {}) } catch(e) {}
+		try { uni.hideTabBar({ animation: false }) } catch(e) {}
+		// App端强制隐藏原生tabBar
+		// #ifdef APP-PLUS
+		setTimeout(() => { try { uni.hideTabBar({ animation: false }) } catch(e) {} }, 100)
+		setTimeout(() => { try { uni.hideTabBar({ animation: false }) } catch(e) {} }, 500)
+		// #endif
 		// 检测是否是分享链接
 		this.checkShareLink()
 	},

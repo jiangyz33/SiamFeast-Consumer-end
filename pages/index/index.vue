@@ -248,6 +248,9 @@ export default {
 			uni.$off("languageChanged")
 	},
 	onShow() {
+		// #ifdef APP-PLUS
+		try { uni.hideTabBar({ animation: false }) } catch(e) {}
+		// #endif
 		uni.$emit("tabbarUpdate")
 		// 每次显示时刷新会员数据和统计
 		this.loadMemberData()
