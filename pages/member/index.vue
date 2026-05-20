@@ -172,7 +172,7 @@ import { showToast, formatPhone, fixMinioUrl } from '@/utils/index.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import UpgradeAnimation from '@/components/upgrade-animation.vue'
 import i18n from '@/i18n/index.js'
-import { getMemberInfo, getMemberProgress, getMemberBalance, getMemberPoints } from '@/api/services/member.js'
+import { getMemberInfo, getMemberProgress } from '@/api/services/member.js'
 	import { getUserInfo } from '@/api/services/auth.js'
 import { getMyCoupons } from '@/api/services/coupon.js'
 import { getStores } from '@/api/services/store.js'
@@ -235,11 +235,7 @@ export default {
 				let info = {}
 				if (memberRes && memberRes.code === 0 && memberRes.data) {
 					info = { ...memberRes.data }
-					if (info.coin_balance !== undefined) this.userBalance = info.coin_balance
-					else if (info.balance !== undefined) this.userBalance = info.balance
-					if (info.points_balance !== undefined) this.userPoints = info.points_balance
-					else if (info.points !== undefined) this.userPoints = info.points
-				}
+									}
 				if (userRes) {
 					const ud = userRes.data || userRes
 					if (ud) info = { ...info, ...ud }
@@ -333,14 +329,20 @@ export default {
 		async loadMemberData() {
 			try {
 				const results = await Promise.allSettled([
+					getMemberInfo(),
 					getMemberProgress(),
-					getMemberBalance(),
-					getMemberPoints(),
 					getMyCoupons({ status: 'UNUSED' }),
 					getStores({ limit: 3 }),
 				])
 
-				const [progressRes, balanceRes, pointsRes, couponsRes, storesRes] = results;
+				const [memberInfoRes, progressRes, couponsRes, storesRes] = results;
+
+				// balance & points from getMemberInfo
+				if (memberInfoRes.status === 'fulfilled' && memberInfoRes.value.code === 0 && memberInfoRes.value.data) {
+					const info = memberInfoRes.value.data
+					this.userBalance = info.coin_balance ?? 0
+					this.userPoints = info.point_balance ?? 0
+				}
 
 				// 会员等级进度
 				if (progressRes.status === 'fulfilled' && progressRes.value.code === 0 && progressRes.value.data) {
@@ -366,14 +368,7 @@ export default {
 
 
 				// 余额
-				if (balanceRes.status === 'fulfilled' && balanceRes.value.code === 0 && balanceRes.value.data) {
-					this.userBalance = balanceRes.value.data.balance || 0
-				}
 
-				// 积分
-				if (pointsRes.status === 'fulfilled' && pointsRes.value.code === 0 && pointsRes.value.data) {
-					this.userPoints = pointsRes.value.data.balance || 0
-				}
 
 				// 优惠券数量
 				if (couponsRes.status === 'fulfilled' && couponsRes.value.code === 0 && couponsRes.value.data) {

@@ -324,8 +324,8 @@ export default {
 					if (infoRes.status === 'fulfilled' && infoRes.value.code === 0 && infoRes.value.data) {
 						const info = infoRes.value.data
 						this.memberInfo = { ...this.memberInfo, ...info }
-				this.coinBalance = info.coin_balance || 0
-				this.points = info.point_balance || 0
+				this.coinBalance = info.coin_balance ?? 0
+				this.points = info.point_balance ?? 0
 				}
 				if (couponsRes.status === 'fulfilled' && couponsRes.value.code === 0 && couponsRes.value.data) {
 					const d = couponsRes.value.data

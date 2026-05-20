@@ -203,7 +203,7 @@ import CustomTabbar from '@/components/custom-tabbar.vue'
 import LanguageModal from '@/components/language-modal.vue'
 import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
-import { getStore, getStores } from '@/api/services/store.js'
+import { getPublicStores } from '@/api/services/store.js'
 import { getBusinessTypes } from '@/api/services/store.js'
 import { getMallBanners } from '@/api/services/banner.js'
 import { getGlobalNotice } from '@/api/services/notice.js'
@@ -272,7 +272,7 @@ export default {
 					getMallBanners(),
 					getGlobalNotice(),
 					getBusinessTypes(),
-					getStores({}, { silent: true })
+					getPublicStores({ delivery_enabled: 'true' })
 				])
 
 				// 轮播图
@@ -355,7 +355,7 @@ export default {
 					} catch(e) {
 						console.warn('getLocation for mall failed:', e)
 					}
-					this.stores = storeList.filter(s => s.delivery_enabled)
+					this.stores = storeList
 				}
 
 			} catch (e) {

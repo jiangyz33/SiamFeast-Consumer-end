@@ -20,22 +20,9 @@
 		<!-- 内容区域 -->
 		<scroll-view v-else class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<!-- 配送方式选择 -->
-			<view class="delivery-tabs">
-				<view
-					class="delivery-tab"
-					:class="{ 'delivery-tab-active': deliveryType === 'delivery' }"
-					@click="switchDeliveryType('delivery')"
-				>
-					<text class="delivery-tab-text">配送</text>
+				<view class="delivery-type-badge" v-if="deliveryType === 'delivery'">
+					<text class="badge-text">外卖配送</text>
 				</view>
-				<view
-					class="delivery-tab"
-					:class="{ 'delivery-tab-active': deliveryType === 'pickup' }"
-					@click="switchDeliveryType('pickup')"
-				>
-					<text class="delivery-tab-text">到店自取</text>
-				</view>
-			</view>
 
 			<!-- 分隔线 -->
 			<view class="divider"></view>
@@ -360,6 +347,7 @@ export default {
 			addressInfo: null,
 			shopInfo: {
 				id: 1,
+				delivery_enabled: false,
 				name: '芭堤雅泰式火锅',
 				address: '四惠·远洋天地二期'
 			},
@@ -417,6 +405,8 @@ export default {
 			this.orderType = options.orderType
 			if (this.orderType === 'dinein') {
 				this.deliveryType = 'pickup'
+			} else if (this.orderType === 'delivery') {
+				this.deliveryType = 'delivery'
 			}
 		}
 		if (options.shopId) {
@@ -481,6 +471,8 @@ export default {
 								business_types: s.business_types || []
 							}
 							this.deliveryFee = s.config?.delivery_fee || 0
+						// Lock delivery type based on store's delivery_enabled
+						this.deliveryType = s.delivery_enabled ? 'delivery' : 'pickup'
 						}
 					} catch (e) {
 						console.error('加载门店详情失败:', e)
@@ -567,9 +559,6 @@ export default {
 			}
 		},
 
-		switchDeliveryType(type) {
-			this.deliveryType = type
-		},
 
 		formatSpecs(specs) {
 			if (!specs) return ''
@@ -820,29 +809,20 @@ export default {
 	background-color: #F3F3F3;
 }
 
-.delivery-tabs {
-	display: flex;
-	background-color: #FFFFFF;
-	padding: 0 16px;
-}
-
-.delivery-tab {
-	flex: 1;
-	height: 40px;
+.delivery-type-badge {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding: 10px 16px;
+	background-color: #FFFFFF;
 }
-
-.delivery-tab-text {
-	font-size: 14px;
-	font-weight: 500;
-	color: #00000099;
-}
-
-.delivery-tab-active .delivery-tab-text {
-	font-weight: 700;
-	color: #000000CC;
+.badge-text {
+	font-size: 13px;
+	font-weight: 600;
+	color: #F2B131;
+	padding: 4px 16px;
+	background-color: #FFF8E1;
+	border-radius: 14px;
 }
 
 .divider {

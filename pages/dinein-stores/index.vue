@@ -37,6 +37,7 @@
 					:class="{ 'category-active': activeCategory === -1 }"
 					@click="selectCategory(-1)"
 				>
+					<image class="category-icon" src="/static/icons/cat-all.svg" mode="aspectFit"></image>
 					<text class="category-name">{{ i18n.t('products.all') || '全部' }}</text>
 				</view>
 				<view
@@ -46,6 +47,7 @@
 					:class="{ 'category-active': activeCategory === index }"
 					@click="selectCategory(index)"
 				>
+					<image class="category-icon" :src="getCategoryIcon(cat)" mode="aspectFit"></image>
 					<text class="category-name">{{ cat['name_' + lang] || cat.name }}</text>
 				</view>
 			</view>
@@ -129,7 +131,7 @@
 import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
 import { fixMinioUrl, calcDistance, getUserLocation } from '@/utils/index.js'
-import { getPublicStores, getStores, getBusinessTypes } from '@/api/services/store.js'
+import { getPublicStores, getBusinessTypes } from '@/api/services/store.js'
 import { getConsumerMenuItems } from '@/api/services/menu.js'
 
 export default {
@@ -179,7 +181,7 @@ export default {
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
 			const navBarHeight = 44
 			const searchBarHeight = 44
-			const catBarHeight = 40
+			const catBarHeight = 72
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
 			this.contentHeight = systemInfo.windowHeight - navBarHeight - searchBarHeight - catBarHeight - safeAreaBottom - this.statusBarHeight
 		},
@@ -189,7 +191,7 @@ export default {
 			try {
 				const [catRes, storesRes] = await Promise.allSettled([
 					getBusinessTypes(),
-					getStores({}, { silent: true })
+					getPublicStores({ delivery_enabled: 'false' })
 				])
 
 				// 分类列表
@@ -203,7 +205,8 @@ export default {
 							name: bt.name,
 							name_en: bt.name_en || '',
 							name_th: bt.name_th || '',
-							code: bt.code
+							code: bt.code,
+							icon_url: bt.icon_url || ''
 						}))
 				}
 
@@ -212,7 +215,7 @@ export default {
 					const data = storesRes.value.data
 					const list = Array.isArray(data) ? data : (data.items || [])
 
-					// 只保留堂食店（delivery_enabled === false 或未设置）
+
 					let dineinStores = list.filter(s => !s.delivery_enabled)
 
 					// 计算距离并排序
@@ -257,6 +260,13 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+
+		getCategoryIcon(cat) {
+			if (cat.icon_url) {
+				return fixMinioUrl(cat.icon_url)
+			}
+			return '/static/images/img-placeholder.svg'
 		},
 
 		getStoreBanner(store) {
@@ -333,11 +343,31 @@ export default {
 .clear-text { font-size: 12px; color: #FFFFFF; }
 
 /* 分类栏 */
-.category-scroll { height: 40px; background-color: #FFFFFF; white-space: nowrap; border-bottom: 1px solid #F3F3F3; }
-.category-list { display: flex; padding: 0 16px; height: 40px; align-items: center; gap: 20px; }
-.category-item { flex-shrink: 0; }
-.category-name { font-size: 13px; color: #828282; }
-.category-active .category-name { color: #F2B131; font-weight: 600; }
+.category-scroll {
+	height: 72px; background-color: #FFFFFF; white-space: nowrap;
+	border-bottom: 1px solid #F3F3F3;
+}
+.category-list {
+	display: flex; padding: 8px 16px; align-items: flex-start; gap: 16px;
+}
+.category-item {
+	flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
+	width: 52px;
+}
+.category-icon {
+	width: 36px; height: 36px; border-radius: 10px; background-color: #FFF8E8;
+	margin-bottom: 4px;
+}
+.category-name {
+	font-size: 11px; color: #828282; text-align: center;
+	width: 52px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.category-active .category-icon {
+	background-color: rgba(242, 177, 49, 0.2);
+}
+.category-active .category-name {
+	color: #F2B131; font-weight: 600;
+}
 
 /* 店铺列表 */
 .store-scroll { flex: 1; }

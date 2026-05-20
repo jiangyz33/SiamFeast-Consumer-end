@@ -275,13 +275,15 @@ export default {
 			})
 		},
 
-		switchLanguage() {
-			const langs = ['zh', 'en', 'th'];
-			const current = i18n.getLanguage();
-			const nextIdx = (langs.indexOf(current) + 1) % langs.length;
-			i18n.setLanguage(langs[nextIdx]);
-			showToast(this.t('language.switchSuccess'));
-		},
+			switchLanguage() {
+				const langs = ['zh', 'en', 'th'];
+				const current = i18n.getLanguage();
+				const nextIdx = (langs.indexOf(current) + 1) % langs.length;
+				i18n.setLanguage(langs[nextIdx]);
+				this.langVersion++;
+				this.$forceUpdate();
+				showToast(this.t('language.switchSuccess'));
+			},
 
 		goRegister() {
 			uni.navigateTo({

@@ -550,6 +550,7 @@ const messages = {
 			all: '全部'
 		},
 			products: {
+				all: '全部',
 				productList: '商品列表',
 				searchProducts: '搜索商品',
 				sold: '已售',
@@ -1873,6 +1874,7 @@ const messages = {
 			all: 'ทั้งหมด'
 		},
 			products: {
+				all: 'ทั้งหมด',
 				productList: 'รายการสินค้า',
 				searchProducts: 'ค้นหาสินค้า',
 				sold: 'ขายแล้ว ',
