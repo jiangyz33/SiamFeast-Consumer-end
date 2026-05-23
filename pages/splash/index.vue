@@ -1,6 +1,6 @@
 <template>
 	<view class="splash-page">
-		<image class="splash-bg" src="/static/images/03_splash.jpg" mode="aspectFill"></image>
+		<image class="splash-bg" src="/static/images/03_splash.png" mode="aspectFill"></image>
 		<view class="splash-loading">
 			<view class="dot dot1" :class="{ 'dot-animate': started }"></view>
 			<view class="dot dot2" :class="{ 'dot-animate': started }"></view>

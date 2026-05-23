@@ -5,7 +5,6 @@
     "versionName" : "1.0.0",
     "versionCode" : "100",
     "transformPx" : false,
-    /* 5+App特有相关 */
     "app-plus" : {
         "usingComponents" : true,
         "nvueStyleCompiler" : "uni-app",
@@ -16,49 +15,10 @@
             "autoclose" : true,
             "delay" : 0
         },
-        "launchview" : {
-            "image" : "static/images/03_splash.jpg"
-        },
-        /* 模块配置 */
         "modules" : {
             "Maps" : {}
         },
-        /* 应用图标 */
-        "icon" : {
-            "android" : {
-                "hdpi" : "static/images/02_Icon-App.png",
-                "xhdpi" : "static/images/02_Icon-App.png",
-                "xxhdpi" : "static/images/02_Icon-App.png",
-                "xxxhdpi" : "static/images/02_Icon-App.png"
-            },
-            "ios" : {
-                "appstore" : "static/images/02_Icon-App.png",
-                "ipad" : {
-                    "app" : "static/images/02_Icon-App.png",
-                    "app@2x" : "static/images/02_Icon-App.png",
-                    "notification" : "static/images/02_Icon-App.png",
-                    "notification@2x" : "static/images/02_Icon-App.png",
-                    "proapp@2x" : "static/images/02_Icon-App.png",
-                    "settings" : "static/images/02_Icon-App.png",
-                    "settings@2x" : "static/images/02_Icon-App.png",
-                    "spotlight" : "static/images/02_Icon-App.png",
-                    "spotlight@2x" : "static/images/02_Icon-App.png"
-                },
-                "iphone" : {
-                    "app@2x" : "static/images/02_Icon-App.png",
-                    "app@3x" : "static/images/02_Icon-App.png",
-                    "notification@2x" : "static/images/02_Icon-App.png",
-                    "notification@3x" : "static/images/02_Icon-App.png",
-                    "settings@2x" : "static/images/02_Icon-App.png",
-                    "settings@3x" : "static/images/02_Icon-App.png",
-                    "spotlight@2x" : "static/images/02_Icon-App.png",
-                    "spotlight@3x" : "static/images/02_Icon-App.png"
-                }
-            }
-        },
-        /* 应用发布信息 */
         "distribute" : {
-            /* android打包配置 */
             "android" : {
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
@@ -80,7 +40,6 @@
                     "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>"
                 ]
             },
-            /* ios打包配置 */
             "ios" : {
                 "privacyDescription" : {
                     "NSLocationWhenInUseUsageDescription" : "SiamFeast需要获取您的位置以推荐附近门店",
@@ -88,13 +47,58 @@
                 },
                 "dSYMs" : false
             },
-            /* SDK配置 */
+            "icons" : {
+                "android" : {
+                    "hdpi" : "static/images/02_Icon-App.png",
+                    "xhdpi" : "static/images/02_Icon-App.png",
+                    "xxhdpi" : "static/images/02_Icon-App.png",
+                    "xxxhdpi" : "static/images/02_Icon-App.png"
+                },
+                "ios" : {
+                    "appstore" : "static/images/02_Icon-App.png",
+                    "ipad" : {
+                        "app" : "static/images/02_Icon-App.png",
+                        "app@2x" : "static/images/02_Icon-App.png",
+                        "notification" : "static/images/02_Icon-App.png",
+                        "notification@2x" : "static/images/02_Icon-App.png",
+                        "proapp@2x" : "static/images/02_Icon-App.png",
+                        "settings" : "static/images/02_Icon-App.png",
+                        "settings@2x" : "static/images/02_Icon-App.png",
+                        "spotlight" : "static/images/02_Icon-App.png",
+                        "spotlight@2x" : "static/images/02_Icon-App.png"
+                    },
+                    "iphone" : {
+                        "app@2x" : "static/images/02_Icon-App.png",
+                        "app@3x" : "static/images/02_Icon-App.png",
+                        "notification@2x" : "static/images/02_Icon-App.png",
+                        "notification@3x" : "static/images/02_Icon-App.png",
+                        "settings@2x" : "static/images/02_Icon-App.png",
+                        "settings@3x" : "static/images/02_Icon-App.png",
+                        "spotlight@2x" : "static/images/02_Icon-App.png",
+                        "spotlight@3x" : "static/images/02_Icon-App.png"
+                    }
+                }
+            },
+            "splashscreen" : {
+                "android" : {
+                    "hdpi" : "static/images/03_splash.png",
+                    "xhdpi" : "static/images/03_splash.png",
+                    "xxhdpi" : "static/images/03_splash.png",
+                    "xxxhdpi" : "static/images/03_splash.png"
+                },
+                "ios" : {
+                    "iphone" : {
+                        "portrait-896h@3x" : "static/images/03_splash.png"
+                    },
+                    "ipad" : {
+                        "portrait-1366h@2x" : "static/images/03_splash.png"
+                    }
+                }
+            },
             "sdkConfigs" : {}
         }
     },
-    /* 快应用特有相关 */
     "quickapp" : {},
-    /* 小程序特有相关 */
     "mp-weixin" : {
         "appid" : "",
         "setting" : {
