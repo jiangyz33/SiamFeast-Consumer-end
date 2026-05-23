@@ -23,7 +23,7 @@
 						<view class="setting-item" @click="handleAvatarClick">
 						<text class="setting-label">{{ i18n.t('settings.avatar') }}</text>
 						<view class="setting-right">
-							<image class="setting-avatar-preview" :src="fixMinioUrl(userInfo?.avatar_url) || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
+							<image class="setting-avatar-preview" :src="fixMinioUrl(userInfo?.avatar_url) || '/static/images/04_default_avatar.png'" mode="aspectFill"></image>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>

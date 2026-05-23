@@ -14,44 +14,7 @@
 				<view class="nav-right"></view>
 			</view>
 
-			<!-- 搜索栏 -->
-			<view class="search-bar" :class="{ 'pac-container-parent': true }">
-				<image class="search-icon" src="/static/icons/search.svg" mode="aspectFit"></image>
-				<!-- #ifdef H5 -->
-				<view class="h5-input-wrapper">
-					<input
-						class="h5-search-input"
-						v-model="searchText"
-						ref="h5SearchInput"
-						id="places-search-input"
-						:placeholder="i18n.t('storeSelect.searchPlaceholder') || '搜索地址'"
-					/>
-				</view>
-				<!-- #endif -->
-				<!-- #ifndef H5 -->
-				<input
-					class="search-input"
-					:placeholder="i18n.t('storeSelect.searchPlaceholder') || '搜索地址'"
-					v-model="searchText"
-					@confirm="onSearchConfirm"
-				/>
-				<!-- #endif -->
-				<view class="search-clear" v-if="searchText" @click="clearSearch">
-					<text class="clear-text">✕</text>
-				</view>
-			</view>
 
-			<!-- 地图模式切换 -->
-			<view class="map-mode-bar">
-				<view class="mode-btn" :class="{ 'mode-active': !pickMode }" @click="setMode('normal')">
-					<image class="mode-icon" src="/static/icons/my-location.svg" mode="aspectFit"></image>
-					<text class="mode-text">{{ i18n.t('storeSelect.gpsMode') || 'GPS定位' }}</text>
-				</view>
-				<view class="mode-btn" :class="{ 'mode-active': pickMode }" @click="setMode('pick')">
-					<image class="mode-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-					<text class="mode-text">{{ i18n.t('storeSelect.pickMode') || '地图选点' }}</text>
-				</view>
-			</view>
 
 			<!-- 地图容器 -->
 			<view class="map-container" :style="{ height: mapHeight + 'px' }">
@@ -61,12 +24,9 @@
 					:longitude="currentLocation.longitude"
 					:markers="mapMarkers"
 					:zoom="14"
-					:show-user-location="!pickMode"
-					:enable-pick-mode="pickMode"
-					@marker-click="onMapMarkerClick"
-					@map-click="onMapClick"
-					@drag-end="onMapDragEnd"
-				></google-map>
+					:show-user-location="true"
+						@marker-click="onMapMarkerClick"
+						></google-map>
 			</view>
 		</view>
 
@@ -167,14 +127,10 @@
 <script>
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import {
-	getUserLocation,
-	reverseGeocode,
-	createAutocompleteSessionToken,
-	fetchPlaceDetails
-} from '@/utils/location.js'
-import { getNearbyStores, resolvePlace } from '@/api/services/location.js'
+		getUserLocation
+	} from '@/utils/location.js'
+import { getNearbyStores } from '@/api/services/location.js'
 import { getStores } from '@/api/services/store.js'
-import { GOOGLE_MAPS_API_KEY } from '@/api/config.js'
 import GoogleMap from '@/components/google-map.vue'
 import i18n from '@/i18n/index.js'
 
@@ -199,20 +155,8 @@ export default {
 			mapMarkers: [],
 			lastClickStoreId: null,
 			lastClickTime: 0,
-			searchText: '',
 			isLocating: false,
 			isLoading: false,
-			// 地图选点模式
-			pickMode: false,
-			// 位置来源追踪
-			locationSource: 'CURRENT_GPS',
-			// Places 相关 (H5)
-			// #ifdef H5
-			autocomplete: null,
-			sessionToken: null,
-			// #endif
-			// 选中地点的 place_id
-			selectedPlaceId: null,
 			// 分页
 			page: 1,
 			pageSize: 20
@@ -235,13 +179,6 @@ export default {
 
 		this.initLocation()
 	},
-	// #ifdef H5
-	mounted() {
-		this.$nextTick(() => {
-			this.initAutocomplete()
-		})
-	},
-	// #endif
 	methods: {
 		fixMinioUrl,
 		initPage() {
@@ -249,17 +186,15 @@ export default {
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
 
 			const navBarHeight = 44
-			const searchBarHeight = 44
-			const modeBarHeight = 36
 			const bottomBarHeight = 64
 			const locationInfoHeight = 70
 			const listHeaderHeight = 44
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
 
 			this.mapHeight = Math.floor(
-				(systemInfo.windowHeight - navBarHeight - searchBarHeight - modeBarHeight - bottomBarHeight - safeAreaBottom - this.statusBarHeight) * 0.35
+				(systemInfo.windowHeight - navBarHeight - bottomBarHeight - safeAreaBottom - this.statusBarHeight) * 0.35
 			)
-			this.listHeight = systemInfo.windowHeight - this.statusBarHeight - navBarHeight - searchBarHeight - modeBarHeight - this.mapHeight - bottomBarHeight - locationInfoHeight - listHeaderHeight - safeAreaBottom
+			this.listHeight = systemInfo.windowHeight - this.statusBarHeight - navBarHeight - this.mapHeight - bottomBarHeight - locationInfoHeight - listHeaderHeight - safeAreaBottom
 		},
 
 		goBack() {
@@ -270,8 +205,6 @@ export default {
 
 		async initLocation() {
 			this.isLocating = true
-			this.locationSource = 'CURRENT_GPS'
-			this.selectedPlaceId = null
 			try {
 				const loc = await getUserLocation()
 				this.currentLocation = {
@@ -291,173 +224,7 @@ export default {
 
 		async refreshLocation() {
 			if (this.isLocating) return
-			// 回到 GPS 模式
-			this.pickMode = false
 			await this.initLocation()
-		},
-
-		// ===================== 场景二：手动输入地址 (文档 4.2) =====================
-		// Places Autocomplete (New) + sessionToken + Place Details (New)
-
-		// #ifdef H5
-		initAutocomplete() {
-			if (!GOOGLE_MAPS_API_KEY) {
-				console.warn('[store-select] GOOGLE_MAPS_API_KEY not set')
-				return
-			}
-
-			// 如果 Google Maps 已加载，直接初始化
-			if (window.google && window.google.maps && window.google.maps.places) {
-				this._bindAutocomplete()
-				return
-			}
-
-			// 否则监听 google-maps-ready 事件
-			const onReady = () => {
-				window.removeEventListener('google-maps-ready', onReady)
-				this._bindAutocomplete()
-			}
-			window.addEventListener('google-maps-ready', onReady)
-		},
-
-		_bindAutocomplete() {
-			// 查找真实 DOM input 元素
-			// uni-app H5 的 <input> 会编译为 <uni-input> 包裹真实 <input>
-			let input = null
-
-			// 方法1: 通过 id 查找 uni-input 容器，再找内部真实 input
-			const wrapper = document.getElementById('places-search-input')
-			if (wrapper) {
-				if (wrapper.tagName === 'INPUT') {
-					input = wrapper
-				} else {
-					// uni-input 组件，找内部真实 input
-					input = wrapper.querySelector('input')
-				}
-			}
-
-			// 方法2: 通过 ref
-			if (!input && this.$refs.h5SearchInput) {
-				const ref = this.$refs.h5SearchInput
-				if (ref instanceof HTMLInputElement) {
-					input = ref
-				} else if (ref.$el) {
-					input = ref.$el.querySelector?.('input') || ref.$el
-				}
-			}
-
-			if (!input || !(input instanceof HTMLInputElement)) {
-				console.warn('[store-select] search input not found in DOM, retrying in 500ms...')
-				setTimeout(() => this._bindAutocomplete(), 500)
-				return
-			}
-
-			console.log('[store-select] binding Autocomplete to input:', input.tagName, input.id)
-
-			// 创建 sessionToken
-			this.sessionToken = createAutocompleteSessionToken()
-
-			this.autocomplete = new google.maps.places.Autocomplete(input, {
-				fields: ['formatted_address', 'geometry', 'name', 'place_id'],
-				types: ['geocode', 'establishment'],
-				sessionToken: this.sessionToken
-			})
-
-			this.autocomplete.addListener('place_changed', () => {
-				const place = this.autocomplete.getPlace()
-
-				if (place.geometry) {
-					this.currentLocation = {
-						latitude: place.geometry.location.lat(),
-						longitude: place.geometry.location.lng()
-					}
-					this.currentAddress = place.formatted_address || place.name
-					this.searchText = this.currentAddress
-
-					this.locationSource = 'MANUAL_PLACE'
-					this.selectedPlaceId = place.place_id
-					this.pickMode = false
-
-					this.loadNearbyStores()
-				}
-
-				// 结束本次 session，创建新 sessionToken
-				this.sessionToken = createAutocompleteSessionToken()
-				if (this.autocomplete) {
-					this.autocomplete.setOptions({ sessionToken: this.sessionToken })
-				}
-			})
-		},
-		// #endif
-
-		onSearchFocus() {
-			// H5 autocomplete 自动处理
-		},
-
-		/**
-		 * App/小程序：手动搜索确认
-		 * 调用后端 location/resolve 解析地址
-		 */
-		async onSearchConfirm() {
-			if (!this.searchText.trim()) return
-
-			this.locationSource = 'MANUAL_PLACE'
-			this.selectedPlaceId = null
-			this.isLoading = true
-
-			try {
-				const res = await resolvePlace({
-					formatted_address: this.searchText
-				})
-				if (res.code === 0 && res.data) {
-					this.currentLocation = {
-						latitude: res.data.latitude,
-						longitude: res.data.longitude
-					}
-					this.currentAddress = res.data.formatted_address || this.searchText
-					if (res.data.place_id) {
-						this.selectedPlaceId = res.data.place_id
-					}
-					await this.loadNearbyStores()
-				}
-			} catch (e) {
-				console.error('地址解析失败:', e)
-				showToast('地址解析失败')
-			} finally {
-				this.isLoading = false
-			}
-		},
-
-		clearSearch() {
-			this.searchText = ''
-		},
-
-		// ===================== 场景三：地图拖动选点 (文档 4.3) =====================
-
-		setMode(mode) {
-			this.pickMode = (mode === 'pick')
-		},
-
-		async onMapDragEnd(e) {
-			if (!e || !e.latitude) return
-
-			this.locationSource = 'MAP_PICKER'
-			this.selectedPlaceId = null
-			this.currentLocation = {
-				latitude: e.latitude,
-				longitude: e.longitude
-			}
-
-			// 可选：反向地理编码获取可读地址
-			this.currentAddress = i18n.t('storeSelect.locating') || 'Locating...'
-			const address = await reverseGeocode(e.latitude, e.longitude)
-			this.currentAddress = address || `${e.latitude.toFixed(4)}, ${e.longitude.toFixed(4)}`
-
-			await this.loadNearbyStores()
-		},
-
-		onMapClick(e) {
-			// 可扩展：点击地图空白处
 		},
 
 		// ===================== 加载附近门店 (文档 5.1) =====================
@@ -467,21 +234,12 @@ export default {
 			try {
 				// 并行加载：附近门店 + 全部门店
 				const params = {
-					location_source: this.locationSource,
 					latitude: this.currentLocation.latitude,
 					longitude: this.currentLocation.longitude,
 					page: this.page,
 					page_size: this.pageSize
 				}
 
-				if (this.locationSource === 'MANUAL_PLACE') {
-					if (this.selectedPlaceId) {
-						params.place_id = this.selectedPlaceId
-					}
-					if (this.currentAddress) {
-						params.formatted_address = this.currentAddress
-					}
-				}
 
 				const [nearbyRes, allRes] = await Promise.allSettled([
 					getNearbyStores(params),
@@ -791,54 +549,7 @@ export default {
 	display: none !important;
 }
 
-.search-clear {
-	width: 20px;
-	height: 20px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
 
-.clear-text {
-	font-size: 14px;
-	color: #999999;
-}
-
-/* 地图模式切换栏 */
-.map-mode-bar {
-	display: flex;
-	gap: 0;
-	padding: 8px 16px;
-}
-
-.mode-btn {
-	flex: 1;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: 4px;
-	padding: 6px 0;
-	border-radius: 8px;
-	background-color: #F3F3F3;
-}
-
-.mode-btn:first-child {
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
-}
-
-.mode-btn:last-child {
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
-}
-
-.mode-active {
-	background-color: #F2B131;
-}
-
-.mode-active .mode-text {
-	color: #FFFFFF;
-}
 
 .mode-icon {
 	width: 14px;
@@ -1212,33 +923,5 @@ export default {
 	font-weight: 600;
 	color: #FFFFFF;
 }
-</style>
 
-<!-- 非 scoped 样式：确保 Google Places Autocomplete 下拉菜单正常显示 -->
-<style>
-.pac-container {
-	z-index: 9999 !important;
-	border-radius: 0 0 8px 8px;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-	border: none;
-	margin-top: 0;
-}
-
-.pac-item {
-	padding: 8px 12px;
-	font-size: 14px;
-	cursor: pointer;
-}
-
-.pac-item:hover {
-	background-color: #F3F3F3;
-}
-
-.pac-item-query {
-	font-size: 14px;
-}
-
-.pac-matched {
-	font-weight: 600;
-}
 </style>

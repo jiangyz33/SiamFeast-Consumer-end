@@ -16,9 +16,45 @@
             "autoclose" : true,
             "delay" : 0
         },
+        "launchview" : {
+            "image" : "static/images/03_splash.jpg"
+        },
         /* 模块配置 */
         "modules" : {
             "Maps" : {}
+        },
+        /* 应用图标 */
+        "icon" : {
+            "android" : {
+                "hdpi" : "static/images/02_Icon-App.png",
+                "xhdpi" : "static/images/02_Icon-App.png",
+                "xxhdpi" : "static/images/02_Icon-App.png",
+                "xxxhdpi" : "static/images/02_Icon-App.png"
+            },
+            "ios" : {
+                "appstore" : "static/images/02_Icon-App.png",
+                "ipad" : {
+                    "app" : "static/images/02_Icon-App.png",
+                    "app@2x" : "static/images/02_Icon-App.png",
+                    "notification" : "static/images/02_Icon-App.png",
+                    "notification@2x" : "static/images/02_Icon-App.png",
+                    "proapp@2x" : "static/images/02_Icon-App.png",
+                    "settings" : "static/images/02_Icon-App.png",
+                    "settings@2x" : "static/images/02_Icon-App.png",
+                    "spotlight" : "static/images/02_Icon-App.png",
+                    "spotlight@2x" : "static/images/02_Icon-App.png"
+                },
+                "iphone" : {
+                    "app@2x" : "static/images/02_Icon-App.png",
+                    "app@3x" : "static/images/02_Icon-App.png",
+                    "notification@2x" : "static/images/02_Icon-App.png",
+                    "notification@3x" : "static/images/02_Icon-App.png",
+                    "settings@2x" : "static/images/02_Icon-App.png",
+                    "settings@3x" : "static/images/02_Icon-App.png",
+                    "spotlight@2x" : "static/images/02_Icon-App.png",
+                    "spotlight@3x" : "static/images/02_Icon-App.png"
+                }
+            }
         },
         /* 应用发布信息 */
         "distribute" : {

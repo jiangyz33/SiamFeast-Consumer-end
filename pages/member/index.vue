@@ -14,7 +14,7 @@
 		<!-- 用户信息区域 -->
 		<view class="user-section">
 			<view class="user-info-row" v-if="userInfo" @click="goSettings">
-				<image class="user-avatar" :src="userInfo.avatar_url || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
+				<image class="user-avatar" :src="userInfo.avatar_url || '/static/images/04_default_avatar.png'" mode="aspectFill"></image>
 				<view class="user-text">
 					<text class="user-name">{{ userInfo.nickname || i18n.t('mine.title') }}</text>
 					<text class="user-phone">{{ formatPhone }}</text>
@@ -92,10 +92,6 @@
 						<view class="feature-tab" @click="handleFeature('address')">
 							<image class="feature-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ i18n.t('mine.myAddress') }}</text>
-						</view>
-						<view class="feature-tab" @click="handleFeature('invoice')">
-							<image class="feature-icon" src="/static/icons/invoice.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ i18n.t('mine.invoice') }}</text>
 						</view>
 						<view class="feature-tab" @click="handleFeature('coupons')">
 							<image class="feature-icon" src="/static/icons/coupon.svg" mode="aspectFit"></image>

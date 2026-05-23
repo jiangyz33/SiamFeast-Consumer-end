@@ -75,7 +75,7 @@
 							<text class="tab-title">{{ t('index.mall') }}</text>
 							<text class="tab-subtitle">{{ t('index.mallDesc') }}</text>
 						</view>
-						<image class="tab-icon" src="/static/icons/mall.svg" mode="aspectFit"></image>
+						<image class="tab-icon" src="/static/images/05_delivery_icon.png" mode="aspectFit"></image>
 					</view>
 				</view>
 			</view>
@@ -83,7 +83,7 @@
 			<!-- 会员信息卡片 -->
 			<view class="member-card">
 				<view class="member-left">
-					<image class="member-avatar" :src="memberInfo.avatar_url || '/static/images/avatar-placeholder.svg'" mode="aspectFill"></image>
+					<image class="member-avatar" :src="memberInfo.avatar_url || '/static/images/04_default_avatar.png'" mode="aspectFill"></image>
 					<view class="member-info">
 						<text class="member-name">{{ memberInfo.nickname || '用户名称' }}</text>
 						<view class="member-level">
@@ -513,10 +513,12 @@ export default {
 				// 堂食
 				const store = appStore.getCurrentStore()
 				if (store && store.id && !store.delivery_enabled) {
-					// 已选择堂食店，直接进入点餐
+					// 已选择堂食店
 					uni.navigateTo({ url: '/pages/dinein/index?shopId=' + store.id })
 				} else {
-					// 未选择堂食店，进入堂食店铺列表
+					if (store && store.delivery_enabled) {
+						uni.showToast({ title: '当前门店为外卖店，请选择堂食门店', icon: 'none' })
+					}
 					uni.navigateTo({ url: '/pages/dinein-stores/index' })
 				}
 			}
