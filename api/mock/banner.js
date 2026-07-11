@@ -36,7 +36,7 @@ const mockHomeBanners = [
 	},
 	{
 		id: 3,
-		title: '积分商城',
+		title: '兑换商城',
 		image_url: '/static/images/img-placeholder.svg',
 		link_type: 'PAGE',
 		link_value: '/pages/points-mall/index',

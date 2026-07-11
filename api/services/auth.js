@@ -38,41 +38,64 @@ import {
 } from '../mock/auth.js'
 
 /**
- * 发送短信验证码
- * POST /auth/sms-code
- * @param {string} phone 手机号
- * @param {string} [purpose] 用途: register / login / reset_password
- * @returns {Promise}
+ * 发送短信验证码（已废弃 — 后端 /auth/sms-code 已关闭 404）
+ * 请改用 sendEmailCode(phone, email)
+ * @deprecated
  */
 export function sendCode(phone, purpose = 'register') {
-	const formattedPhone = formatWithCurrentCode(phone)
+	console.warn('[auth] sendCode 已废弃，请改用 sendEmailCode（SMS 服务已下线）')
 	if (USE_MOCK) {
 		return mockSendCode(phone)
 	}
-	return post('/auth/sms-code', { phone: formattedPhone })
+	return Promise.reject({ code: 'DEPRECATED', message: 'SMS 验证码服务已下线，请使用邮箱验证码' })
 }
 
 /**
- * 验证码登录
- * POST /auth/sms-login
- * @param {string} phone 手机号
- * @param {string} code 验证码
+ * 发送邮箱验证码（SMS 不可用时的替代通道，账号仍绑手机号）
+ * POST /auth/email-code
+ * @param {string} phone 手机号（账号标识）
+ * @param {string} email 接收验证码的邮箱
  * @returns {Promise}
  */
-export function loginByCode(phone, code) {
+export function sendEmailCode(phone, email) {
+	const formattedPhone = formatWithCurrentCode(phone)
+	if (USE_MOCK) {
+		return mockSendCode(phone + email)
+	}
+	return post('/auth/email-code', { phone: formattedPhone, email })
+}
+
+/**
+ * 邮箱验证码登录（用手机号查/建用户，验证码从邮箱拿）
+ * POST /auth/email-login
+ * @param {string} phone 手机号
+ * @param {string} code 邮箱收到的 6 位验证码
+ * @returns {Promise}
+ */
+export function loginByEmailCode(phone, code) {
 	const formattedPhone = formatWithCurrentCode(phone)
 	if (USE_MOCK) {
 		return mockLoginByCode(phone, code)
 	}
-	return post('/auth/sms-login', {
-		phone: formattedPhone,
-		code
-	})
+	return post('/auth/email-login', { phone: formattedPhone, code })
+}
+
+/**
+ * SMS 验证码登录（已废弃 — 后端 /auth/sms-login 已关闭 404）
+ * 请改用 loginByEmailCode(phone, code)
+ * @deprecated
+ */
+export function loginByCode(phone, code) {
+	console.warn('[auth] loginByCode 已废弃，请改用 loginByEmailCode（SMS 服务已下线）')
+	if (USE_MOCK) {
+		return mockLoginByCode(phone, code)
+	}
+	return Promise.reject({ code: 'DEPRECATED', message: 'SMS 验证码登录已下线，请使用邮箱验证码登录' })
 }
 
 /**
  * 手机号+密码登录
- * POST /auth/temp-login
+ * POST /auth/login
  * @param {string} phone 手机号
  * @param {string} password 密码
  * @returns {Promise}
@@ -82,32 +105,24 @@ export function loginByPassword(phone, password) {
 	if (USE_MOCK) {
 		return mockLoginByPassword(phone, password)
 	}
-	return post('/auth/temp-login', {
+	return post('/auth/login', {
 		phone: formattedPhone,
 		password
 	})
 }
 
 /**
- * 手机号注册（通过验证码登录自动注册）
- * POST /auth/sms-login
- * @param {Object} data 注册信息
- * @param {string} data.phone 手机号
- * @param {string} data.password 密码
- * @param {string} data.sms_code 短信验证码
- * @param {string} [data.invite_code] 邀请码
- * @returns {Promise}
+ * 手机号注册（已废弃 — 后端 /auth/sms-login 已关闭 404）
+ * 新流程：邮箱验证码注册 → 用 sendEmailCode + loginByEmailCode
+ * loginByEmailCode 会自动注册新用户，无需调 register
+ * @deprecated
  */
 export function register(data) {
+	console.warn('[auth] register 已废弃，请改用 sendEmailCode + loginByEmailCode')
 	if (USE_MOCK) {
 		return mockRegister(data)
 	}
-	// Backend has no separate register endpoint - sms-login auto-registers new users
-	// After login, set password via temp-login or user update
-	return post('/auth/sms-login', {
-		phone: formatWithCurrentCode(data.phone),
-		code: data.sms_code
-	})
+	return Promise.reject({ code: 'DEPRECATED', message: 'register 接口已下线，请使用邮箱验证码流程' })
 }
 
 /**
@@ -227,6 +242,8 @@ export function refreshToken(refreshToken) {
 // 导出模块对象
 export const authApi = {
 	sendCode,
+	sendEmailCode,
+	loginByEmailCode,
 	loginByCode,
 	loginByPassword,
 	register,

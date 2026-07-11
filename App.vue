@@ -1,6 +1,7 @@
 <script>
 import store from './store/index.js'
 import { parseShareLink, clearShareParams, ShareType } from './utils/share.js'
+import { autoSetPageTitle } from './utils/setPageTitle.js'
 
 export default {
 	globalData: {
@@ -12,25 +13,35 @@ export default {
 		// 初始化状态
 		store.init()
 
+		// 登录态检查放在首页 onLoad 里做（onLaunch 阶段路由还没初始化完成，跳转会失败）
+
 		// #ifdef APP-PLUS
+
 		// 禁用原生导航栏，避免双导航栏问题
-		const currentWebview = this.$scope.$getAppWebview()
-		if (currentWebview) {
-			const titleNView = currentWebview.getTitleNView()
-			if (titleNView) titleNView.hide()
-			currentWebview.addEventListener('titleUpdate', function() {
-				const nView = currentWebview.getTitleNView()
-				if (nView) nView.hide()
-			})
+		// 注意：onLaunch 阶段 this.$scope 尚未注入，必须用 plus.webview 全局 API
+		try {
+			if (typeof plus !== 'undefined' && plus.webview) {
+				const currentWebview = plus.webview.currentWebview()
+				if (currentWebview) {
+					const titleNView = currentWebview.getTitleNView && currentWebview.getTitleNView()
+					if (titleNView) titleNView.hide()
+					currentWebview.addEventListener && currentWebview.addEventListener('titleUpdate', function() {
+						const nView = currentWebview.getTitleNView && currentWebview.getTitleNView()
+						if (nView) nView.hide()
+					})
+				}
+			}
+		} catch (e) {
+			console.warn('[App] hide titleNView failed:', e)
 		}
 		// #endif
 
 		// 隐藏原生 tabBar，使用自定义 tabBar
-		try { uni.hideTabBar({ animation: false }) } catch(e) {}
+		uni.hideTabBar({ animation: false, fail: () => {} })
 		// App端强制隐藏原生tabBar
 		// #ifdef APP-PLUS
-		setTimeout(() => { try { uni.hideTabBar({ animation: false }) } catch(e) {} }, 100)
-		setTimeout(() => { try { uni.hideTabBar({ animation: false }) } catch(e) {} }, 500)
+		setTimeout(() => { uni.hideTabBar({ animation: false, fail: () => {} }) }, 100)
+		setTimeout(() => { uni.hideTabBar({ animation: false, fail: () => {} }) }, 500)
 		// #endif
 		// 检测是否是分享链接
 		this.checkShareLink()
@@ -38,6 +49,10 @@ export default {
 
 	onShow: function() {
 		console.log('App Show')
+		// H5 端根据当前路由自动设置页面标题
+		// #ifdef H5
+		try { autoSetPageTitle() } catch (e) {}
+		// #endif
 	},
 
 	onHide: function() {

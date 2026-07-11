@@ -2,11 +2,21 @@
  * 模拟数据 - 订单相关
  */
 
+// 生成模拟 unique_code (UUID v4)
+function generateUniqueCode() {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		const r = Math.random() * 16 | 0
+		const v = c === 'x' ? r : (r & 0x3 | 0x8)
+		return v.toString(16)
+	})
+}
+
 // 模拟订单数据
 export const mockOrders = [
 	{
 		id: 1,
 		order_no: 'SF00120240310120000',
+		unique_code: 'a1b2c3d4-e5f6-4789-a0b1-c2d3e4f5a6b7',
 		store_id: 1,
 		user_id: 1,
 		order_type: 'SEAFOOD_NOODLES',
@@ -36,6 +46,7 @@ export const mockOrders = [
 	{
 		id: 2,
 		order_no: 'SF00120240309180000',
+		unique_code: 'b2c3d4e5-f6a7-4890-b1c2-d3e4f5a6b7c8',
 		store_id: 1,
 		user_id: 1,
 		order_type: 'HOTPOT',
@@ -63,6 +74,7 @@ export const mockOrders = [
 	{
 		id: 3,
 		order_no: 'SF00120240308100000',
+		unique_code: 'c3d4e5f6-a7b8-4901-c2d3-e4f5a6b7c8d9',
 		store_id: 1,
 		user_id: 1,
 		order_type: 'BEVERAGE',
@@ -90,6 +102,7 @@ export const mockOrders = [
 	{
 		id: 4,
 		order_no: 'SF00120240307140000',
+		unique_code: 'd4e5f6a7-b8c9-4012-d3e4-f5a6b7c8d9e0',
 		store_id: 1,
 		user_id: 1,
 		order_type: 'MALA_TANG',
@@ -126,6 +139,20 @@ export const ORDER_STATUS_MAP = {
 	'CANCELLED': { text: '已取消', color: '#999999' }
 }
 
+// 兑换订单状态映射
+export const EXCHANGE_STATUS_MAP = {
+	'PENDING_REDEEM': { text: '待核销', color: '#F2B131' },
+	'REDEEMED': { text: '已核销', color: '#52C41A' },
+	'EXPIRED': { text: '已过期', color: '#999999' },
+	'CANCELLED': { text: '已取消', color: '#999999' }
+}
+
+// 轮询计数器（模拟收银端扫码后状态变化）
+const _pollCounters = {}
+
+// 兑换订单轮询计数器
+const _exchangePollCounters = {}
+
 /**
  * 模拟获取用户订单列表
  */
@@ -159,6 +186,7 @@ export function mockGetUserOrders(params = {}) {
 					items: paginatedOrders.map(o => ({
 						id: o.id,
 						order_no: o.order_no,
+						unique_code: o.unique_code,
 						order_type: o.order_type,
 						status: o.status,
 						statusText: ORDER_STATUS_MAP[o.status]?.text || o.status,
@@ -210,11 +238,12 @@ export function mockCreateOrder(orderData) {
 		setTimeout(() => {
 			const timestamp = new Date().toISOString().replace(/[-:T.Z]/g, '').slice(0, 14)
 			const orderNo = `SF001${timestamp}`
+			const uniqueCode = generateUniqueCode()
 
 			// 计算金额
 			let subtotal = 0
 			const items = orderData.items.map(item => {
-				const price = 18 + Math.random() * 20 // 模拟价格
+				const price = 18 + Math.random() * 20
 				const itemSubtotal = price * item.quantity
 				subtotal += itemSubtotal
 				return {
@@ -233,18 +262,24 @@ export function mockCreateOrder(orderData) {
 			let coinsUsed = 0
 			if (orderData.use_coins && orderData.coins_to_use > 0) {
 				coinsUsed = orderData.coins_to_use
-				coinDeductAmount = coinsUsed // 1 金币 = 1 元
+				coinDeductAmount = coinsUsed
 			}
 
 			const totalAmount = Math.max(0, subtotal - coinDeductAmount)
+			const newOrderId = mockOrders.length + 1
+
+			// Track for polling simulation
+			_pollCounters[newOrderId] = 0
 
 			resolve({
 				code: 0,
 				message: 'success',
 				data: {
-					id: mockOrders.length + 1,
+					id: newOrderId,
 					order_no: orderNo,
+					unique_code: uniqueCode,
 					order_type: orderData.order_type,
+					store_id: orderData.store_id,
 					status: 'PENDING_PAYMENT',
 					subtotal: subtotal,
 					coin_deduct_amount: coinDeductAmount,
@@ -289,11 +324,83 @@ export function mockCancelOrder(orderId) {
 	})
 }
 
+/**
+ * 模拟获取订单状态（支持轮询模拟收银端扫码）
+ */
+export function mockGetOrderStatus(orderId) {
+	const id = parseInt(orderId)
+	return new Promise((resolve) => {
+		setTimeout(() => {
+			const order = mockOrders.find(o => o.id === id)
+			let status = order?.status || 'PENDING_PAYMENT'
+
+			// 模拟新创建订单的支付状态变化
+			if (_pollCounters[id] !== undefined) {
+				_pollCounters[id]++
+				if (_pollCounters[id] >= 3) {
+					status = 'PAID'
+					delete _pollCounters[id]
+				} else {
+					status = 'PENDING_PAYMENT'
+				}
+			}
+
+			resolve({
+				code: 0,
+				data: {
+					order_id: id,
+					status: status
+				}
+			})
+		}, 200)
+	})
+}
+
+/**
+ * 模拟获取兑换订单状态（支持轮询模拟收银端核销）
+ */
+export function mockGetExchangeOrderStatus(orderId) {
+	const id = parseInt(orderId)
+	return new Promise((resolve) => {
+		setTimeout(() => {
+			// 模拟新兑换订单的核销状态变化
+			if (_exchangePollCounters[id] !== undefined) {
+				_exchangePollCounters[id]++
+				if (_exchangePollCounters[id] >= 3) {
+					delete _exchangePollCounters[id]
+					resolve({
+						code: 0,
+						data: {
+							order_id: id,
+							status: 'REDEEMED'
+						}
+					})
+					return
+				}
+			}
+
+			resolve({
+				code: 0,
+				data: {
+					order_id: id,
+					status: 'PENDING_REDEEM'
+				}
+			})
+		}, 200)
+	})
+}
+
+// 导出内部引用供 member mock 使用
+export { _exchangePollCounters, generateUniqueCode }
+
 export default {
 	mockOrders,
 	ORDER_STATUS_MAP,
+	EXCHANGE_STATUS_MAP,
 	mockGetUserOrders,
 	mockGetOrderDetail,
 	mockCreateOrder,
-	mockCancelOrder
+	mockCancelOrder,
+	mockGetOrderStatus,
+	mockGetExchangeOrderStatus
 }

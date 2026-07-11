@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('coupons.claimCenter') }}</text>
+			<text class="nav-title">{{ t('coupons.claimCenter') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -27,7 +27,7 @@
 								<text class="amount-symbol">฿</text>
 								<text class="amount-num">{{ item.amount }}</text>
 							</view>
-							<text class="coupon-condition">{{ i18n.t('coupons.minSpend', { amount: item.minSpend }) }}</text>
+							<text class="coupon-condition">{{ t('coupons.minSpend', { amount: item.minSpend }) }}</text>
 						</view>
 
 						<!-- 右侧信息区域 -->
@@ -39,7 +39,7 @@
 								</view>
 							</view>
 							<view class="coupon-validity">
-								<text class="validity-text">{{ i18n.t('coupons.validDays', { days: item.validDays }) }}</text>
+								<text class="validity-text">{{ t('coupons.validDays', { days: item.validDays }) }}</text>
 							</view>
 							<view class="coupon-desc" v-if="item.description">
 								<text class="desc-text">{{ item.description }}</text>
@@ -49,11 +49,11 @@
 								<view class="limit-bar-bg">
 									<view class="limit-bar-fill" :style="{ width: Math.min(item.claimedCount / item.perUserLimit * 100, 100) + '%' }"></view>
 								</view>
-								<text class="limit-text">{{ i18n.t("coupons.claimedCount", { claimed: item.claimedCount, total: item.perUserLimit }) }}</text>
+								<text class="limit-text">{{ t("coupons.claimedCount", { claimed: item.claimedCount, total: item.perUserLimit }) }}</text>
 							</view>
 							<view class="coupon-action">
 								<view class="claim-btn" @click="handleClaim(item)">
-									<text class="claim-btn-text">{{ i18n.t('coupons.claim') }}</text>
+									<text class="claim-btn-text">{{ t('coupons.claim') }}</text>
 								</view>
 							</view>
 						</view>
@@ -67,13 +67,13 @@
 				<!-- 空状态 -->
 				<view class="empty-state" v-if="!loading && claimableCoupons.length === 0">
 					<image class="empty-icon" src="/static/images/empty-coupon.svg" mode="aspectFit"></image>
-					<text class="empty-title">{{ i18n.t("common.empty.coupon") }}</text>
-					<text class="empty-desc">{{ i18n.t("coupons.noClaimable") }}</text>
+					<text class="empty-title">{{ t("common.empty.coupon") }}</text>
+					<text class="empty-desc">{{ t("coupons.noClaimable") }}</text>
 				</view>
 
 				<!-- 加载状态 -->
 				<view class="loading-state" v-if="loading">
-					<text class="loading-text">{{ i18n.t("common.loading") }}</text>
+					<text class="loading-text">{{ t("common.loading") }}</text>
 				</view>
 			</view>
 
@@ -90,6 +90,7 @@ import { getReceivableCoupons, receiveCoupon, getMyCoupons } from '@/api/service
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -101,7 +102,22 @@ export default {
 		this.initPage()
 		this.loadData()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -146,15 +162,18 @@ export default {
 				const alreadyClaimed = myTemplateIds.has(c.id) ||
 					(c.per_user_limit && c.claimed_count >= c.per_user_limit)
 				if (alreadyClaimed) return null
+				const lang = i18n.getLanguage()
 				return {
 					id: c.id,
-					name: c.name || '',
+					// 多语言回退：name_<lang> → name
+					name: c['name_' + lang] || c.name || '',
 					amount: c.discount_value || c.amount || 0,
 					minSpend: c.min_order_amount || c.min_amount || c.min_spend || 0,
 					type: (c.coupon_tag || '').toLowerCase() || 'all',
 					tag: c.coupon_tag || '',
 					validDays: c.valid_days || 30,
-					description: c.description || '',
+					// 多语言回退：description_<lang> → description
+					description: c['description_' + lang] || c.description || '',
 					perUserLimit: c.per_user_limit || 0,
 					claimedCount: c.claimed_count || 0
 				}

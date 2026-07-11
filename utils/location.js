@@ -65,30 +65,101 @@ export function getUserLocation() {
 				})
 			},
 			fail: (err) => {
-				console.warn('定位失败，使用默认位置:', err)
-
-				// 权限被拒绝时提示用户
-				if (err.errMsg && err.errMsg.includes('auth deny')) {
-					uni.showModal({
-						title: '定位权限',
-						content: '需要定位权限以获取附近门店，是否前往设置开启？',
-						success: (modalRes) => {
-							if (modalRes.confirm) {
-								uni.openSetting()
-							}
-						}
-					})
-				}
-
-				// 返回默认位置（曼谷市中心）
-				resolve({
-					latitude: 13.7563,
-					longitude: 100.5018,
-					address: null
+				console.warn('定位失败:', err)
+				// 判断错误类型
+				const errMsg = (err && err.errMsg) || ''
+				const isPermissionDenied =
+					errMsg.includes('auth deny') ||
+					errMsg.includes('authRefuse') ||
+					errMsg.includes('permission') ||
+					errMsg.includes('authorize') ||
+					errMsg.includes('denied')
+				const isTimeout = errMsg.includes('timeout')
+				// 返回结构化错误
+				reject({
+					code: isPermissionDenied ? 'PERMISSION_DENIED'
+						: (isTimeout ? 'TIMEOUT' : 'UNKNOWN'),
+					message: errMsg,
+					error: err
 				})
 			}
 		})
 	})
+}
+
+/**
+ * 默认位置（曼谷市中心），定位失败时兜底使用
+ */
+export const DEFAULT_LOCATION = {
+	latitude: 13.7563,
+	longitude: 100.5018,
+	address: null
+}
+
+/**
+ * 获取定位，失败时返回默认位置（不抛错）
+ * @param {Object} [options]
+ * @param {boolean} [options.silentOnDeny=false] - 权限拒绝时不弹提示
+ * @returns {Promise<{latitude: number, longitude: number, address: string|null, denied: boolean}>}
+ */
+export function getLocationOrDefault(options = {}) {
+	return getUserLocation().then(loc => ({
+		...loc,
+		denied: false
+	})).catch(err => {
+		// 权限拒绝时弹引导（除非 silent）
+		if (err.code === 'PERMISSION_DENIED' && !options.silentOnDeny) {
+			showLocationPermissionGuide()
+		}
+		return {
+			...DEFAULT_LOCATION,
+			denied: err.code === 'PERMISSION_DENIED'
+		}
+	})
+}
+
+/**
+ * 引导用户去开启定位权限
+ */
+export function showLocationPermissionGuide() {
+	uni.showModal({
+		title: i18n.t ? i18n.t('storeSelect.title') : '定位权限',
+		content: '需要定位权限以获取附近门店，是否前往设置开启？',
+		confirmText: '去设置',
+		cancelText: '暂不',
+		success: (modalRes) => {
+			if (modalRes.confirm) {
+				openLocationSettings()
+			}
+		}
+	})
+}
+
+/**
+ * 打开系统定位设置页
+ * APP 端打开 APP 自身的权限设置；H5 端无法直接打开，给提示
+ */
+export function openLocationSettings() {
+	// #ifdef APP-PLUS
+	if (typeof plus !== 'undefined' && plus.runtime && plus.runtime.openURL) {
+		// Android: 打开应用详情页（含权限设置）
+		// iOS: 打开设置 App
+		try {
+			plus.runtime.openURL('app-settings:')  // iOS
+		} catch (e) {
+			try { plus.runtime.openURL('package:com.android.settings') } catch(e2) {}
+		}
+		return
+	}
+	uni.openSetting && uni.openSetting({
+		fail: () => {
+			uni.showToast({ title: '请在系统设置中开启定位权限', icon: 'none' })
+		}
+	})
+	// #endif
+	// #ifdef H5
+	uni.showToast({ title: '请在浏览器地址栏允许定位权限', icon: 'none', duration: 3000 })
+	// #endif
 }
 
 /**

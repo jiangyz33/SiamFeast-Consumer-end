@@ -8,9 +8,9 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('message.title') }}</text>
+			<text class="nav-title">{{ t('message.title') }}</text>
 			<view class="nav-right" @click="handleMarkAllRead" v-if="hasUnread">
-				<text class="mark-all-text">{{ i18n.t('message.markAllRead') }}</text>
+				<text class="mark-all-text">{{ t('message.markAllRead') }}</text>
 			</view>
 			<view class="nav-right" v-else></view>
 		</view>
@@ -42,14 +42,14 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-state" v-if="loading">
-				<text class="loading-text">{{ i18n.t('common.loading') }}</text>
+				<text class="loading-text">{{ t('common.loading') }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="!loading && messages.length === 0">
 				<image class="empty-icon" src="/static/images/empty-message.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t('common.empty.message') }}</text>
-				<text class="empty-desc">{{ i18n.t('common.empty.messageDesc') }}</text>
+				<text class="empty-title">{{ t('common.empty.message') }}</text>
+				<text class="empty-desc">{{ t('common.empty.messageDesc') }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -73,10 +73,12 @@ export default {
 	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			messages: [],
+			rawMessages: [],
 			unreadCount: 0,
 			loading: false
 		}
@@ -90,7 +92,24 @@ export default {
 		this.initPage()
 		this.loadData()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+			// 切语言时用新语言重新 normalize 已加载的消息
+			this.refreshMessagesForLang()
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -113,6 +132,8 @@ export default {
 
 				if (msgRes.status === 'fulfilled' && msgRes.value.code === 0 && msgRes.value.data) {
 					const items = msgRes.value.data.items || []
+					// 保留原始数据，切语言时可以重新 normalize
+					this.rawMessages = items
 					this.messages = items.map(m => this.normalizeMessage(m))
 				}
 
@@ -128,6 +149,7 @@ export default {
 
 		normalizeMessage(m) {
 				const type = m.notification_type || m.type || 'SYSTEM'
+				const lang = i18n.getLanguage()
 				const iconMap = {
 					ORDER_STATUS: { icon: '/static/icons/order.svg', bg: '#FFF3E0' },
 					ORDER: { icon: '/static/icons/order.svg', bg: '#FFF3E0' },
@@ -138,6 +160,25 @@ export default {
 					MEMBER: { icon: '/static/icons/member.svg', bg: '#F3E5F5' },
 					SYSTEM: { icon: '/static/icons/message.svg', bg: '#E3F2FD' }
 				}
+				// type → i18n key 映射（type 大小写不统一，统一转小写再匹配）
+				const typeToI18n = {
+					'system': 'message.system',
+					'order': 'message.order',
+					'order_status': 'message.order',
+					'promotion': 'message.promotion',
+					'coupon': 'message.promotion',
+					'coin': 'message.promotion',
+					'point': 'message.promotion',
+					'member': 'message.system'
+				}
+				const typeKey = typeToI18n[type.toLowerCase()] || 'message.system'
+				// 标题优先级：后端多语言字段 → i18n 类型映射 → 后端默认 title
+				const fallbackTitle = m['title_' + lang] || m.title || m.title_en || ''
+				const title = (typeKey && i18n.t(typeKey)) || fallbackTitle
+				// 描述：优先取多语言字段，回退到 body/description
+				const description = m['body_' + lang] || m['description_' + lang]
+					|| m.body || m.description || ''
+
 				let time = ''
 				if (m.sent_at) {
 					const d = new Date(m.sent_at)
@@ -154,12 +195,18 @@ export default {
 				return {
 					id: m.id,
 					type: type,
-					title: m.title || m.title_en || '',
+					title: title,
 					iconData: iconMap[type] || iconMap.SYSTEM,
-					description: m.body || m.description || '',
+					description: description,
 					time: time,
 					isRead: m.is_read
 				}
+		},
+
+		// 切语言后重新 normalize 已有消息（触发响应式更新）
+		refreshMessagesForLang() {
+			if (!this.rawMessages || this.rawMessages.length === 0) return
+			this.messages = this.rawMessages.map(m => this.normalizeMessage(m))
 		},
 
 		goBack() {

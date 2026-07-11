@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('coupons.title') }}</text>
+			<text class="nav-title">{{ t('coupons.title') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -40,7 +40,7 @@
 							<text class="amount-symbol">฿</text>
 							<text class="amount-num">{{ item.amount }}</text>
 						</view>
-						<text class="coupon-condition">{{ i18n.t("coupons.minSpend", { amount: item.minSpend }) }}</text>
+						<text class="coupon-condition">{{ t("coupons.minSpend", { amount: item.minSpend }) }}</text>
 					</view>
 
 					<!-- 右侧信息区域 -->
@@ -57,12 +57,9 @@
 						<view class="coupon-desc" v-if="item.description">
 							<text class="desc-text">{{ item.description }}</text>
 						</view>
-						<view class="coupon-action" v-if="item.isAvailable">
-							<view class="use-btn" @click="handleUseCoupon(item)">
-								<text class="use-text">{{ i18n.t("coupons.immediateUse") }}</text>
-							</view>
-						</view>
-						<view class="coupon-action" v-else>
+						<!-- 移除「立即使用」按钮：通用券在堂食/外卖下单时自动可用，无需跳转。
+							 只保留已用/已过期等状态文本（可用券不显示按钮）。 -->
+						<view class="coupon-action" v-if="!item.isAvailable">
 							<text class="expired-text">{{ getStatusLabel(item) }}</text>
 						</view>
 					</view>
@@ -75,13 +72,13 @@
 				<!-- 无优惠券提示 -->
 				<view class="empty-section" v-if="!loading && currentCoupons.length === 0">
 					<image class="empty-icon" src="/static/images/empty-coupon.svg" mode="aspectFit"></image>
-					<text class="empty-title">{{ i18n.t("common.empty.coupon") }}</text>
-					<text class="empty-desc">{{ i18n.t("common.empty.couponDesc") }}</text>
+					<text class="empty-title">{{ t("common.empty.coupon") }}</text>
+					<text class="empty-desc">{{ t("common.empty.couponDesc") }}</text>
 				</view>
 
 				<!-- 加载状态 -->
 				<view class="loading-state" v-if="loading">
-					<text class="loading-text">{{ i18n.t("common.loading") }}</text>
+					<text class="loading-text">{{ t("common.loading") }}</text>
 				</view>
 			</view>
 
@@ -99,6 +96,7 @@ import { getMyCoupons } from '@/api/services/coupon.js'
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -126,7 +124,22 @@ export default {
 		this.initPage()
 		this.loadData()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -166,6 +179,7 @@ export default {
 
 		normalizeCoupon(c) {
 			const tpl = c.template || {}
+			const lang = i18n.getLanguage()
 			const status = (c.status || '').toUpperCase()
 			const validEnd = c.valid_end || c.end_date || ''
 			const validStart = c.valid_start || c.start_date || ''
@@ -194,13 +208,13 @@ export default {
 
 			return {
 				id: c.id,
-				name: tpl.name || c.name || '',
+				name: tpl['name_' + lang] || tpl.name || c['name_' + lang] || c.name || '',
 				amount: c.value || tpl.discount_value || c.discount_value || c.amount || 0,
 				minSpend: tpl.min_order_amount || c.min_order_amount || c.min_spend || 0,
 				type: (tpl.coupon_tag || c.coupon_tag || '').toLowerCase() || 'all',
 				tag: tpl.coupon_tag || '',
 				validity: validity,
-				description: tpl.description || c.description || '',
+				description: tpl['description_' + lang] || tpl.description || c['description_' + lang] || c.description || '',
 				isExpired: isExpired,
 				isAvailable: isAvailable,
 				isUsed: isUsed,
@@ -230,12 +244,6 @@ export default {
 		switchTab(index) {
 			this.activeTab = index
 		},
-
-		handleUseCoupon(item) {
-			uni.navigateTo({
-				url: '/pages/mall/index'
-			})
-		}
 	}
 }
 </script>
@@ -349,14 +357,22 @@ export default {
 .coupon-expired {
 	opacity: 0.6;
 }
-
-	.coupon-locked {
-		opacity: 0.75;
-	}
-
-	.coupon-locked .coupon-left {
-		background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%);
-	}
+
+
+	.coupon-locked {
+
+		opacity: 0.75;
+
+	}
+
+
+
+	.coupon-locked .coupon-left {
+
+		background: linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%);
+
+	}
+
 
 /* 左侧金额区域 */
 .coupon-left {

@@ -136,8 +136,8 @@
 
 					<view class="empty-box" v-if="rooms.length === 0 && !loading">
 						<image class="empty-img" src="/static/images/empty-room.svg" mode="aspectFit"></image>
-						<text class="empty-msg">{{ i18n.t("common.empty.room") }}</text>
-						<text class="empty-msg-desc">{{ i18n.t("common.empty.roomDesc") }}</text>
+						<text class="empty-msg">{{ t("common.empty.room") }}</text>
+						<text class="empty-msg-desc">{{ t("common.empty.roomDesc") }}</text>
 					</view>
 				</view>
 			<!-- ========== 商品列表（动态分类） ========== -->
@@ -268,6 +268,7 @@ import i18n from '@/i18n/index.js'
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			statusBarHeight: 20,
 			scrollHeight: 600,
 			loading: false,
@@ -332,7 +333,22 @@ export default {
 			this.loadDemoData()
 		}
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		initLayout() {
 			const sys = uni.getSystemInfoSync()
 			this.statusBarHeight = sys.statusBarHeight || 0
@@ -501,8 +517,14 @@ export default {
 						footprintManager.addStoreFootprint({
 							id: this.shopInfo.id,
 							name: this.shopInfo.name,
+							name_zh: this.shopInfo.name_zh || this.shopInfo.name,
+							name_en: this.shopInfo.name_en,
+							name_th: this.shopInfo.name_th,
 							logo: this.shopInfo.logo,
 							address: this.shopInfo.address,
+							address_zh: this.shopInfo.address_zh || this.shopInfo.address,
+							address_en: this.shopInfo.address_en,
+							address_th: this.shopInfo.address_th,
 							rating: this.shopInfo.rating || 4.5,
 							status: this.shopInfo.status || 'OPEN',
 							businessHours: this.shopInfo.businessHours

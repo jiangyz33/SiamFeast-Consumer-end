@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">热销榜单</text>
+			<text class="nav-title">{{ t('hotProducts.title') }}</text>
 			<view class="nav-right">
 				<view class="search-btn" @click="handleSearchClick">
 					<image class="search-icon" src="/static/icons/search.svg" mode="aspectFit"></image>
@@ -23,7 +23,7 @@
 				<input
 					class="search-input"
 					v-model="searchKeyword"
-					placeholder="搜索商品"
+					:placeholder="t('products.searchProducts')"
 					confirm-type="search"
 					@confirm="handleSearch"
 				/>
@@ -66,18 +66,18 @@
 					<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					<view class="product-info">
 						<view class="product-content">
-							<text class="product-name">{{ item.name || item.name_en }}</text>
-							<view class="product-sales">
-								<text class="sales-text">{{ i18n.t("mine.monthlySales") }}{{ item.sales_count || 0 }}</text>
+							<text class="product-name">{{ item['name_' + i18n.getLanguage()] || item.name || item.name_en }}</text>
+							<view class="product-sales" v-if="item.sales_count > 0">
+								<text class="sales-text">{{ t("mine.monthlySales") }}{{ item.sales_count }}</text>
 							</view>
 						</view>
 						<view class="product-footer">
 							<view class="price-section">
 								<text class="price-text">฿{{ item.price }}</text>
-								<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
+								<text class="original-price" v-if="item.original_price && Number(item.original_price) > Number(item.price)">฿{{ item.original_price }}</text>
 							</view>
 							<view class="buy-btn" @click.stop="handleBuy(item)">
-								<text class="buy-text">抢</text>
+								<text class="buy-text">{{ t('hotProducts.grab') }}</text>
 							</view>
 						</view>
 					</view>
@@ -87,14 +87,14 @@
 			<!-- 加载状态 -->
 			<view class="loading-tip">
 				<text v-if="loading" class="tip-text">加载中...</text>
-				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t("order.noMore") }}</text>
+				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ t("order.noMore") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view v-if="!loading && products.length === 0" class="empty-state">
 				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
-				<text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
+				<text class="empty-title">{{ t("common.empty.product") }}</text>
+				<text class="empty-desc">{{ t("common.empty.productDesc") }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -120,6 +120,7 @@ export default {
 	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -167,7 +168,22 @@ export default {
 			this.loadCategories()
 			this.loadProducts()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
@@ -193,7 +209,7 @@ export default {
 							const key = (cat.name_en || cat.name || '').toLowerCase()
 							if (!seen.has(key)) seen.set(key, cat)
 						}
-						this.categories = [{ id: null, name: '全部', name_en: 'All', name_th: 'ทั้งหมด', icon: '/static/images/store-placeholder.svg' }, ...seen.values()]
+						this.categories = [{ id: null, name: '全部', name_en: 'All', name_th: 'ทั้งหมด', icon: '/static/icons/cat-all.svg' }, ...seen.values()]
 					}
 				} catch (e) {
 					console.error('加载分类失败:', e)
@@ -257,16 +273,22 @@ export default {
 				showToast(i18n.t('dinein.soldOut'))
 				return
 			}
+			// 优先用商品自带的 store_id，否则用当前页 shopId
+			const storeId = item.store_id || this.shopId
+			if (!storeId) {
+				showToast('该商品没有门店信息，无法下单')
+				return
+			}
 			const productData = {
 				id: item.id,
 				name: item["name_" + i18n.getLanguage()] || item.name || item.name_en,
 				price: item.price,
 				image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 				quantity: 1,
-				store_id: this.shopId
+				store_id: storeId
 			}
 			uni.navigateTo({
-				url: `/pages/checkout/index?orderType=dinein&shopId=${this.shopId}&products=${encodeURIComponent(JSON.stringify([productData]))}`
+				url: `/pages/checkout/index?orderType=dinein&shopId=${storeId}&products=${encodeURIComponent(JSON.stringify([productData]))}`
 			})
 		}
 	}
@@ -471,9 +493,10 @@ export default {
 }
 
 .product-image {
-	width: 100px;
-	height: 100px;
+	width: 96px;
+	height: 96px;
 	border-radius: 8px;
+	background-color: #F5F5F5;
 }
 
 .product-info {

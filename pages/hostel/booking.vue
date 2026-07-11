@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t("hostel.bookingConfirm") }}</text>
+			<text class="nav-title">{{ t("hostel.bookingConfirm") }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -23,7 +23,7 @@
 					<view class="room-price-row">
 						<text class="price-symbol">฿</text>
 						<text class="price-num">{{ roomPrice }}</text>
-						<text class="price-unit">{{ i18n.t("hostel.perNightUnit") }}</text>
+						<text class="price-unit">{{ t("hostel.perNightUnit") }}</text>
 					</view>
 				</view>
 			</view>
@@ -31,53 +31,53 @@
 			<!-- 入住日期 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">{{ i18n.t("hostel.stayInfo") }}</text>
+					<text class="section-title">{{ t("hostel.stayInfo") }}</text>
 				</view>
 					<view class="date-info">
 						<picker mode="date" :value="checkIn" :start="todayStr" @change="onCheckInChange">
 							<view class="date-block">
-								<text class="date-label">{{ i18n.t("hostel.checkInDate") }}</text>
+								<text class="date-label">{{ t("hostel.checkInDate") }}</text>
 								<text class="date-value" :class='{"date-placeholder": !checkIn}'>{{ checkIn || i18n.t("hostel.selectDate") }}</text>
 							</view>
 						</picker>
 						<view class="date-arrow">
 							<view class="nights-badge" v-if="nights > 0">
-								<text class="nights-text">{{ nights }}{{ i18n.t("hostel.nights") }}</text>
+								<text class="nights-text">{{ nights }}{{ t("hostel.nights") }}</text>
 							</view>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 						<picker mode="date" :value="checkOut" :start="checkIn || todayStr" @change="onCheckOutChange">
 							<view class="date-block">
-								<text class="date-label">{{ i18n.t("hostel.checkOutDate") }}</text>
+								<text class="date-label">{{ t("hostel.checkOutDate") }}</text>
 								<text class="date-value" :class='{"date-placeholder": !checkOut}'>{{ checkOut || i18n.t("hostel.selectDate") }}</text>
 							</view>
 						</picker>
 					</view>
 				<view class="guest-row" v-if="capacity">
-					<text class="guest-label">{{ i18n.t("hostel.maxGuests") }}</text>
-					<text class="guest-value">{{ capacity }}{{ i18n.t("hostel.person") }}</text>
+					<text class="guest-label">{{ t("hostel.maxGuests") }}</text>
+					<text class="guest-value">{{ capacity }}{{ t("hostel.person") }}</text>
 				</view>
 			</view>
 
 			<!-- 入住人信息 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">{{ i18n.t("hostel.guestInfo") }}</text>
+					<text class="section-title">{{ t("hostel.guestInfo") }}</text>
 				</view>
 				<view class="form-group">
-					<text class="form-label">{{ i18n.t("hostel.guestName") }}</text>
+					<text class="form-label">{{ t("hostel.guestName") }}</text>
 					<input class="form-input" v-model="guestInfo.name" :placeholder="i18n.t('hostel.guestNamePlaceholder')" />
 				</view>
 				<view class="form-group">
-					<text class="form-label">{{ i18n.t("hostel.guestPhone") }}</text>
+					<text class="form-label">{{ t("hostel.guestPhone") }}</text>
 					<input class="form-input" v-model="guestInfo.phone" :placeholder="i18n.t('hostel.guestPhonePlaceholder')" type="number" />
 				</view>
 				<view class="form-group">
-					<text class="form-label">{{ i18n.t("hostel.guestIdNumber") }}</text>
+					<text class="form-label">{{ t("hostel.guestIdNumber") }}</text>
 					<input class="form-input" v-model="guestInfo.id_number" :placeholder="i18n.t('hostel.guestIdPlaceholder')" />
 				</view>
 				<view class="form-group">
-					<text class="form-label">{{ i18n.t("hostel.guestCount") }}</text>
+					<text class="form-label">{{ t("hostel.guestCount") }}</text>
 					<view class="guest-count-control">
 						<view class="count-btn" @click="changeGuestCount(-1)">
 							<text class="count-btn-text">-</text>
@@ -93,7 +93,7 @@
 			<!-- 备注 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">{{ i18n.t("hostel.remark") }}</text>
+					<text class="section-title">{{ t("hostel.remark") }}</text>
 				</view>
 				<textarea class="remark-input" v-model="remark" :placeholder="i18n.t('hostel.remarkPlaceholder')" maxlength="200"></textarea>
 			</view>
@@ -101,18 +101,18 @@
 			<!-- 费用明细 -->
 			<view class="section-card">
 				<view class="section-header">
-					<text class="section-title">{{ i18n.t("hostel.feeDetail") }}</text>
+					<text class="section-title">{{ t("hostel.feeDetail") }}</text>
 				</view>
 				<view class="fee-row">
-					<text class="fee-label">{{ i18n.t("hostel.roomFee") }} ({{ roomPrice }} x {{ nights }}{{ i18n.t("hostel.nights") }})</text>
+					<text class="fee-label">{{ t("hostel.roomFee") }} ({{ roomPrice }} x {{ nights }}{{ t("hostel.nights") }})</text>
 					<text class="fee-value">฿{{ roomTotal }}</text>
 				</view>
 				<view class="fee-row" v-if="deposit > 0">
-					<text class="fee-label">{{ i18n.t("hostel.deposit") }}</text>
+					<text class="fee-label">{{ t("hostel.deposit") }}</text>
 					<text class="fee-value">฿{{ deposit }}</text>
 				</view>
 				<view class="fee-row fee-total">
-					<text class="fee-label">{{ i18n.t("hostel.total") }}</text>
+					<text class="fee-label">{{ t("hostel.total") }}</text>
 					<text class="fee-value fee-total-value">฿{{ totalAmount }}</text>
 				</view>
 			</view>
@@ -124,7 +124,7 @@
 		<!-- 底部提交栏 -->
 		<view class="submit-bar">
 			<view class="submit-info">
-				<text class="submit-total-label">{{ i18n.t("hostel.totalLabel") }}</text>
+				<text class="submit-total-label">{{ t("hostel.totalLabel") }}</text>
 				<view class="submit-price">
 					<text class="price-symbol">฿</text>
 					<text class="price-num">{{ totalAmount }}</text>
@@ -146,6 +146,7 @@ import { createBooking } from '@/api/services/hostel.js'
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -204,7 +205,22 @@ export default {
 			this.guestInfo.phone = userInfo.phone || ''
 		}
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20

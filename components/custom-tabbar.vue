@@ -12,7 +12,7 @@
 				mode="aspectFit"
 			></image>
 			<text class="tabbar-text" :class="{ 'tabbar-active': currentIndex === index }">
-				{{ i18n.t(item.textKey) }}
+				{{ t(item.textKey) }}
 			</text>
 		</view>
 	</view>
@@ -34,6 +34,8 @@ export default {
 			i18n: i18n,
 			currentIndex: 0,
 			safeAreaBottom: 0,
+			// 语言切换时自增，让模板上 i18n.t(...) 重新求值（i18n.state 不是响应式，必须靠这个触发）
+			langVersion: 0,
 			tabList: [
 				{
 					pagePath: '/pages/index/index',
@@ -65,11 +67,22 @@ export default {
 		uni.$on('tabbarUpdate', () => {
 			this.detectFromRoute()
 		})
+		// 监听语言切换：让 tabbar 文字立刻跟随
+		uni.$on('languageChanged', this.onLanguageChanged)
 	},
 	beforeDestroy() {
 		uni.$off('tabbarUpdate')
+		uni.$off('languageChanged', this.onLanguageChanged)
 	},
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key) {
+			// 读 langVersion 触发响应式依赖；返回真正的翻译
+			void this.langVersion
+			return i18n.t(key)
+		},
 		detectFromRoute() {
 			const pages = getCurrentPages()
 			const currentPage = pages[pages.length - 1]

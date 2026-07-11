@@ -73,8 +73,8 @@
 					<!-- 商品预览区域 -->
 					<view class="sc-products" v-if="store._items && store._items.length > 0">
 						<view class="sc-products-header">
-							<text class="sc-products-title">{{ i18n.t('products.hotItems') || '招牌菜品' }}</text>
-							<text class="sc-products-count">{{ store._items.length }} {{ i18n.t('products.items') || '款' }}</text>
+							<text class="sc-products-title">{{ t('products.hotItems') || '招牌菜品' }}</text>
+							<text class="sc-products-count">{{ store._items.length }} {{ t('products.items') || '款' }}</text>
 						</view>
 						<scroll-view class="sc-products-scroll" scroll-x>
 							<view class="sc-products-list">
@@ -95,7 +95,7 @@
 					<!-- 进入店铺按钮 -->
 					<view class="sc-action">
 						<view class="sc-enter-btn">
-							<text class="sc-enter-text">{{ i18n.t('mine.enterStore') }}</text>
+							<text class="sc-enter-text">{{ t('mine.enterStore') }}</text>
 							<image class="sc-enter-arrow" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
@@ -104,13 +104,13 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">{{ i18n.t("common.loading") }}</text>
+				<text v-if="loading" class="tip-text">{{ t("common.loading") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view v-if="!loading && filteredStores.length === 0" class="empty-state">
 				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t("common.empty.store") || i18n.t("common.noData") }}</text>
+				<text class="empty-title">{{ t("common.empty.store") || i18n.t("common.noData") }}</text>
 			</view>
 
 			<view class="bottom-placeholder"></view>
@@ -155,10 +155,10 @@
 							<text class="product-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
 							<view class="product-price-row">
 								<text class="product-price">฿{{ item.price }}</text>
-								<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
-								<text class="sales-text">{{ i18n.t("products.sold") }}{{ item.sales_count || 0 }}{{ i18n.t("products.units") }}</text>
+								<text class="original-price" v-if="item.original_price && Number(item.original_price) > Number(item.price)">฿{{ item.original_price }}</text>
+								<text class="sales-text">{{ t("products.sold") }}{{ item.sales_count || 0 }}{{ t("products.units") }}</text>
 								<view class="buy-btn" @click.stop="handleBuyNow(item)">
-									<text class="buy-btn-text">{{ i18n.t("productDetail.buyNow") }}</text>
+									<text class="buy-btn-text">{{ t("productDetail.buyNow") }}</text>
 								</view>
 							</view>
 						</view>
@@ -166,14 +166,14 @@
 				</view>
 
 				<view class="loading-tip">
-					<text v-if="loading" class="tip-text">{{ i18n.t("common.loading") }}</text>
-					<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t("order.noMore") }}</text>
+					<text v-if="loading" class="tip-text">{{ t("common.loading") }}</text>
+					<text v-else-if="noMore && products.length > 0" class="tip-text">{{ t("order.noMore") }}</text>
 				</view>
 
 				<view v-if="!loading && products.length === 0" class="empty-state">
 					<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-					<text class="empty-title">{{ i18n.t("common.empty.product") }}</text>
-					<text class="empty-desc">{{ i18n.t("common.empty.productDesc") }}</text>
+					<text class="empty-title">{{ t("common.empty.product") }}</text>
+					<text class="empty-desc">{{ t("common.empty.productDesc") }}</text>
 				</view>
 
 				<view class="bottom-placeholder"></view>
@@ -199,6 +199,7 @@ export default {
 	components: { CustomTabbar },
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			lang: i18n.getLanguage(),
 			statusBarHeight: 20,
@@ -276,7 +277,22 @@ export default {
 			this.loadProducts()
 		}
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 
 		initPage() {

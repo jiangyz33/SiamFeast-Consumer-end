@@ -1,12 +1,43 @@
 /**
  * 验证手机号格式
- * 不限制位数，只检查非空且为数字
+ * 校验规则：非空 + 纯数字 + 长度符合指定范围
  * @param {string} phone 手机号
+ * @param {Object} [country] 国家信息，含 min/max 字段（可选）
  * @returns {boolean}
  */
-export function validatePhone(phone) {
+import i18n from '@/i18n/index.js'
+
+export function validatePhone(phone, country) {
 	if (!phone || !phone.trim()) return false
-	return /^\d+$/.test(phone.trim())
+	const cleaned = phone.trim()
+	if (!/^\d+$/.test(cleaned)) return false
+	if (country && (country.min || country.max)) {
+		const min = country.min || 7
+		const max = country.max || 15
+		return cleaned.length >= min && cleaned.length <= max
+	}
+	// 兜底：7~15 位
+	return cleaned.length >= 7 && cleaned.length <= 15
+}
+
+/**
+ * 获取当前国家的手机号最大位数（用于 input maxlength）
+ * @param {Object} country 国家信息
+ * @returns {number}
+ */
+export function getPhoneMaxLength(country) {
+	if (country && country.max) return country.max
+	return 15
+}
+
+/**
+ * 获取当前国家的手机号最小位数（用于提示文案）
+ * @param {Object} country 国家信息
+ * @returns {number}
+ */
+export function getPhoneMinLength(country) {
+	if (country && country.min) return country.min
+	return 7
 }
 
 /**
@@ -204,14 +235,23 @@ export function deepClone(obj) {
  * @param {string} url 原始 URL
  * @returns {string} 修正后的 URL
  */
-const OLD_MINIO_HOSTS = ['106.12.91.224:9000', '106.13.161.35:9000', 'localhost:9000', '127.0.0.1:9000']
-const NEW_MINIO_BASE = 'http://34.15.175.23:9000'
+const OLD_MINIO_HOSTS = ['106.12.91.224:9000', '106.13.161.35:9000', 'localhost:9000', '127.0.0.1:9000', '34.15.175.23:9000', 'test.siamfeast.wenshuai.space', 'siamfeast.wenshuai.space']
+const NEW_MINIO_BASE = 'https://minio.siamfeast.com'
 
 export function fixMinioUrl(url) {
 	if (!url) return url
+	// 后端反代 host：https://test.siamfeast.wenshuai.space/minio/sf-uploads/xxx
+	// 重写为直连：http://34.15.175.23:9000/sf-uploads/xxx
 	for (const old of OLD_MINIO_HOSTS) {
-		if (url.includes(old)) {
-			return url.replace(old, '34.15.175.23:9000')
+		const proxyRe = new RegExp('https?://' + old.replace(/\./g, '\\.') + '/minio/')
+		if (proxyRe.test(url)) {
+			return url.replace(proxyRe, NEW_MINIO_BASE + '/')
+		}
+	}
+	for (const old of OLD_MINIO_HOSTS) {
+		const hostRe = new RegExp('https?://' + old.replace(/\./g, '\\.'))
+		if (hostRe.test(url)) {
+			return url.replace(hostRe, NEW_MINIO_BASE)
 		}
 	}
 	if (url.startsWith('/minio-files/')) {
@@ -311,6 +351,22 @@ export function getUserLocation() {
  */
 export function getErrorMessage(error) {
 	const code = error?.code || error?.data?.code || ''
+	// 后端某些场景只返回中文 message，没有 bizCode —— 用关键词反查
+	const rawMsg = error?.message || error?.data?.message || ''
+	const keywordToCode = {
+		'新密码不能与旧密码相同': 'PASSWORD_SAME_AS_OLD',
+		'密码长度': 'PASSWORD_TOO_SHORT',
+		'密码太短': 'PASSWORD_TOO_SHORT',
+		'旧密码': 'INVALID_OLD_PASSWORD',
+		'验证码': 'INVALID_VERIFY_CODE',
+		'账号或密码': 'INVALID_CREDENTIALS',
+		'密码错误': 'INVALID_CREDENTIALS',
+		'用户不存在': 'USER_NOT_FOUND',
+		'频繁': 'RATE_LIMITED',
+		'金币余额不足': 'COIN_INSUFFICIENT',
+		'积分余额不足': 'POINTS_INSUFFICIENT',
+	}
+	const effectiveCode = code || (rawMsg && keywordToCode[rawMsg]) || ''
 	const codeMap = {
 		'UNAUTHENTICATED': 'error.unauthenticated',
 		'TOKEN_INVALID': 'error.tokenInvalid',
@@ -329,15 +385,25 @@ export function getErrorMessage(error) {
 		'INVALID_DATE_RANGE': 'error.invalidDateRange',
 		'CAPABILITY_DENIED': 'error.capabilityDenied',
 		'CAPABILITY_DISABLED': 'error.capabilityDisabled',
+		// 密码 / 认证相关 bizCode
+		'INVALID_CREDENTIALS': 'error.invalidCredentials',
+		'INVALID_VERIFY_CODE': 'error.invalidVerifyCode',
+		'PASSWORD_SAME_AS_OLD': 'error.passwordSameAsOld',
+		'PASSWORD_TOO_SHORT': 'error.passwordTooShort',
+		'INVALID_OLD_PASSWORD': 'error.invalidOldPassword',
+		'USER_NOT_FOUND': 'error.userNotFound',
+		'RATE_LIMITED': 'error.rateLimited',
+		// 积分商城兑换相关 bizCode
+		'COIN_INSUFFICIENT': 'error.coinInsufficient',
+		'POINTS_INSUFFICIENT': 'error.pointsInsufficient',
+		// 兼容后端可能的命名变体
+		'INSUFFICIENT_COINS': 'error.coinInsufficient',
+		'INSUFFICIENT_POINTS': 'error.pointsInsufficient',
 	}
-	const i18nKey = codeMap[code]
-	if (i18nKey) {
-		try {
-			const i18n = require('@/i18n/index.js').default || require('@/i18n/index.js')
-			return (i18n.t ? i18n : i18n.default).t(i18nKey)
-		} catch (e) {
-			// fallback
-		}
+	const i18nKey = codeMap[effectiveCode]
+	if (i18nKey && i18n?.t) {
+		const translated = i18n.t(i18nKey)
+		if (translated && translated !== i18nKey) return translated
 	}
 	return error?.message || '请求失败'
 }

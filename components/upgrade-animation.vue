@@ -34,14 +34,14 @@
 				</view>
 
 				<!-- 标题 -->
-				<text class="upgrade-title">{{ i18n.t('upgrade.congratulations') }}</text>
-				<text class="upgrade-subtitle">{{ i18n.t('upgrade.becomePlatinum') }}</text>
+				<text class="upgrade-title">{{ t('upgrade.congratulations') }}</text>
+				<text class="upgrade-subtitle">{{ t('upgrade.becomePlatinum') }}</text>
 
 				<!-- 等级卡片 -->
 				<view class="level-card">
 					<view class="level-from">
-						<text class="level-label">{{ i18n.t('upgrade.from') }}</text>
-						<text class="level-name from-name">{{ i18n.t('member.normalMember') }}</text>
+						<text class="level-label">{{ t('upgrade.from') }}</text>
+						<text class="level-name from-name">{{ t('member.normalMember') }}</text>
 					</view>
 					<view class="level-arrow">
 						<view class="arrow-line"></view>
@@ -49,8 +49,8 @@
 						<view class="arrow-line"></view>
 					</view>
 					<view class="level-to">
-						<text class="level-label">{{ i18n.t('upgrade.to') }}</text>
-						<text class="level-name to-name">{{ i18n.t('member.platinumMember') }}</text>
+						<text class="level-label">{{ t('upgrade.to') }}</text>
+						<text class="level-name to-name">{{ t('member.platinumMember') }}</text>
 					</view>
 				</view>
 
@@ -64,7 +64,7 @@
 
 				<!-- 按钮 -->
 				<view class="upgrade-btn" @click="handleClose">
-					<text class="btn-label">{{ i18n.t('upgrade.enjoyNow') }}</text>
+					<text class="btn-label">{{ t('upgrade.enjoyNow') }}</text>
 				</view>
 			</view>
 		</view>
@@ -84,17 +84,26 @@ export default {
 	data() {
 		return {
 			i18n: i18n,
+			langVersion: 0,
 			animateIn: false
 		}
 	},
 	computed: {
 		benefits() {
+			// 用 this.t() 走 method 包装，确保 langVersion 响应式依赖生效
+			void this.langVersion
 			return [
-				this.i18n.t('upgrade.benefitBirthday'),
-				this.i18n.t('upgrade.benefitDiscount'),
-				this.i18n.t('upgrade.benefitPriority')
+				this.t('upgrade.benefitBirthday'),
+				this.t('upgrade.benefitDiscount'),
+				this.t('upgrade.benefitPriority')
 			]
 		}
+	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
 	},
 	watch: {
 		visible(val) {
@@ -108,6 +117,13 @@ export default {
 		}
 	},
 	methods: {
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
+		onLanguageChanged() {
+			this.langVersion++
+		},
 		handleClose() {
 			this.animateIn = false
 			setTimeout(() => {
@@ -134,13 +150,16 @@ export default {
 
 .upgrade-container {
 	width: 320px;
-	height: 460px;
+	/* 改为高度自适应，避免内容被截断；保留最小高度确保小屏不会太矮 */
+	min-height: 480px;
+	max-height: 90vh;
 	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
 	border-radius: 20px;
+	padding: 8px 0;
 }
 
 /* 背景光效 */

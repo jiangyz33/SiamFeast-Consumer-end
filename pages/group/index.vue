@@ -9,7 +9,7 @@
 				</view>
 			</view>
 			<view class="header-info">
-				<text class="header-title">{{ i18n.t('groupBuy.title') }}</text>
+				<text class="header-title">{{ t('groupBuy.title') }}</text>
 			</view>
 		</view>
 
@@ -34,20 +34,20 @@
 							<view class="progress-bar">
 								<view class="progress-fill" :style="{ width: progressPercent(item) + '%' }"></view>
 							</view>
-							<text class="meta-text">{{ i18n.t('groupBuy.progressSold', { sold: item.sold_count, total: item.total_quota }) }}</text>
+							<text class="meta-text">{{ t('groupBuy.progressSold', { sold: item.sold_count, total: item.total_quota }) }}</text>
 						</view>
 
 						<view class="product-footer">
 							<view class="price-info">
 								<view class="group-tag">
-									<text class="group-tag-text">{{ i18n.t('groupBuy.discountRate', { rate: formatDiscount(item.discount_rate) }) }}</text>
+									<text class="group-tag-text">{{ t('groupBuy.discountRate', { rate: formatDiscount(item.discount_rate) }) }}</text>
 								</view>
 								<text class="price-symbol">฿</text>
 								<text class="price-num">{{ item.group_price }}</text>
-								<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
+								<text class="original-price" v-if="item.original_price && Number(item.original_price) > Number(item.price)">฿{{ item.original_price }}</text>
 							</view>
 							<view class="join-btn" @click.stop="goDetail(item)">
-								<text class="join-text">{{ i18n.t('groupBuy.joinGroup') }}</text>
+								<text class="join-text">{{ t('groupBuy.joinGroup') }}</text>
 							</view>
 						</view>
 					</view>
@@ -55,12 +55,12 @@
 			</view>
 
 			<view class="loading-tip" v-if="loading">
-				<text class="tip-text">{{ i18n.t('common.loading') }}</text>
+				<text class="tip-text">{{ t('common.loading') }}</text>
 			</view>
 
 			<view class="empty-state" v-if="!loading && products.length === 0">
 				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t('groupBuy.noProducts') }}</text>
+				<text class="empty-title">{{ t('groupBuy.noProducts') }}</text>
 			</view>
 
 			<view class="bottom-placeholder"></view>
@@ -77,6 +77,7 @@ import { fixMinioUrl } from '@/utils/index.js'
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -97,7 +98,22 @@ export default {
 		}
 		this.loadProducts()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 		formatDiscount(rate) {
 			if (!rate) return ''

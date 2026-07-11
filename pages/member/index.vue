@@ -26,8 +26,8 @@
 			<view class="user-info-row" v-else @click="goLogin">
 				<image class="user-avatar" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 				<view class="user-text">
-					<text class="user-name">{{ i18n.t('login.notLoggedIn') }}</text>
-					<text class="user-phone">{{ i18n.t('login.clickToLogin') }}</text>
+					<text class="user-name">{{ t('login.notLoggedIn') }}</text>
+					<text class="user-phone">{{ t('login.clickToLogin') }}</text>
 				</view>
 			</view>
 		</view>
@@ -39,27 +39,27 @@
 				<view class="member-level-section" :class="{ 'platinum-section': currentLevel === 1 }" @click="goToPointsMall">
 					<view class="level-header">
 						<view class="level-titles">
-							<text class="level-title" :class="{ 'level-active': currentLevel === 0 }">{{ i18n.t('member.normal') }}</text>
-							<text class="level-title" :class="{ 'level-active': currentLevel === 1 }">{{ i18n.t('member.platinum') }}</text>
+							<text class="level-title" :class="{ 'level-active': currentLevel === 0 }">{{ t('member.normal') }}</text>
+							<text class="level-title" :class="{ 'level-active': currentLevel === 1 }">{{ t('member.platinum') }}</text>
 						</view>
 					</view>
 					<view class="level-info">
 						<text class="level-status">{{ currentLevel === 0 ? i18n.t('member.normalMember') : i18n.t('member.platinumMember') }}</text>
 						<view class="upgrade-btn" :class="{ 'upgrade-btn-disabled': !canUpgrade }" @click.stop="handleUpgrade" v-if="currentLevel === 0">
-							<text class="upgrade-text">{{ i18n.t('member.upgrade') }}</text>
+							<text class="upgrade-text">{{ t('member.upgrade') }}</text>
 						</view>
 					</view>
 					<view class="progress-section" v-if="currentLevel === 0">
 						<view class="progress-bar">
 							<view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
 						</view>
-						<text class="progress-text">{{ i18n.t('member.consumption') }} {{ consumedAmount }}/{{ totalAmount }}</text>
+						<text class="progress-text">{{ t('member.consumption') }} {{ consumedAmount }}/{{ totalAmount }}</text>
 					</view>
 					<view class="level-benefit" v-if="currentLevel === 0">
-						<text class="benefit-text">{{ i18n.t('member.platinumBenefit') }}</text>
+						<text class="benefit-text">{{ t('member.platinumBenefit') }}</text>
 					</view>
 					<view class="level-benefit platinum-benefit" v-if="currentLevel === 1">
-						<text class="benefit-text">{{ i18n.t('upgrade.benefitBirthday') }} · {{ i18n.t('upgrade.benefitDiscount') }} · {{ i18n.t('upgrade.benefitPriority') }}</text>
+						<text class="benefit-text">{{ t('upgrade.benefitBirthday') }} · {{ t('upgrade.benefitDiscount') }} · {{ t('upgrade.benefitPriority') }}</text>
 					</view>
 				</view>
 
@@ -67,43 +67,48 @@
 				<view class="stats-section">
 					<view class="stat-item" @click="handleFeature('balance')">
 						<text class="stat-value">{{ userBalance }}</text>
-						<text class="stat-label">{{ i18n.t('member.balance') }}</text>
+						<text class="stat-label">{{ t('member.balance') }}</text>
 					</view>
 					<view class="stat-item" @click="goToPointsMall">
 						<text class="stat-value">{{ userPoints }}</text>
-						<text class="stat-label">{{ i18n.t('member.points') }}</text>
+						<text class="stat-label">{{ t('member.points') }}</text>
 					</view>
 					<view class="stat-item" @click="handleFeature('newUserCoupons')">
 						<text class="stat-value">{{ newUserCoupons }}</text>
-						<text class="stat-label">{{ i18n.t('member.newUserPack') }}</text>
+						<text class="stat-label">{{ t('index.coupons') }}</text>
 					</view>
 				</view>
 
 				<!-- 我的功能 -->
 				<view class="feature-section">
 					<view class="section-header">
-						<text class="section-title">{{ i18n.t('mine.myFeatures') }}</text>
+						<text class="section-title">{{ t('mine.myFeatures') }}</text>
 					</view>
 					<view class="feature-tabs">
 						<view class="feature-tab" @click="handleFeature('footprint')">
 							<image class="feature-icon" src="/static/icons/clock.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ i18n.t('mine.footprint') }}</text>
+							<text class="feature-text">{{ t('mine.footprint') }}</text>
 						</view>
-						<view class="feature-tab" @click="handleFeature('address')">
-							<image class="feature-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ i18n.t('mine.myAddress') }}</text>
-						</view>
+						<!-- 移除「我的地址」入口：当前只有堂食，无外卖配送场景 -->
 						<view class="feature-tab" @click="handleFeature('coupons')">
 							<image class="feature-icon" src="/static/icons/coupon.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ i18n.t('mine.myCoupons') }}</text>
+							<text class="feature-text">{{ t('mine.myCoupons') }}</text>
 						</view>
 						<view class="feature-tab" @click="handleFeature('claimCoupons')">
-							<image class="feature-icon" src="/static/icons/coupon.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ i18n.t('mine.claimCenter') }}</text>
+							<image class="feature-icon" src="/static/icons/claim-coupon.svg" mode="aspectFit"></image>
+							<text class="feature-text">{{ t('mine.claimCenter') }}</text>
+						</view>
+						<view class="feature-tab" @click="handleFeature('referral')">
+							<image class="feature-icon" src="/static/icons/invite.svg" mode="aspectFit"></image>
+							<text class="feature-text">{{ t('mine.inviteCode') }}</text>
+						</view>
+						<view class="feature-tab" @click="handleFeature('memberCode')">
+							<image class="feature-icon" src="/static/icons/vending.svg" mode="aspectFit"></image>
+							<text class="feature-text">{{ t('memberCode.title') }}</text>
 						</view>
 						<view class="feature-tab" @click="handleFeature('settings')">
 							<image class="feature-icon" src="/static/icons/settings.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ i18n.t('mine.settings') }}</text>
+							<text class="feature-text">{{ t('mine.settings') }}</text>
 						</view>
 					</view>
 				</view>
@@ -111,7 +116,7 @@
 				<!-- 好店推荐 -->
 				<view class="recommend-section">
 					<view class="section-header">
-						<text class="section-title">{{ i18n.t('mine.recommendedStores') }}</text>
+						<text class="section-title">{{ t('mine.recommendedStores') }}</text>
 					</view>
 					<view class="recommend-list">
 						<view
@@ -133,7 +138,7 @@
 								</view>
 							</view>
 							<view class="shop-action">
-								<text class="action-text">{{ i18n.t('mine.enterStore') }}</text>
+								<text class="action-text">{{ t('mine.enterStore') }}</text>
 							</view>
 						</view>
 					</view>
@@ -143,7 +148,7 @@
 			<!-- 退出登录 -->
 			<view class="logout-section" v-if="userInfo">
 				<view class="logout-btn" @click="handleLogout">
-					<text class="logout-text">{{ i18n.t('mine.logout') }}</text>
+					<text class="logout-text">{{ t('mine.logout') }}</text>
 				</view>
 			</view>
 
@@ -180,6 +185,7 @@ export default {
 	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -212,7 +218,7 @@ export default {
 	},
 	onShow() {
 			// #ifdef APP-PLUS
-			try { uni.hideTabBar({ animation: false }) } catch(e) {}
+			uni.hideTabBar({ animation: false, fail: () => {} })
 			// #endif
 			uni.$emit('tabbarUpdate')
 			const cached = store.getUserInfo()
@@ -221,7 +227,52 @@ export default {
 		this.initPage()
 		this.loadMemberData()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+
+		// 格式化营业时间：兼容 config.opening_time/closing_time、business_hours 字符串、opening_hours 等
+		// 和 dinein/index.vue 的 formatBusinessHours 逻辑保持一致
+		formatBusinessHours(s) {
+			if (!s) return ''
+			// 形态1：config 对象里有 opening_time / closing_time
+			const cfg = s.config || s.store_config
+			if (cfg && cfg.opening_time && cfg.closing_time) {
+				const open = String(cfg.opening_time).slice(0, 5)
+				const close = String(cfg.closing_time).slice(0, 5)
+				if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+					return `${open}-${close}`
+				}
+			}
+			// 形态2：字符串字段（过滤占位符 "-"）
+			const str = s.business_hours || s.businessHours || s.opening_hours
+			if (str && typeof str === 'string' && !str.includes('undefined') && str !== '-' && str !== ' - ') {
+				return str
+			}
+			// 形态3：顶层 opening_time / closing_time
+			if (s.opening_time && s.closing_time) {
+				const open = String(s.opening_time).slice(0, 5)
+				const close = String(s.closing_time).slice(0, 5)
+				if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+					return `${open}-${close}`
+				}
+			}
+			return ''
+		},
+
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		async refreshUserInfo() {
 			try {
 				const [memberRes, userRes] = await Promise.all([
@@ -289,16 +340,17 @@ export default {
 				this.goLogin()
 				return
 			}
-			if (type === 'address') {
-				uni.navigateTo({
-					url: '/pages/address/index'
-				})
-			} else if (type === 'coupons') {
+			if (type === 'coupons') {
 				uni.navigateTo({
 					url: '/pages/coupons/index'
 				})
 			} else if (type === 'points') {
 				this.goToPointsMall()
+			} else if (type === 'balance') {
+				// userBalance 实际是金币余额，跳到金币商城（tab=1）
+				uni.navigateTo({
+					url: '/pages/points-mall/index?tab=1'
+				})
 			} else if (type === 'footprint') {
 				uni.navigateTo({
 					url: '/pages/footprint/index'
@@ -307,7 +359,15 @@ export default {
 				uni.navigateTo({
 					url: '/pages/claim-coupons/index'
 				})
-			} else if (type === 'settings') {
+			} else if (type === 'referral') {
+					uni.navigateTo({
+						url: '/pages/referral/index'
+					})
+				} else if (type === 'memberCode') {
+					uni.navigateTo({
+						url: '/pages/member-code/index'
+					})
+				} else if (type === 'settings') {
 				uni.navigateTo({
 					url: '/pages/settings/index'
 				})
@@ -316,8 +376,9 @@ export default {
 			} else if (type === 'balance') {
 				showToast(this.i18n.t('member.balanceDetail'))
 			} else if (type === 'newUserCoupons') {
+				// 业务简化：和首页一致，跳转到优惠券列表（不再单独走 newUser 类型）
 				uni.navigateTo({
-					url: '/pages/coupons/index?type=newUser'
+					url: '/pages/coupons/index'
 				})
 			}
 		},
@@ -343,14 +404,34 @@ export default {
 				// 会员等级进度
 				if (progressRes.status === 'fulfilled' && progressRes.value.code === 0 && progressRes.value.data) {
 					const d = progressRes.value.data
-					this.consumedAmount = d.current_spent || d.total_spent || 0
-					this.totalAmount = d.threshold || d.required_for_next || 200
+					console.log('[member] progress response:', JSON.stringify(d).substring(0, 500))
+					// 已消费金额（兼容多种字段名）
+					this.consumedAmount =
+						d.current_spent ||
+						d.total_spent ||
+						d.spent_amount ||
+						d.consumption ||
+						d.current_amount ||
+						d.current_progress ||
+						0
+					// 升级阈值（兼容多种字段名）
+					this.totalAmount =
+						d.threshold ||
+						d.required_for_next ||
+						d.next_tier_threshold ||
+						d.target_amount ||
+						d.upgrade_threshold ||
+						d.next_threshold ||
+						d.required_amount ||
+						d.goal_amount ||
+						d.target ||
+						200  // 后端确认的真实默认值（如未提供则用此值）
+					console.log('[member] consumed=', this.consumedAmount, 'total=', this.totalAmount)
 						const isBackendPlatinum = d.current_tier === 'PLATINUM'
 						const hasMetGoal = this.consumedAmount >= this.totalAmount
 						const hasSeenAnimation = this.hasSeenUpgradeAnimation()
 						const shouldShowPlatinum = isBackendPlatinum || hasMetGoal
 						if (shouldShowPlatinum && !hasSeenAnimation) {
-							// Platinum but animation not yet shown = play animation
 							this.currentLevel = 0
 							this.showUpgradeAnimation = true
 							this.markUpgradeAnimationShown()
@@ -361,15 +442,12 @@ export default {
 						}
 				}
 
-
-
-				// 余额
-
-
-				// 优惠券数量
+				// 优惠券数量（只统计可用：UNUSED/ACTIVE/CLAIMED，和首页一致）
 				if (couponsRes.status === 'fulfilled' && couponsRes.value.code === 0 && couponsRes.value.data) {
 					const items = couponsRes.value.data.items || couponsRes.value.data || []
-					this.newUserCoupons = Array.isArray(items) ? items.length : 0
+					this.newUserCoupons = Array.isArray(items)
+						? items.filter(c => c.status === 'CLAIMED' || c.status === 'ACTIVE' || c.status === 'UNUSED').length
+						: 0
 				}
 
 				// 好店推荐
@@ -382,18 +460,15 @@ export default {
 						name_th: s.name_th || '',
 						logo: fixMinioUrl(s.logo || s.image_url) || '/static/images/store-placeholder.svg',
 						status: s.status || 'OPEN',
-						businessHours: s.business_hours || '',
+						businessHours: this.formatBusinessHours(s),
 						tags: s.business_types || [s.name]
 					}))
 				}
-
 
 			} catch (e) {
 				console.error('loadMemberData error:', e)
 			}
 		},
-
-
 		handleShopClick(item) {
 			uni.navigateTo({
 				url: `/pages/dinein/index?shopId=${item.id}&shopName=${encodeURIComponent(item.name)}`
@@ -736,6 +811,10 @@ export default {
 	flex-direction: column;
 	align-items: center;
 	gap: 4px;
+	/* 让三项等宽，防止长 label 拉歪数字位置 */
+	flex: 1;
+	min-width: 0;
+	padding: 0 4px;
 }
 
 .stat-value {
@@ -748,6 +827,12 @@ export default {
 	font-size: 14px;
 	font-weight: 500;
 	color: #000000CC;
+	text-align: center;
+	/* 限两行，防止泰国字把高度撑开导致上方数字位置参差 */
+	min-height: 20px;
+	line-height: 1.2;
+	word-break: break-word;
+	width: 100%;
 }
 
 /* 区块头部 */
@@ -786,6 +871,9 @@ export default {
 	align-items: center;
 	gap: 6px;
 	padding: 12px 0;
+	/* 多语言下让每个 tab 等宽，避免长文本（泰文/英文）把图标挤歪 */
+	flex: 1;
+	min-width: 0;
 	transition: transform 0.15s ease;
 }
 
@@ -801,6 +889,15 @@ export default {
 .feature-text {
 	font-size: 12px;
 	color: #00000099;
+	/* 限两行、固定行高，确保各 tab 上方图标垂直对齐 */
+	line-height: 1.3;
+	text-align: center;
+	width: 100%;
+	min-height: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	word-break: break-word;
 }
 
 /* 优惠券区域 */

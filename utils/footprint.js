@@ -3,6 +3,8 @@
  * 记录用户浏览的商品、门店等访问记录
  */
 
+import i18n from '@/i18n/index.js'
+
 const FOOTPRINT_KEY = 'siamfeast_footprint'
 const MAX_FOOTPRINT_COUNT = 100 // 最大记录数量
 
@@ -59,6 +61,9 @@ class FootprintManager {
 		const footprint = {
 			id: product.id,
 			name: product.name,
+			name_zh: product.name_zh || product.name || '',
+			name_en: product.name_en || '',
+			name_th: product.name_th || '',
 			image: product.image || product.image_url,
 			price: product.price,
 			originalPrice: product.originalPrice,
@@ -100,8 +105,17 @@ class FootprintManager {
 		const footprint = {
 			id: store.id,
 			name: store.name,
+			name_zh: store.name_zh || store.name || '',
+			name_en: store.name_en || '',
+			name_th: store.name_th || '',
 			logo: store.logo || store.image_url,
 			address: store.address,
+			address_zh: store.address_zh || store.address || '',
+			address_en: store.address_en || '',
+			address_th: store.address_th || '',
+			formatted_address_zh: store.formatted_address_zh || '',
+			formatted_address_en: store.formatted_address_en || '',
+			formatted_address_th: store.formatted_address_th || '',
 			rating: store.rating,
 			distance: store.distance,
 			status: store.status,
@@ -275,7 +289,7 @@ class FootprintManager {
 	}
 
 	/**
-	 * 格式化时间为友好显示
+	 * 格式化时间为友好显示（按当前 i18n 语言渲染）
 	 * @param {number} timestamp - 时间戳
 	 * @returns {string}
 	 */
@@ -287,23 +301,23 @@ class FootprintManager {
 
 		// 1分钟内
 		if (diff < 60 * 1000) {
-			return '刚刚'
+			return i18n.t('footprint.justNow')
 		}
 		// 1小时内
 		if (diff < 60 * 60 * 1000) {
-			return `${Math.floor(diff / (60 * 1000))}分钟前`
+			return i18n.t('footprint.minutesAgo', { n: Math.floor(diff / (60 * 1000)) })
 		}
 		// 24小时内
 		if (diff < 24 * 60 * 60 * 1000) {
-			return `${Math.floor(diff / (60 * 60 * 1000))}小时前`
+			return i18n.t('footprint.hoursAgo', { n: Math.floor(diff / (60 * 60 * 1000)) })
 		}
 		// 7天内
 		if (diff < 7 * 24 * 60 * 60 * 1000) {
-			return `${Math.floor(diff / (24 * 60 * 60 * 1000))}天前`
+			return i18n.t('footprint.daysAgo', { n: Math.floor(diff / (24 * 60 * 60 * 1000)) })
 		}
 		// 超过7天显示日期
 		const date = new Date(timestamp)
-		return `${date.getMonth() + 1}月${date.getDate()}日`
+		return i18n.t('footprint.monthDay', { m: date.getMonth() + 1, d: date.getDate() })
 	}
 
 	/**

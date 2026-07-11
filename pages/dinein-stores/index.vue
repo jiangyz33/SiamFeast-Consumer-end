@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('index.dineIn') }}</text>
+			<text class="nav-title">{{ t('index.dineIn') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -38,7 +38,7 @@
 					@click="selectCategory(-1)"
 				>
 					<image class="category-icon" src="/static/icons/cat-all.svg" mode="aspectFit"></image>
-					<text class="category-name">{{ i18n.t('products.all') || '全部' }}</text>
+					<text class="category-name">{{ t('products.all') || '全部' }}</text>
 				</view>
 				<view
 					v-for="(cat, index) in categories"
@@ -82,8 +82,8 @@
 					<!-- 菜品预览 -->
 					<view class="sc-products" v-if="store._items && store._items.length > 0">
 						<view class="sc-products-header">
-							<text class="sc-products-title">{{ i18n.t('products.hotItems') || '招牌菜品' }}</text>
-							<text class="sc-products-count">{{ store._items.length }} {{ i18n.t('products.items') || '款' }}</text>
+							<text class="sc-products-title">{{ t('products.hotItems') || '招牌菜品' }}</text>
+							<text class="sc-products-count">{{ store._items.length }} {{ t('products.items') || '款' }}</text>
 						</view>
 						<scroll-view class="sc-products-scroll" scroll-x>
 							<view class="sc-products-list">
@@ -104,7 +104,7 @@
 					<!-- 进入店铺 -->
 					<view class="sc-action">
 						<view class="sc-enter-btn">
-							<text class="sc-enter-text">{{ i18n.t('mine.enterStore') }}</text>
+							<text class="sc-enter-text">{{ t('mine.enterStore') }}</text>
 							<image class="sc-enter-arrow" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
@@ -113,13 +113,13 @@
 
 			<!-- 加载 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">{{ i18n.t("common.loading") }}</text>
+				<text v-if="loading" class="tip-text">{{ t("common.loading") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view v-if="!loading && filteredStores.length === 0" class="empty-state">
 				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t("common.empty.store") || i18n.t("common.noData") }}</text>
+				<text class="empty-title">{{ t("common.empty.store") || i18n.t("common.noData") }}</text>
 			</view>
 
 			<view class="bottom-placeholder"></view>
@@ -130,13 +130,15 @@
 <script>
 import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
-import { fixMinioUrl, calcDistance, getUserLocation } from '@/utils/index.js'
+import { fixMinioUrl, calcDistance } from '@/utils/index.js'
+import { getLocationOrDefault } from '@/utils/location.js'
 import { getPublicStores, getBusinessTypes } from '@/api/services/store.js'
 import { getConsumerMenuItems } from '@/api/services/menu.js'
 
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			lang: i18n.getLanguage(),
 			statusBarHeight: 20,
@@ -173,7 +175,22 @@ export default {
 		this.initPage()
 		this.loadData()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 
 		initPage() {
@@ -218,9 +235,9 @@ export default {
 
 					let dineinStores = list.filter(s => !s.delivery_enabled)
 
-					// 计算距离并排序
+					// 计算距离并排序（失败用曼谷默认坐标，不抛错）
 					try {
-						const loc = await getUserLocation()
+						const loc = await getLocationOrDefault()
 						dineinStores.forEach(s => {
 							if (s.latitude && s.longitude) {
 								const info = calcDistance(loc.latitude, loc.longitude, s.latitude, s.longitude)

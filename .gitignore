@@ -7,3 +7,23 @@ unpackage/
 .env
 .env.*
 !.env.example
+
+# Keystore（生产签名，禁止入库）
+keystore/
+*.keystore
+*.jks
+
+# 临时测试脚本
+scripts/test_*.py
+scripts/test_*.js
+scripts/local-preview-server.js
+
+# 大文件 / 压缩包
+*.zip
+*.rar
+
+# 测试截图
+docs/*test*.png
+
+# Claude 本地设置
+.claude/settings.local.json

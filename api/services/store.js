@@ -21,13 +21,15 @@ export function getStores(params = {}) {
 /**
  * 获取门店详情
  * @param {number} storeId 门店ID
+ * @param {Object} [options]
+ * @param {boolean} [options.silent=false] 静默模式：失败时不弹 toast（用于后台刷新多语言字段等容错场景）
  * @returns {Promise}
  */
-export function getStore(storeId) {
+export function getStore(storeId, options = {}) {
 	if (USE_MOCK) {
 		return mockGetStore(storeId)
 	}
-	return get(`/stores/${storeId}`)
+	return get(`/stores/${storeId}`, {}, { silent: !!options.silent })
 }
 
 /**

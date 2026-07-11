@@ -51,7 +51,7 @@ let mockMessages = [
 		id: 5,
 		type: 'promotion',
 		title: '优惠活动',
-		description: '积分商城上新：品牌定制马克杯已上架，快去兑换吧',
+		description: '兑换商城上新：品牌定制马克杯已上架，快去兑换吧',
 		icon: iconMap.promotion,
 		created_at: '2025-12-16 14:00:00',
 		is_read: false

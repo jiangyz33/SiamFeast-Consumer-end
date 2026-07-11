@@ -1,5 +1,5 @@
 <template>
-	<view class="checkout-page">
+	<view class="checkout-page" :data-lang="langVersion">
 		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
@@ -8,27 +8,27 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">确认订单</text>
+			<text class="nav-title">{{ t('checkout.title') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
 		<!-- 加载状态 -->
 		<view class="loading-state" v-if="loading">
-			<text class="loading-text">加载中...</text>
+			<text class="loading-text">{{ t('common.loading') }}</text>
 		</view>
 
 		<!-- 内容区域 -->
 		<scroll-view v-else class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<!-- 配送方式选择 -->
-				<view class="delivery-type-badge" v-if="deliveryType === 'delivery'">
-					<text class="badge-text">外卖配送</text>
+				<view class="delivery-type-badge" v-if="false">
+					<text class="badge-text">{{ t('checkout.deliveryBadge') }}</text>
 				</view>
 
 			<!-- 分隔线 -->
 			<view class="divider"></view>
 
 			<!-- 收货地址 -->
-			<view class="address-section" v-if="deliveryType === 'delivery'">
+			<view class="address-section" v-if="false">
 				<view class="section-card">
 					<view class="address-content" @click="handleSelectAddress">
 						<image class="address-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
@@ -40,7 +40,7 @@
 							<text class="address-detail">{{ addressInfo.province }}{{ addressInfo.city }}{{ addressInfo.district }}{{ addressInfo.detail }}</text>
 						</view>
 						<view class="address-info" v-else>
-							<text class="address-detail">请选择收货地址</text>
+							<text class="address-detail">{{ t('checkout.pleaseSelectAddress') }}</text>
 						</view>
 						<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 					</view>
@@ -54,7 +54,7 @@
 						<image class="shop-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 						<view class="shop-info">
 							<text class="shop-name">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.name }}</text>
-							<text class="shop-address">{{ shopInfo.address }}</text>
+							<text class="shop-address">{{ shopInfo['address_' + i18n.getLanguage()] || shopInfo['formatted_address_' + i18n.getLanguage()] || shopInfo.address }}</text>
 						</view>
 						<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 					</view>
@@ -68,14 +68,14 @@
 			<view class="order-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">订单信息</text>
+						<text class="title-text">{{ t('checkout.orderInfo') }}</text>
 					</view>
 					<!-- 商品列表 -->
 					<view class="product-list">
 						<view class="product-item" v-for="(item, index) in cartItems" :key="index">
 							<image class="product-image" :src="item.image || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 							<view class="product-info">
-								<text class="product-name">{{ item.name }}</text>
+								<text class="product-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
 								<view class="product-specs" v-if="item.specs && Object.keys(item.specs).length > 0">
 									<text class="specs-text">{{ formatSpecs(item.specs) }}</text>
 								</view>
@@ -93,10 +93,10 @@
 			<view class="divider"></view>
 
 			<!-- 配送时间 -->
-			<view class="time-section">
+			<view class="time-section" v-if="false">
 				<view class="section-card">
 					<view class="time-row" @click="handleSelectTime">
-						<text class="time-label">{{ deliveryType === 'delivery' ? '配送时间' : '取餐时间' }}</text>
+						<text class="time-label">{{ t('checkout.pickupTime') }}</text>
 						<view class="time-value">
 							<text class="time-text">{{ selectedTimeLabel }}</text>
 							<image class="arrow-icon-small" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
@@ -106,13 +106,13 @@
 			</view>
 
 			<!-- 分隔线 -->
-			<view class="divider"></view>
+			<view class="divider" v-if="false"></view>
 
 			<!-- 支付方式 -->
-			<view class="payment-section">
+			<view class="payment-section" v-if="false">
 				<view class="section-card">
 					<view class="payment-row" @click="handleSelectPayment">
-						<text class="payment-label">支付方式</text>
+						<text class="payment-label">{{ t('checkout.paymentMethod') }}</text>
 						<view class="payment-value">
 							<text class="payment-text">{{ selectedPaymentName }}</text>
 							<image class="arrow-icon-small" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
@@ -129,14 +129,14 @@
 				<view class="section-card">
 					<view class="coupon-row" @click="availableCoupons.length > 0 ? (showCouponPicker = true) : null">
 						<view class="coupon-left">
-							<text class="coupon-label">优惠券</text>
-							<text class="coupon-count" v-if="availableCoupons.length > 0">{{ availableCoupons.length }}张可用</text>
-							<text class="coupon-count" v-else>暂无可用</text>
+							<text class="coupon-label">{{ t('checkout.coupon') }}</text>
+							<text class="coupon-count" v-if="availableCoupons.length > 0">{{ t('checkout.couponAvailable', { n: availableCoupons.length }) }}</text>
+							<text class="coupon-count" v-else>{{ t('checkout.couponNone') }}</text>
 						</view>
 						<view class="coupon-right">
 							<text class="coupon-selected" v-if="selectedCoupon">-฿{{ selectedCoupon.amount.toFixed(2) }}</text>
-							<text class="coupon-hint" v-else-if="availableCoupons.length > 0">请选择</text>
-							<text class="coupon-hint" v-else>无可用券</text>
+							<text class="coupon-hint" v-else-if="availableCoupons.length > 0">{{ t('checkout.pleaseSelect') }}</text>
+							<text class="coupon-hint" v-else>{{ t('checkout.couponNoAvailable') }}</text>
 							<image class="arrow-icon-small" src="/static/icons/arrow-right.svg" mode="aspectFit" v-if="availableCoupons.length > 0"></image>
 						</view>
 					</view>
@@ -156,13 +156,21 @@
 					<view class="coin-row">
 						<view class="coin-left">
 							<image class="coin-icon" src="/static/icons/coin.svg" mode="aspectFit"></image>
-							<text class="coin-label">{{ i18n.t('orderDetail.coinDeduct') }}</text>
-							<text class="coin-balance">{{ i18n.t("orderDetail.coinsUnit", { n: coinBalance }) }}</text>
+							<text class="coin-label">{{ t('orderDetail.coinDeduct') }}</text>
+							<!-- 显示用户当前金币余额（不再本地算 maxCoinUsage，由后端 used_coins 决定）-->
+							<text class="coin-balance">{{ t("orderDetail.coinsUnit", { n: coinBalance }) }}</text>
 						</view>
 						<view class="coin-right">
 							<text class="coin-deduct" v-if="useCoins">-฿{{ coinDeductAmount }}</text>
-							<switch :checked="useCoins" @change="handleCoinToggle" color="#F2B131" />
+							<switch :checked="useCoins" @change="handleCoinToggle" color="#F2B131" :disabled="!coinDeductAvailable" />
 						</view>
+					</view>
+					<view class="coin-hint-row" v-if="maxDeductAmount > 0">
+						<!-- 后端文档建议：不要展示金币数（分段累进模型下没有简单 rate），只展示金额 -->
+						<text class="coin-hint">{{ t('checkout.coinMaxDeductAmount', { amount: maxDeductAmount.toFixed(2) }) }}</text>
+					</view>
+					<view class="coin-hint-row threshold-not-met" v-if="!coinDeductAvailable">
+						<text class="coin-hint">{{ t('checkout.coinThresholdNotMet') }}</text>
 					</view>
 				</view>
 			</view>
@@ -174,7 +182,7 @@
 			<view class="cost-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">商品费用</text>
+						<text class="title-text">{{ t('checkout.productCost') }}</text>
 					</view>
 					<view class="shop-name-row">
 						<text class="shop-name-text">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.name }}</text>
@@ -184,27 +192,27 @@
 							<image class="cost-image" :src="item.image || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 							<view class="cost-info">
 								<view class="cost-name-row">
-									<text class="cost-name">{{ item.name }}</text>
+									<text class="cost-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
 									<text class="cost-price">฿{{ (item.price * item.quantity).toFixed(2) }}</text>
 								</view>
 								<text class="cost-specs" v-if="item.specs && Object.keys(item.specs).length > 0">{{ formatSpecs(item.specs) }}</text>
 							</view>
 						</view>
 					</view>
-					<view class="cost-row" v-if="deliveryType === 'delivery'">
-						<text class="cost-label">配送费</text>
+					<view class="cost-row" v-if="false">
+						<text class="cost-label">{{ t('checkout.deliveryFee') }}</text>
 						<text class="cost-value">฿{{ deliveryFee.toFixed(2) }}</text>
 					</view>
 					<view class="cost-row" v-if="selectedCoupon">
-						<text class="cost-label">优惠券（{{ selectedCoupon.name }}）</text>
+						<text class="cost-label">{{ t('checkout.coupon') }}（{{ selectedCoupon.name }}）</text>
 						<text class="cost-value discount">-฿{{ selectedCoupon.amount.toFixed(2) }}</text>
 					</view>
 					<view class="cost-row" v-if="useCoins && coinDeductAmount > 0">
-						<text class="cost-label">{{ i18n.t('orderDetail.coinDeduct') }}</text>
+						<text class="cost-label">{{ t('orderDetail.coinDeduct') }}</text>
 						<text class="cost-value discount">-฿{{ coinDeductAmount.toFixed(2) }}</text>
 					</view>
 					<view class="total-row">
-						<text class="total-label">合计</text>
+						<text class="total-label">{{ t('checkout.totalAmount') }}</text>
 						<text class="total-value">฿{{ totalPrice }}</text>
 					</view>
 				</view>
@@ -217,8 +225,8 @@
 			<view class="remark-section">
 				<view class="section-card">
 					<view class="remark-row">
-						<text class="remark-label">备注</text>
-						<input class="remark-input" v-model="remark" placeholder="选填，请输入备注信息" placeholder-class="remark-placeholder" />
+						<text class="remark-label">{{ t('checkout.remark') }}</text>
+						<input class="remark-input" v-model="remark" :placeholder="i18n.t('checkout.remarkOptional')" placeholder-class="remark-placeholder" />
 					</view>
 				</view>
 			</view>
@@ -231,7 +239,7 @@
 		<view class="coupon-picker-mask" v-if="showCouponPicker" @click="showCouponPicker = false">
 			<view class="coupon-picker" @click.stop>
 				<view class="picker-header">
-					<text class="picker-title">选择优惠券</text>
+					<text class="picker-title">{{ t('checkout.selectCoupon') }}</text>
 					<text class="picker-close" @click="showCouponPicker = false">×</text>
 				</view>
 				<scroll-view class="picker-list" scroll-y>
@@ -254,7 +262,7 @@
 						</view>
 					</view>
 					<view class="picker-item picker-item-none" @click="clearCoupon">
-						<text class="picker-coupon-name">不使用优惠券</text>
+						<text class="picker-coupon-name">{{ t('checkout.couponNotUse') }}</text>
 					</view>
 				</scroll-view>
 			</view>
@@ -263,11 +271,11 @@
 		<!-- 底部结算栏 -->
 		<view class="bottom-bar">
 			<view class="total-section">
-				<text class="total-text">合计：</text>
+				<text class="total-text">{{ t('checkout.totalColon') }}</text>
 				<text class="total-price">฿{{ totalPrice }}</text>
 			</view>
 			<view class="submit-btn" :class="{ 'submit-btn-disabled': submitting }" @click="handleSubmit">
-				<text class="submit-text">{{ submitting ? '提交中...' : '提交订单' }}</text>
+				<text class="submit-text">{{ submitting ? i18n.t('checkout.submitting') : i18n.t('checkout.submitOrder') }}</text>
 			</view>
 		</view>
 
@@ -275,7 +283,7 @@
 		<view class="picker-mask" v-if="showTimePicker" @click="showTimePicker = false">
 			<view class="picker-panel" @click.stop>
 				<view class="picker-header">
-					<text class="picker-title">选择{{ deliveryType === 'delivery' ? '配送' : '取餐' }}时间</text>
+					<text class="picker-title">{{ t('checkout.selectPickupTime') }}</text>
 				</view>
 				<view class="picker-list">
 					<view
@@ -295,7 +303,7 @@
 		<view class="picker-mask" v-if="showPaymentPicker" @click="showPaymentPicker = false">
 			<view class="picker-panel" @click.stop>
 				<view class="picker-header">
-					<text class="picker-title">选择支付方式</text>
+					<text class="picker-title">{{ t('checkout.selectPaymentMethod') }}</text>
 				</view>
 				<view class="picker-list">
 					<view
@@ -334,6 +342,7 @@ const ORDER_SOURCE_MAP = {
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -365,15 +374,33 @@ export default {
 			availableCoupons: [],
 			showCouponPicker: false,
 			selectedCoupon: null,
-			coinBalance: 0,
-			useCoins: false,
-			coinDeductAmount: 0,
-			deliveryFee: 0
-		}
-	},
+		coinBalance: 0,
+		useCoins: false,
+		coinDeductAmount: 0,
+			maxCoinUsage: 0,
+		// 金币抵扣配置（来自后端 /user-orders/calculate-coin-deduct 响应）
+		coinConfig: {
+			maxDeductPercent: 10,        // 每单最大抵扣比例（%），后端配置
+			maxDeductAmount: 0,          // 本单最大可抵扣金额
+			usedCoins: 0                 // 实际使用的金币数
+		},
+		deliveryFee: 0,
+		langVersion: 0
+	}
+},
 	computed: {
 		productTotal() {
 			return this.cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+		},
+		maxDeductAmount() {
+			// 优先用后端返回的 max_deduct_amount；兜底按 max_deduct_percent 算（防接口未返回）
+			if (this.coinConfig.maxDeductAmount > 0) {
+				return this.coinConfig.maxDeductAmount
+			}
+			return Math.floor(this.productTotal * (this.coinConfig.maxDeductPercent / 100) * 100) / 100
+		},
+		coinDeductAvailable() {
+			return this.maxDeductAmount >= 1 && this.coinBalance > 0
 		},
 		totalPrice() {
 			let total = this.productTotal
@@ -389,11 +416,11 @@ export default {
 			return Math.max(0, total).toFixed(2)
 		},
 		selectedTimeLabel() {
-			return this.timeOptions[this.selectedTimeIndex]?.label || '立即配送'
+			return this.timeOptions[this.selectedTimeIndex]?.label || i18n.t('checkout.deliveryBadge')
 		},
 		selectedPaymentName() {
-			if (this.paymentMethods.length === 0) return '加载中...'
-			return this.paymentMethods[this.selectedPaymentIndex]?.name || '请选择'
+			if (this.paymentMethods.length === 0) return i18n.t('common.loading')
+			return this.paymentMethods[this.selectedPaymentIndex]?.name || i18n.t('checkout.pleaseSelect')
 		},
 		selectedPaymentCode() {
 			if (this.paymentMethods.length === 0) return 'cash_pos'
@@ -438,11 +465,21 @@ export default {
 		uni.$on('addressSelected', (address) => {
 			this.addressInfo = address
 		})
+		uni.$on('languageChanged', this.onLanguageChanged)
 	},
 	onUnload() {
 		uni.$off('addressSelected')
+		uni.$off('languageChanged', this.onLanguageChanged)
 	},
 	methods: {
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
+		onLanguageChanged() {
+			this.langVersion++
+		},
+
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -466,6 +503,12 @@ export default {
 								name_en: s.name_en || '',
 								name_th: s.name_th || '',
 								address: s.address || '',
+								address_zh: s.address_zh || '',
+								address_en: s.address_en || '',
+								address_th: s.address_th || '',
+								formatted_address_zh: s.formatted_address_zh || '',
+								formatted_address_en: s.formatted_address_en || '',
+								formatted_address_th: s.formatted_address_th || '',
 								phone: s.phone || '',
 								delivery_fee: s.config?.delivery_fee || 0,
 								business_types: s.business_types || []
@@ -486,6 +529,12 @@ export default {
 							name_en: currentStore.name_en || '',
 							name_th: currentStore.name_th || '',
 							address: currentStore.address,
+							address_zh: currentStore.address_zh || '',
+							address_en: currentStore.address_en || '',
+							address_th: currentStore.address_th || '',
+							formatted_address_zh: currentStore.formatted_address_zh || '',
+							formatted_address_en: currentStore.formatted_address_en || '',
+							formatted_address_th: currentStore.formatted_address_th || '',
 							phone: currentStore.phone || '',
 							delivery_fee: currentStore.config?.delivery_fee || 0,
 							business_types: currentStore.business_types || []
@@ -497,7 +546,11 @@ export default {
 				const [addressRes, paymentRes, couponRes, coinRes] = await Promise.allSettled([
 					getAddressList(),
 					getPaymentMethods(this.shopId),
-					getAvailableCoupons({ order_amount: this.productTotal, ...(this.shopId ? { store_id: this.shopId } : {}) }),
+					getAvailableCoupons({
+						order_amount: this.productTotal,
+						order_type: this.orderType,
+						...(this.shopId ? { store_id: this.shopId } : {})
+					}),
 					getCoinBalance()
 				])
 
@@ -531,16 +584,17 @@ export default {
 					} catch(e) { console.log('fallback getMyCoupons failed:', e) }
 				}
 				if (couponItems.length > 0) {
+					const lang = i18n.getLanguage()
 					this.availableCoupons = couponItems.map(c => {
 						const tpl = c.template || {}
 						return {
 							id: c.id,
 							coupon_code: c.coupon_code || '',
-							name: tpl.name || c.name || c.coupon_name || '',
+							name: tpl['name_' + lang] || tpl.name || c['name_' + lang] || c.name || c.coupon_name || '',
 							amount: c.value || tpl.discount_value || c.discount_value || c.amount || 0,
 							min_spend: tpl.min_order_amount || c.min_order_amount || c.min_spend || 0,
 							valid_end: c.valid_end || c.validity_end || '',
-							description: tpl.description || c.description || ''
+							description: tpl['description_' + lang] || tpl.description || c['description_' + lang] || c.description || ''
 						}
 					}).filter(c => c.amount > 0 && (!c.min_spend || this.productTotal >= c.min_spend))
 					if (this.availableCoupons.length > 0) {
@@ -553,7 +607,7 @@ export default {
 				}
 			} catch (e) {
 				console.error('加载结算数据失败:', e)
-				showToast('加载失败')
+				showToast(i18n.t('checkout.loadFailed'))
 			} finally {
 				this.loading = false
 			}
@@ -594,7 +648,7 @@ export default {
 
 		handleSelectPayment() {
 			if (this.paymentMethods.length === 0) {
-				showToast('暂无可用支付方式')
+				showToast(i18n.t('checkout.paymentNone'))
 				return
 			}
 			this.showPaymentPicker = true
@@ -617,38 +671,61 @@ export default {
 
 			async handleCoinToggle(e) {
 				this.useCoins = e.detail.value
+				if (this.useCoins && !this.coinDeductAvailable) {
+					this.useCoins = false
+					uni.showModal({
+						title: '',
+						content: this.i18n.t('checkout.coinThresholdNotMet'),
+						showCancel: false,
+						confirmText: this.i18n.t('common.confirm')
+					})
+					return
+				}
 				if (this.useCoins && this.coinBalance > 0) {
-					try {
-						const res = await calculateCoinDeduct(this.productTotal, this.coinBalance)
-						if (res.code === 0 && res.data) {
-							const deduct = res.data.deduct_amount || 0
-							if (deduct <= 0) {
-								this.useCoins = false
-								this.coinDeductAmount = 0
-								uni.showModal({
-									title: '',
-									content: this.i18n.t('checkout.coinDeductUnavailable'),
-									showCancel: false,
-									confirmText: this.i18n.t('common.confirm')
-								})
-							} else {
-								this.coinDeductAmount = deduct
-							}
+				try {
+					// 后端 A 算法分段累进，会自动按 max_deduct_percent 上限、按余额上限、按订单金额上限算
+					// 前端直接传用户全部余额，让后端算实际使用金币数（used_coins）和实际抵扣额（deduct_amount）
+					const coinsToSend = this.coinBalance
+					const res = await calculateCoinDeduct(this.productTotal, coinsToSend)
+					if (res.code === 0 && res.data) {
+						if (res.data.max_coins) this.maxCoinUsage = res.data.max_coins
+						// 保存后端配置（来自 coin_deduction_configs 表）
+						if (res.data.max_deduct_percent) this.coinConfig.maxDeductPercent = res.data.max_deduct_percent
+						if (res.data.max_deduct_amount) this.coinConfig.maxDeductAmount = res.data.max_deduct_amount
+						if (res.data.used_coins !== undefined) this.coinConfig.usedCoins = res.data.used_coins
+						// 实际抵扣金额（A 算法分段累进计算后的值）
+						let deduct = res.data.deduct_amount || 0
+						// 双重保险：再按 maxDeductAmount 兜底一次
+						if (deduct > this.maxDeductAmount) {
+							deduct = this.maxDeductAmount
 						}
-					} catch (e) {
-						this.useCoins = false
-						this.coinDeductAmount = 0
+						if (deduct <= 0) {
+							this.useCoins = false
+							this.coinDeductAmount = 0
+							uni.showModal({
+								title: '',
+								content: this.i18n.t('checkout.coinDeductUnavailable'),
+								showCancel: false,
+								confirmText: this.i18n.t('common.confirm')
+							})
+						} else {
+							this.coinDeductAmount = deduct
+						}
 					}
-				} else {
+				} catch (e) {
+					this.useCoins = false
 					this.coinDeductAmount = 0
 				}
+			} else {
+				this.coinDeductAmount = 0
+			}
 			},
 
 		async handleSubmit() {
 			if (this.submitting) return
 
 			if (this.deliveryType === 'delivery' && !this.addressInfo) {
-				showToast('请选择收货地址')
+				showToast(i18n.t('checkout.pleaseSelectAddress'))
 				return
 			}
 
@@ -688,7 +765,12 @@ export default {
 						extra_data: {
 
 								store_name: this.shopInfo.name || '',
-							store_address: this.shopInfo.address || ''
+								store_name_en: this.shopInfo.name_en || '',
+								store_name_th: this.shopInfo.name_th || '',
+							store_address: this.shopInfo.address || '',
+							store_address_zh: this.shopInfo.formatted_address_zh || this.shopInfo.address_zh || this.shopInfo.address || '',
+							store_address_en: this.shopInfo.formatted_address_en || this.shopInfo.address_en || '',
+							store_address_th: this.shopInfo.formatted_address_th || this.shopInfo.address_th || ''
 					}
 					}
 
@@ -698,7 +780,13 @@ export default {
 
 					if (this.useCoins && this.coinDeductAmount > 0) {
 						orderData.use_coins = true
-						orderData.coins_to_use = this.coinBalance
+						// 直接用后端 calculateCoinDeduct 接口返回的 used_coins
+						// （A 算法分段累进计算出的实际使用金币数，已包含余额/上限/比例约束）
+						// 兜底：如果接口没返回 used_coins，用 coinConfig 保存的值；再没有就用 coinDeductAmount（隐含 1:1）
+						const usedCoins = this.coinConfig.usedCoins
+							|| Math.ceil(this.coinDeductAmount)
+						// 双重保险：不超过用户余额
+						orderData.coins_to_use = Math.min(usedCoins, this.coinBalance)
 					}
 
 					if (this.deliveryType === 'delivery' && this.addressInfo) {
@@ -710,30 +798,19 @@ export default {
 
 				if (orderRes.code === 0 && orderRes.data) {
 					const orderId = orderRes.data.id || orderRes.data.order_id
+					const orderNo = orderRes.data.order_no || ''
+					const totalAmount = orderRes.data.total_amount || parseFloat(this.totalPrice)
+					const uniqueCode = orderRes.data.unique_code || ''
 
-					const paymentRes = await createPayment({
-						order_id: orderId,
-						amount: parseFloat(this.totalPrice),
-						method: this.selectedPaymentCode
+					uni.redirectTo({
+						url: '/pages/payment-success/index?orderId=' + orderId + '&orderNo=' + encodeURIComponent(orderNo) + '&orderType=' + this.orderType + '&totalAmount=' + totalAmount + '&uniqueCode=' + encodeURIComponent(uniqueCode)
 					})
-
-					if (paymentRes.code === 0) {
-						const needPickupCode = this.orderType === "dinein" || this.deliveryType === "pickup"
-							const pickupCode = needPickupCode ? this.generatePickupCode() : ""
-							if (pickupCode) { try { uni.setStorageSync("pickup_code_" + orderId, pickupCode) } catch(e) {} }
-
-						uni.redirectTo({
-							url: `/pages/payment-success/index?orderId=${orderId}&orderType=${this.orderType}&deliveryType=${this.deliveryType}&pickupCode=${pickupCode}`
-						})
-					} else {
-						showToast('支付失败')
-					}
 				} else {
-					showToast(orderRes.message || '创建订单失败')
+					showToast(orderRes.message || i18n.t('checkout.createOrderFailed'))
 				}
 			} catch (e) {
 				console.error('提交订单失败:', e)
-				showToast('提交失败')
+				showToast(i18n.t('checkout.submitFailed'))
 			} finally {
 				this.submitting = false
 			}
@@ -1186,6 +1263,21 @@ export default {
 	justify-content: space-between;
 }
 
+.coin-hint-row {
+	margin-top: 8px;
+	padding: 0 4px;
+}
+
+.coin-hint {
+	font-size: 11px;
+	color: #FF6B00;
+	line-height: 1.4;
+}
+
+.coin-hint-row.threshold-not-met .coin-hint {
+	color: #999999;
+}
+
 .coin-left {
 	display: flex;
 	align-items: center;
@@ -1214,7 +1306,13 @@ export default {
 	gap: 8px;
 }
 
-.coin-deduct {
+.coin-limit {
+				font-size: 10px;
+				color: #F2B131;
+				margin-left: 4px;
+			}
+
+			.coin-deduct {
 	font-size: 12px;
 	color: #DA3300;
 }

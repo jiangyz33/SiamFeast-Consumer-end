@@ -24,7 +24,7 @@
 			<!-- 输入框区域 -->
 			<view class="input-section">
 				<!-- 手机号输入框 -->
-				<view class="input-field" :style="{ borderColor: phoneFocused ? '#F2B131' : '#E0E0E0' }">
+				<view class="input-field" :style="{ borderColor: phoneError ? '#DA3300' : (phoneFocused ? '#F2B131' : '#E0E0E0') }">
 					<view class="country-picker" @click="showCountryPicker = true">
 						<text class="country-flag">{{ selectedCountry.flag }}</text>
 						<text class="country-code">{{ selectedCountry.code }}</text>
@@ -33,14 +33,17 @@
 					<view class="phone-divider"></view>
 					<input
 						class="input"
-						type="text"
+						type="number"
+						:maxlength="phoneMaxLength"
 						:placeholder="t('login.phonePlaceholder')"
 						placeholder-style="color: #828282;"
 						v-model="phone"
-						@focus="phoneFocused = true"
-						@blur="phoneFocused = false"
+						@focus="phoneFocused = true; phoneError = ''"
+						@input="onPhoneInput"
+						@blur="onPhoneBlur"
 					/>
 				</view>
+				<text v-if="phoneError" class="field-error">{{ phoneError }}</text>
 
 				<!-- 密码输入框 -->
 				<view class="input-field" :style="{ borderColor: passwordFocused ? '#F2B131' : '#E0E0E0' }">
@@ -69,30 +72,11 @@
 
 				<!-- 登录链接 -->
 				<view class="login-links">
-					<view class="switch-login" @click="goSmsLogin">
-						<text class="switch-text">{{ t('login.codeLogin') }}</text>
+					<view class="email-login-link" @click="goEmailLogin">
+						<text class="switch-text">{{ t('login.emailLogin') }}</text>
 					</view>
 					<view class="register-link" @click="goRegister">
 						<text class="register-text">{{ t('login.goRegister') }}</text>
-					</view>
-				</view>
-			</view>
-
-			<!-- 分隔线 -->
-			<view class="divider">
-				<view class="divider-line"></view>
-				<text class="divider-text">or</text>
-				<view class="divider-line"></view>
-			</view>
-
-			<!-- 社交登录 -->
-			<view class="social-section">
-				<view class="social-buttons">
-					<view class="social-btn google" @click="socialLogin('google')">
-						<image class="social-icon-img" src="/static/icons/google.svg" mode="aspectFit"></image>
-					</view>
-					<view class="social-btn facebook" @click="socialLogin('facebook')">
-						<image class="social-icon-img" src="/static/icons/facebook.svg" mode="aspectFit"></image>
 					</view>
 				</view>
 			</view>
@@ -143,31 +127,31 @@
 </template>
 
 <script>
-import { validatePhone, showToast } from '@/utils/index.js'
+import { validatePhone, getPhoneMaxLength, showToast } from '@/utils/index.js'
 import { loginByPassword, setCountryCode } from '@/api/services/auth.js'
 import store from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 
 const COUNTRY_LIST = [
-	{ code: '+66',  flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand',  name_zh: '泰国',  name_th: 'ประเทศไทย' },
-	{ code: '+86',  flag: '\u{1F1E8}\u{1F1F3}', name: 'China',     name_zh: '中国',  name_th: 'จีน' },
-	{ code: '+852', flag: '\u{1F1ED}\u{1F1F0}', name: 'Hong Kong', name_zh: '香港',  name_th: 'ฮ่องกง' },
-	{ code: '+853', flag: '\u{1F1F2}\u{1F1F4}', name: 'Macau',     name_zh: '澳门',  name_th: 'มาเกา' },
-	{ code: '+886', flag: '\u{1F1F9}\u{1F1FC}', name: 'Taiwan',    name_zh: '台湾',  name_th: 'ไต้วัน' },
-	{ code: '+65',  flag: '\u{1F1F8}\u{1F1EC}', name: 'Singapore', name_zh: '新加坡', name_th: 'สิงคโปร์' },
-	{ code: '+60',  flag: '\u{1F1F2}\u{1F1FE}', name: 'Malaysia',  name_zh: '马来西亚', name_th: 'มาเลเซีย' },
-	{ code: '+84',  flag: '\u{1F1FB}\u{1F1F3}', name: 'Vietnam',   name_zh: '越南',  name_th: 'เวียดนาม' },
-	{ code: '+95',  flag: '\u{1F1F2}\u{1F1E6}', name: 'Myanmar',   name_zh: '缅甸',  name_th: 'พม่า' },
-	{ code: '+855', flag: '\u{1F1F0}\u{1F1ED}', name: 'Cambodia',  name_zh: '柬埔寨', name_th: 'กัมพูชา' },
-	{ code: '+856', flag: '\u{1F1F1}\u{1F1E6}', name: 'Laos',      name_zh: '老挝',  name_th: 'ลาว' },
-	{ code: '+62',  flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia', name_zh: '印尼',  name_th: 'อินโดนีเซีย' },
-	{ code: '+63',  flag: '\u{1F1F5}\u{1F1ED}', name: 'Philippines', name_zh: '菲律宾', name_th: 'ฟิลิปปินส์' },
-	{ code: '+82',  flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea', name_zh: '韩国', name_th: 'เกาหลีใต้' },
-	{ code: '+81',  flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan',     name_zh: '日本',  name_th: 'ญี่ปุ่น' },
-	{ code: '+91',  flag: '\u{1F1EE}\u{1F1F3}', name: 'India',     name_zh: '印度',  name_th: 'อินเดีย' },
-	{ code: '+1',   flag: '\u{1F1FA}\u{1F1F8}', name: 'USA',       name_zh: '美国',  name_th: 'อเมริกา' },
-	{ code: '+44',  flag: '\u{1F1EC}\u{1F1E7}', name: 'UK',        name_zh: '英国',  name_th: 'อังกฤษ' },
-	{ code: '+61',  flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia', name_zh: '澳大利亚', name_th: 'ออสเตรเลีย' },
+	{ code: '+66',  flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand',  name_zh: '泰国',  name_th: 'ประเทศไทย', min: 9, max: 9 },
+	{ code: '+86',  flag: '\u{1F1E8}\u{1F1F3}', name: 'China',     name_zh: '中国',  name_th: 'จีน', min: 11, max: 11 },
+	{ code: '+852', flag: '\u{1F1ED}\u{1F1F0}', name: 'Hong Kong', name_zh: '香港',  name_th: 'ฮ่องกง', min: 8, max: 8 },
+	{ code: '+853', flag: '\u{1F1F2}\u{1F1F4}', name: 'Macau',     name_zh: '澳门',  name_th: 'มาเกา', min: 8, max: 8 },
+	{ code: '+886', flag: '\u{1F1F9}\u{1F1FC}', name: 'Taiwan',    name_zh: '台湾',  name_th: 'ไต้วัน', min: 9, max: 9 },
+	{ code: '+65',  flag: '\u{1F1F8}\u{1F1EC}', name: 'Singapore', name_zh: '新加坡', name_th: 'สิงคโปร์', min: 8, max: 8 },
+	{ code: '+60',  flag: '\u{1F1F2}\u{1F1FE}', name: 'Malaysia',  name_zh: '马来西亚', name_th: 'มาเลเซีย', min: 9, max: 10 },
+	{ code: '+84',  flag: '\u{1F1FB}\u{1F1F3}', name: 'Vietnam',   name_zh: '越南',  name_th: 'เวียดนาม', min: 9, max: 10 },
+	{ code: '+95',  flag: '\u{1F1F2}\u{1F1E6}', name: 'Myanmar',   name_zh: '缅甸',  name_th: 'พม่า', min: 8, max: 9 },
+	{ code: '+855', flag: '\u{1F1F0}\u{1F1ED}', name: 'Cambodia',  name_zh: '柬埔寨', name_th: 'กัมพูชา', min: 8, max: 9 },
+	{ code: '+856', flag: '\u{1F1F1}\u{1F1E6}', name: 'Laos',      name_zh: '老挝',  name_th: 'ลาว', min: 8, max: 9 },
+	{ code: '+62',  flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia', name_zh: '印尼',  name_th: 'อินโดนีเซีย', min: 8, max: 12 },
+	{ code: '+63',  flag: '\u{1F1F5}\u{1F1ED}', name: 'Philippines', name_zh: '菲律宾', name_th: 'ฟิลิปปินส์', min: 10, max: 10 },
+	{ code: '+82',  flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea', name_zh: '韩国', name_th: 'เกาหลีใต้', min: 9, max: 10 },
+	{ code: '+81',  flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan',     name_zh: '日本',  name_th: 'ญี่ปุ่น', min: 9, max: 10 },
+	{ code: '+91',  flag: '\u{1F1EE}\u{1F1F3}', name: 'India',     name_zh: '印度',  name_th: 'อินเดีย', min: 10, max: 10 },
+	{ code: '+1',   flag: '\u{1F1FA}\u{1F1F8}', name: 'USA',       name_zh: '美国',  name_th: 'อเมริกา', min: 10, max: 10 },
+	{ code: '+44',  flag: '\u{1F1EC}\u{1F1E7}', name: 'UK',        name_zh: '英国',  name_th: 'อังกฤษ', min: 10, max: 10 },
+	{ code: '+61',  flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia', name_zh: '澳大利亚', name_th: 'ออสเตรเลีย', min: 9, max: 10 },
 ]
 
 export default {
@@ -181,6 +165,7 @@ export default {
 			agreed: true,
 			loading: false,
 			phoneFocused: false,
+			phoneError: '',
 			passwordFocused: false,
 			langVersion: 0,
 			showCountryPicker: false,
@@ -194,8 +179,11 @@ export default {
 			const labels = { zh: '中文', en: 'EN', th: 'ไทย' };
 			return labels[lang] || 'EN';
 		},
+		phoneMaxLength() {
+			return getPhoneMaxLength(this.selectedCountry)
+		},
 		canSubmit() {
-			if (!validatePhone(this.phone)) return false
+			if (!validatePhone(this.phone, this.selectedCountry)) return false
 			if (!this.agreed) return false
 			return this.password.length >= 6
 		}
@@ -219,11 +207,57 @@ export default {
 			this.selectedCountry = c
 			setCountryCode(c.code)
 			this.showCountryPicker = false
+			// 切换国家后，如果当前手机号超出新国家的位数上限，截断
+			if (this.phone && c.max && this.phone.length > c.max) {
+				this.phone = this.phone.slice(0, c.max)
+			}
+			// 重新校验
+			if (this.phone) {
+				if (!validatePhone(this.phone, c)) {
+					const len = c.min === c.max ? c.min : `${c.min}-${c.max}`
+					this.phoneError = this.t('login.phoneInvalid') + ` (${len})`
+				} else {
+					this.phoneError = ''
+				}
+			}
 		},
+
+		// 手机号实时过滤：去掉非数字
+		onPhoneInput(e) {
+			const val = (e.detail && e.detail.value) || ''
+			const cleaned = val.replace(/\D/g, '').slice(0, this.phoneMaxLength)
+			if (cleaned !== val) {
+				this.phone = cleaned
+				// 触发 v-model 同步
+				this.$forceUpdate()
+			} else {
+				this.phone = cleaned
+			}
+			// 输入中清空错误（除非已超长）
+			if (this.phoneError && validatePhone(this.phone, this.selectedCountry)) {
+				this.phoneError = ''
+			}
+		},
+
+		// 失焦校验
+		onPhoneBlur() {
+			this.phoneFocused = false
+			if (!this.phone) {
+				this.phoneError = this.t('login.phoneRequired')
+			} else if (!validatePhone(this.phone, this.selectedCountry)) {
+				const len = this.selectedCountry.min === this.selectedCountry.max
+					? this.selectedCountry.min
+					: `${this.selectedCountry.min}-${this.selectedCountry.max}`
+				this.phoneError = this.t('login.phoneInvalid') + ` (${len})`
+			} else {
+				this.phoneError = ''
+			}
+		},
+
 		async handleLogin() {
 			if (!this.canSubmit || this.loading) return
 
-			if (!validatePhone(this.phone)) {
+			if (!validatePhone(this.phone, this.selectedCountry)) {
 				showToast(this.t('login.phoneRequired'))
 				return
 			}
@@ -239,7 +273,7 @@ export default {
 				const res = await loginByPassword(this.phone, this.password)
 
 				if (res.code !== 0) {
-					showToast(res.message || this.t('login.loginFailed'))
+					showToast(this.resolveErrorMessage(res))
 					return
 				}
 
@@ -259,19 +293,30 @@ export default {
 				}, 1500)
 			} catch (e) {
 				console.error('登录失败:', e)
-				showToast(this.t('common.networkError'))
+				showToast(this.resolveErrorMessage(e))
 			} finally {
 				this.loading = false
 			}
 		},
 
-		goSmsLogin() {
-			if (!validatePhone(this.phone)) {
-				showToast(this.t('login.phoneRequired'))
-				return
+		resolveErrorMessage(err) {
+			const msg = (err && (err.message || err.msg)) || ''
+			const code = err && (err.bizCode || err.code)
+			// 密码错误的常见 code + 关键词匹配（三语）
+			const pwdErrorCodes = [4001, 1001, 401, 'INVALID_CREDENTIALS', 'PASSWORD_INCORRECT', 'LOGIN_FAILED']
+			const pwdErrorKeywords = ['密码', 'password', 'Password', 'PASSWORD', 'credential', 'incorrect', '无效', '错误', 'รหัสผ่าน', 'ไม่ถูกต้อง', 'ไม่ถูกต้อง']
+			if (pwdErrorCodes.includes(code) || (typeof msg === 'string' && pwdErrorKeywords.some(k => msg.toLowerCase().includes(k.toLowerCase())))) {
+				return this.t('login.passwordIncorrect')
 			}
+			// 后端按 Accept-Language 返回的本地化消息
+			if (typeof msg === 'string' && msg.trim()) return msg
+			// 兜底：真正的网络错误
+			return this.t('common.networkError')
+		},
+
+		goEmailLogin() {
 			uni.navigateTo({
-				url: '/pages/login/verify?phone=' + encodeURIComponent(this.phone) + '&type=login&cc=' + encodeURIComponent(this.selectedCountry.code)
+				url: '/pages/login/verify?type=login&mode=email&cc=' + encodeURIComponent(this.selectedCountry.code)
 			})
 		},
 
@@ -287,7 +332,7 @@ export default {
 
 		goRegister() {
 			uni.navigateTo({
-				url: '/pages/login/verify?type=register&cc=' + encodeURIComponent(this.selectedCountry.code)
+				url: '/pages/login/verify?type=register&mode=email&cc=' + encodeURIComponent(this.selectedCountry.code)
 			})
 		},
 
@@ -385,6 +430,14 @@ export default {
 	padding: 0 32rpx;
 	margin-bottom: 32rpx;
 	transition: border-color 0.3s;
+}
+
+.field-error {
+	color: #DA3300;
+	font-size: 24rpx;
+	margin-top: -20rpx;
+	margin-bottom: 16rpx;
+	margin-left: 32rpx;
 }
 
 /* 国家区号选择器 */

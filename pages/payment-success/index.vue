@@ -1,44 +1,56 @@
 <template>
 	<view class="payment-success-page">
-		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
-		<!-- 顶部导航栏 -->
 		<view class="nav-bar">
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">订单信息</text>
+			<text class="nav-title">{{ t('payment.orderInfo') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
-		<!-- 内容区域 -->
 		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
-			<!-- 支付成功图标 -->
-			<view class="success-icon-section">
-				<image class="success-icon" src="/static/images/payment-success.svg" mode="aspectFit"></image>
+			<!-- 等待支付 / 已支付 状态 -->
+			<view class="status-section" :class="{ 'status-paid': isPaid }">
+				<view class="status-icon-wrap">
+					<image v-if="isPaid" class="status-icon" src="/static/images/payment-success.svg" mode="aspectFit"></image>
+					<view v-else class="status-pending-icon">
+						<view class="pulse-ring"></view>
+						<text class="pending-dot">฿</text>
+					</view>
+				</view>
+				<text class="status-text">{{ isPaid ? i18n.t('payment.paidSuccess') : i18n.t('payment.waitingPay') }}</text>
 			</view>
 
-			<!-- 支付成功信息 -->
-			<view class="success-info-card">
-				<view class="success-title-row">
-					<text class="success-title">{{ statusText }}</text>
-				</view>
-				<!-- 堂食订单或到店自取显示取餐码 -->
-				<view class="pickup-code-section" v-if="showPickupCode && pickupCode">
-					<text class="pickup-label">取餐码</text>
-					<text class="pickup-code">{{ pickupCode }}</text>
-				</view>
+			<!-- 二维码卡片 -->
+			<view class="qr-card" v-if="!isPaid">
+				<image v-if="qrImageUrl" class="qr-image" :src="qrImageUrl" mode="aspectFit"></image>
+				<text class="qr-hint">{{ t('payment.showQR') }}</text>
+				<text class="qr-sub-hint">{{ t('payment.scanning') }}</text>
 			</view>
 
-			<!-- 分隔线 -->
-			<view class="divider"></view>
+			<!-- 订单信息 -->
+			<view class="order-info-card">
+				<view class="info-row">
+					<text class="info-label">{{ t('payment.orderNo') }}</text>
+					<text class="info-value">{{ orderNo }}</text>
+				</view>
+				<view class="info-row">
+					<text class="info-label">{{ t('payment.amount') }}</text>
+					<text class="info-value amount">฿{{ totalAmount }}</text>
+				</view>
+				<view class="info-row" v-if="isPaid">
+					<text class="info-label">{{ t('payment.paid') }}</text>
+					<text class="info-value paid-badge">{{ t('payment.paidSuccess') }}</text>
+				</view>
+			</view>
 
 			<!-- 好店推荐 -->
 			<view class="recommend-section">
 				<view class="recommend-card">
 					<view class="recommend-header">
-						<text class="recommend-title">好店推荐</text>
+						<text class="recommend-title">{{ t('mine.recommendedStores') }}</text>
 					</view>
 					<view class="recommend-list">
 						<view
@@ -53,11 +65,6 @@
 									<text class="shop-name">{{ item["name_" + i18n.getLanguage()] || item.name }}</text>
 									<view class="shop-stats">
 										<text class="stat-text shop-status" :class="item.status === 'OPEN' ? 'status-open' : 'status-closed'">{{ item.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
-										<text class="stat-divider">|</text>
-										<text class="stat-text" v-if="item.businessHours">{{ item.businessHours }}</text>
-									</view>
-									<view class="shop-tags">
-										<text class="tag" v-for="(tag, tagIndex) in item.tags" :key="tagIndex">{{ tag }}</text>
 									</view>
 								</view>
 							</view>
@@ -69,22 +76,20 @@
 				</view>
 			</view>
 
-			<!-- 底部占位 -->
 			<view class="bottom-placeholder"></view>
 		</scroll-view>
 
-		<!-- 底部操作栏 -->
 		<view class="bottom-bar">
 			<view class="action-btn view-order-btn" @click="handleViewOrder">
-				<text class="action-btn-text">查看订单</text>
+				<text class="action-btn-text">{{ t('payment.viewOrder') }}</text>
 			</view>
 			<view class="action-btn continue-btn" @click="handleContinue">
-				<text class="action-btn-text">继续购物</text>
+				<text class="action-btn-text">{{ t('payment.continueShopping') }}</text>
 			</view>
 		</view>
 
-		<!-- 自定义底部导航栏 -->
 		<custom-tabbar :current="1"></custom-tabbar>
+		<canvas canvas-id="qrCanvasPayment" style="position:fixed;left:-9999px;width:200px;height:200px;"></canvas>
 	</view>
 </template>
 
@@ -92,68 +97,117 @@
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import { showToast } from '@/utils/index.js'
 import { getStores } from '@/api/services/store.js'
-	import i18n from '@/i18n/index.js'
+import { getOrderStatus } from '@/api/services/order.js'
+import i18n from '@/i18n/index.js'
+import { generateQRImage } from '@/utils/qrcode.js'
 
 export default {
-	components: {
-		CustomTabbar
-	},
+	components: { CustomTabbar },
 	data() {
 		return {
+			langVersion: 0,
+			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			orderId: '',
-			orderType: 'delivery', // delivery, dinein
-			deliveryType: 'delivery', // delivery, pickup
-			pickupCode: '',
+			orderNo: '',
+			orderType: 'dinein',
+			totalAmount: '0',
+			uniqueCode: '',
+			isPaid: false,
 			recommendations: [],
-			i18n: i18n
+			pollTimer: null,
+			qrImageUrl: ''
 		}
 	},
 	onLoad(options) {
-		if (options.orderId) {
-			this.orderId = options.orderId
-		}
-		if (options.orderType) {
-			this.orderType = options.orderType
-		}
-		if (options.deliveryType) {
-			this.deliveryType = options.deliveryType
-		}
-		if (options.pickupCode) {
-			this.pickupCode = options.pickupCode
-		}
+		if (options.orderId) this.orderId = options.orderId
+		if (options.orderNo) this.orderNo = decodeURIComponent(options.orderNo)
+		if (options.orderType) this.orderType = options.orderType
+		if (options.totalAmount) this.totalAmount = options.totalAmount
+		if (options.uniqueCode) this.uniqueCode = decodeURIComponent(options.uniqueCode)
 		this.initPage()
 		this.loadRecommendations()
+		this.startPolling()
 	},
-	computed: {
-		statusText() {
-			// 堂食订单
-			if (this.orderType === 'dinein') {
-				return '支付完成，请等待取餐'
-			}
-			// 到店自取
-			if (this.deliveryType === 'pickup') {
-				return '支付完成，请到店取餐'
-			}
-			// 配送订单
-			return '支付完成，等待配送'
-		},
-		showPickupCode() {
-			// 堂食订单或到店自取显示取餐码
-			return this.orderType === 'dinein' || this.deliveryType === 'pickup'
-		}
+	onReady() {
+		this.generateQR()
 	},
+	onUnload() {
+		this.stopPolling()
+	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
+		async generateQR() {
+			const qrData = this.uniqueCode
+			if (!qrData) return
+			try {
+				this.qrImageUrl = await generateQRImage(qrData, { size: 200, canvasId: 'qrCanvasPayment', componentInstance: this })
+			} catch (err) {
+				console.error('[payment-success] generateQR error:', err)
+			}
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
-
 			const navBarHeight = 44
 			const bottomBarHeight = 64
 			const tabBarHeight = 50
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
 			this.contentHeight = systemInfo.windowHeight - navBarHeight - bottomBarHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
+		},
+
+
+
+		startPolling() {
+			this.pollTimer = setInterval(() => {
+				this.checkOrderStatus()
+			}, 5000)
+		},
+
+		stopPolling() {
+			if (this.pollTimer) {
+				clearInterval(this.pollTimer)
+				this.pollTimer = null
+			}
+		},
+
+		async checkOrderStatus() {
+			if (this.isPaid || !this.orderId) return
+			try {
+				const res = await getOrderStatus(this.orderId)
+				if (res.code === 0 && res.data) {
+					const status = res.data.status
+					if (status === 'PAID' || status === 'COMPLETED' || status === 'PREPARING') {
+						this.isPaid = true
+						this.stopPolling()
+						this.playSuccessSound()
+					}
+				}
+			} catch (e) {
+				console.error('Poll status error:', e)
+			}
+		},
+
+		playSuccessSound() {
+			if (typeof navigator !== 'undefined' && navigator.vibrate) {
+				navigator.vibrate(200)
+			}
+			try { uni.vibrateShort({ success: () => {} }) } catch (e) {}
 		},
 
 		async loadRecommendations() {
@@ -176,30 +230,25 @@ export default {
 		},
 
 		goBack() {
-			uni.switchTab({
-				url: '/pages/order/index'
-			})
+			this.stopPolling()
+			uni.switchTab({ url: '/pages/order/index' })
 		},
 
 		handleShopClick(item) {
-			uni.navigateTo({
-				url: `/pages/dinein/index?shopId=${item.id}`
-			})
+			uni.navigateTo({ url: `/pages/dinein/index?shopId=${item.id}` })
 		},
 
 		handleViewOrder() {
-			uni.switchTab({
-				url: '/pages/order/index'
-			})
+			this.stopPolling()
+			uni.switchTab({ url: '/pages/order/index' })
 		},
 
 		handleContinue() {
-			uni.switchTab({
-				url: '/pages/index/index'
-			})
+			this.stopPolling()
+			uni.switchTab({ url: '/pages/index/index' })
 		}
 	}
-}
+	}
 </script>
 
 <style scoped>
@@ -210,12 +259,8 @@ export default {
 	flex-direction: column;
 }
 
-.status-bar {
-	width: 100%;
-	background-color: #FFFFFF;
-}
+.status-bar { width: 100%; background-color: #FFFFFF; }
 
-/* 导航栏 */
 .nav-bar {
 	height: 44px;
 	background-color: #FFFFFF;
@@ -225,128 +270,105 @@ export default {
 	padding: 0 16px;
 	border-bottom: 1px solid #F3F3F3;
 }
+.nav-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+.back-icon { width: 24px; height: 24px; }
+.nav-title { font-size: 16px; font-weight: 700; color: #000000CC; }
+.nav-right { width: 32px; }
 
-.nav-back {
-	width: 32px;
-	height: 32px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+.content-scroll { flex: 1; background-color: #FFFFFF; }
 
-.back-icon {
-	width: 24px;
-	height: 24px;
-}
-
-.nav-title {
-	font-size: 16px;
-	font-weight: 700;
-	color: #000000CC;
-}
-
-.nav-right {
-	width: 32px;
-}
-
-/* 内容区域 */
-.content-scroll {
-	flex: 1;
-	background-color: #FFFFFF;
-}
-
-/* 支付成功图标 */
-.success-icon-section {
-	display: flex;
-	justify-content: center;
-	padding: 20px 0;
-}
-
-.success-icon {
-	width: 74px;
-	height: 74px;
-}
-
-/* 支付成功信息 */
-.success-info-card {
-	margin: 0 16px;
-	background-color: #FFFFFF;
-	border-radius: 8px;
-	overflow: hidden;
-}
-
-.success-title-row {
-	padding: 8px 16px;
-}
-
-.success-title {
-	font-size: 18px;
-	font-weight: 700;
-	color: #000000CC;
-}
-
-/* 取餐码区域 */
-.pickup-code-section {
+/* 状态区域 */
+.status-section {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	padding: 20px 16px;
-	background-color: #FFF8E6;
-	margin: 0 16px;
-	border-radius: 8px;
-	margin-top: 10px;
+	padding: 24px 0 16px;
 }
+.status-icon-wrap { margin-bottom: 10px; }
+.status-icon { width: 60px; height: 60px; }
+.status-text { font-size: 18px; font-weight: 700; color: #000000CC; }
+.status-paid .status-text { color: #52C41A; }
 
-.pickup-label {
-	font-size: 14px;
-	color: #00000099;
-	margin-bottom: 8px;
+.status-pending-icon {
+	width: 60px;
+	height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
 }
-
-.pickup-code {
-	font-size: 48px;
-	font-weight: 700;
+.pending-dot {
+	font-size: 28px;
 	color: #F2B131;
-	letter-spacing: 8px;
+	font-weight: 700;
+	z-index: 1;
+}
+.pulse-ring {
+	position: absolute;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	border: 2px solid #F2B131;
+	animation: pulse 2s ease-out infinite;
+}
+@keyframes pulse {
+	0% { transform: scale(0.8); opacity: 1; }
+	100% { transform: scale(1.4); opacity: 0; }
 }
 
-/* 分隔线 */
-.divider {
-	height: 6px;
-	background-color: #F3F3F3;
+/* 二维码卡片 */
+.qr-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin: 12px 24px;
+	padding: 24px;
+	background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+	border-radius: 16px;
+	box-shadow: 0 4px 16px rgba(242, 177, 49, 0.1);
 }
+.qr-image {
+	width: 200px;
+	height: 200px;
+	background-color: #FFFFFF;
+	border-radius: 8px;
+}
+.qr-hint {
+	margin-top: 16px;
+	font-size: 14px;
+	font-weight: 600;
+	color: #5D4037;
+}
+.qr-sub-hint {
+	margin-top: 4px;
+	font-size: 12px;
+	color: #5D403799;
+}
+
+/* 订单信息 */
+.order-info-card {
+	margin: 12px 24px;
+	padding: 16px;
+	background-color: #F9F9F9;
+	border-radius: 12px;
+}
+.info-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 6px 0;
+}
+.info-label { font-size: 13px; color: #999; }
+.info-value { font-size: 13px; color: #333; font-weight: 500; }
+.info-value.amount { font-size: 16px; font-weight: 700; color: #F2B131; }
+.paid-badge { color: #52C41A; font-size: 12px; background-color: rgba(82, 196, 26, 0.1); padding: 2px 8px; border-radius: 4px; }
 
 /* 好店推荐 */
-.recommend-section {
-	padding: 10px 16px;
-}
-
-.recommend-card {
-	background-color: #FFFFFF;
-	border-radius: 8px;
-	padding-bottom: 10px;
-}
-
-.recommend-header {
-	height: 40px;
-	display: flex;
-	align-items: center;
-	padding: 0 16px;
-}
-
-.recommend-title {
-	font-size: 14px;
-	font-weight: 700;
-	color: #000000;
-}
-
-.recommend-list {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-	padding: 0 10px;
-}
-
+.recommend-section { padding: 10px 16px; }
+.recommend-card { background-color: #FFFFFF; border-radius: 8px; padding-bottom: 10px; }
+.recommend-header { height: 40px; display: flex; align-items: center; padding: 0 16px; }
+.recommend-title { font-size: 14px; font-weight: 700; color: #000000; }
+.recommend-list { display: flex; flex-direction: column; gap: 10px; padding: 0 10px; }
 .recommend-item {
 	background-color: #FFFFFF;
 	border-radius: 6px;
@@ -354,85 +376,26 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	border: 1px solid #F3F3F3;
 }
+.recommend-content { display: flex; align-items: center; flex: 1; }
+.shop-logo { width: 40px; height: 40px; border-radius: 8px; margin-right: 10px; }
+.shop-info { display: flex; flex-direction: column; gap: 4px; }
+.shop-name { font-size: 14px; font-weight: 500; color: #000000CC; }
+.shop-stats { display: flex; align-items: center; gap: 6px; }
+.stat-text { font-size: 12px; color: #00000099; }
+.status-open { color: #52C41A; }
+.status-closed { color: #999; }
+.shop-action { background-color: #F2B131; border-radius: 14px; padding: 6px 16px; }
+.action-text { font-size: 12px; font-weight: 500; color: #FFFFFF; }
 
-.recommend-content {
-	display: flex;
-	align-items: center;
-	flex: 1;
-}
-
-.shop-logo {
-	width: 40px;
-	height: 40px;
-	border-radius: 8px;
-	margin-right: 10px;
-}
-
-.shop-info {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.shop-name {
-	font-size: 14px;
-	font-weight: 500;
-	color: #000000CC;
-}
-
-.shop-stats {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-}
-
-.stat-text {
-	font-size: 12px;
-	color: #00000099;
-}
-
-.stat-divider {
-	font-size: 12px;
-	color: #00000099;
-}
-
-.shop-tags {
-	display: flex;
-	gap: 6px;
-}
-
-.tag {
-	font-size: 10px;
-	color: #F2B131;
-	background-color: rgba(242, 177, 49, 0.1);
-	padding: 2px 6px;
-	border-radius: 4px;
-}
-
-.shop-action {
-	background-color: #F2B131;
-	border-radius: 14px;
-	padding: 6px 16px;
-}
-
-.action-text {
-	font-size: 12px;
-	font-weight: 500;
-	color: #FFFFFF;
-}
-
-/* 底部占位 */
-.bottom-placeholder {
-	height: 20px;
-}
+.bottom-placeholder { height: 20px; }
 
 /* 底部操作栏 */
 .bottom-bar {
 	position: fixed;
 	bottom: 50px;
-	left: 0;
-	right: 0;
+	left: 0; right: 0;
 	height: 64px;
 	background-color: #FFFFFF;
 	display: flex;
@@ -441,7 +404,6 @@ export default {
 	gap: 16px;
 	padding: 0 16px;
 }
-
 .action-btn {
 	flex: 1;
 	height: 44px;
@@ -450,25 +412,9 @@ export default {
 	align-items: center;
 	justify-content: center;
 }
-
-.view-order-btn {
-	background-color: #F3F3F3;
-}
-
-.view-order-btn .action-btn-text {
-	color: #000000CC;
-}
-
-.continue-btn {
-	background-color: #F2B131;
-}
-
-.continue-btn .action-btn-text {
-	color: #FFFFFF;
-}
-
-.action-btn-text {
-	font-size: 14px;
-	font-weight: 500;
-}
+.view-order-btn { background-color: #F3F3F3; }
+.view-order-btn .action-btn-text { color: #000000CC; }
+.continue-btn { background-color: #F2B131; }
+.continue-btn .action-btn-text { color: #FFFFFF; }
+.action-btn-text { font-size: 14px; font-weight: 500; }
 </style>

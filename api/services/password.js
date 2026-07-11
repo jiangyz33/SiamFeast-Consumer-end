@@ -38,17 +38,21 @@ function mockResetPassword(data) {
 }
 
 /**
- * 重置密码
+ * 修改密码（已登录用户，使用旧密码）
+ * POST /password/change
  * @param {Object} data
  * @param {string} data.old_password 旧密码
- * @param {string} data.new_password 新密码
+ * @param {string} data.new_password 新密码（≥6 位）
  * @returns {Promise}
  */
 export function resetPassword(data) {
 	if (USE_MOCK) {
 		return mockResetPassword(data)
 	}
-	return post('/password/reset', data)
+	return post('/password/change', {
+		old_password: data.old_password,
+		new_password: data.new_password
+	})
 }
 
 export const passwordApi = {

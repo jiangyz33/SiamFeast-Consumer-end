@@ -10,7 +10,7 @@
 				<view class="nav-back" @click="goBack">
 					<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 				</view>
-				<text class="nav-title">{{ i18n.t('storeSelect.title') }}</text>
+				<text class="nav-title">{{ t('storeSelect.title') }}</text>
 				<view class="nav-right"></view>
 			</view>
 
@@ -36,18 +36,23 @@
 			<view class="location-info">
 				<image class="location-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 				<view class="location-text-wrapper">
-					<text class="location-label">{{ i18n.t('storeSelect.currentLocation') }}</text>
-					<text class="location-address">{{ currentAddress || i18n.t('storeSelect.locating') }}</text>
+					<text class="location-label">{{ t('storeSelect.currentLocation') }}：</text>
+					<text class="location-address" v-if="locationDenied">{{ t('storeSelect.locationDenied') }}</text>
+					<text class="location-address" v-else-if="currentAddress">{{ currentAddress }}</text>
+					<text class="location-address" v-else>{{ t('storeSelect.locating') }}</text>
 				</view>
-				<view class="refresh-btn" :class="{ 'refreshing': isLocating }" @click="refreshLocation">
+				<view v-if="!locationDenied" class="refresh-btn" :class="{ 'refreshing': isLocating }" @click="refreshLocation">
 					<image class="refresh-icon" src="/static/icons/refresh.svg" mode="aspectFit"></image>
+				</view>
+				<view v-else class="enable-location-btn" @click="handleEnableLocation">
+					<text class="enable-location-text">{{ t('storeSelect.enableLocation') }}</text>
 				</view>
 			</view>
 
 			<!-- 门店列表标题 -->
 			<view class="list-header">
-				<text class="list-title">{{ i18n.t('storeSelect.nearbyStores') }}</text>
-				<text class="list-count">{{ i18n.t('storeSelect.storeCount', { count: stores.length }) }}</text>
+				<text class="list-title">{{ t('storeSelect.nearbyStores') }}</text>
+				<text class="list-count">{{ t('storeSelect.storeCount', { count: stores.length }) }}</text>
 			</view>
 
 			<!-- 门店列表 -->
@@ -74,7 +79,7 @@
 								
 
 
-								<text class="business-hours">{{ store.business_hours }}</text>
+								<text class="business-hours" v-if="store.business_hours && store.business_hours !== '-'">{{ store.business_hours }}</text>
 							</view>
 							<view class="store-tags">
 								<text class="tag" v-for="(type, idx) in getBusinessTypeText(store.business_types)" :key="idx">{{ type }}</text>
@@ -86,14 +91,14 @@
 							<image class="distance-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 							<text class="distance-text" v-if="store.distance_text">{{ store.distance_text }}</text>
 							<text class="eta-text" v-if="store.eta_min && store.eta_min > 0">~{{ store.eta_min }}min</text>
-								<text class="address-text" v-if="store.formatted_address">{{ store.formatted_address }}</text>
+								<text class="address-text" v-if="store['formatted_address_' + i18n.getLanguage()] || store['address_' + i18n.getLanguage()] || store.formatted_address">{{ store['formatted_address_' + i18n.getLanguage()] || store['address_' + i18n.getLanguage()] || store.formatted_address }}</text>
 						</view>
 						<view class="store-meta">
-							<text class="delivery-fee" v-if="store.is_deliverable && store.delivery_fee > 0">฿{{ store.delivery_fee }} delivery</text>
-							<text class="delivery-badge" v-if="store.is_deliverable">Deliverable</text>
+							<text class="delivery-fee" v-if="false">฿{{ store.delivery_fee }} delivery</text>
+							<text class="delivery-badge" v-if="false">Deliverable</text>
 						</view>
 						<view class="select-btn" v-if="selectedStoreId === store.store_id">
-							<text class="select-text">{{ i18n.t('storeSelect.selected') }}</text>
+							<text class="select-text">{{ t('storeSelect.selected') }}</text>
 						</view>
 					</view>
 				</view>
@@ -101,13 +106,13 @@
 				<!-- 空状态 -->
 				<view class="empty-state" v-if="stores.length === 0 && !isLoading">
 					<image class="empty-icon" src="/static/images/empty-store.svg" mode="aspectFit"></image>
-					<text class="empty-title">{{ i18n.t('common.empty.store') }}</text>
-					<text class="empty-desc">{{ i18n.t('common.empty.storeDesc') }}</text>
+					<text class="empty-title">{{ t('common.empty.store') }}</text>
+					<text class="empty-desc">{{ t('common.empty.storeDesc') }}</text>
 				</view>
 
 				<!-- 加载状态 -->
 				<view class="loading-state" v-if="isLoading">
-					<text class="loading-text">{{ i18n.t('storeSelect.locating') }}</text>
+					<text class="loading-text">{{ t('storeSelect.locating') }}</text>
 				</view>
 
 				<!-- 底部占位 -->
@@ -118,7 +123,7 @@
 		<!-- 底部确认按钮 -->
 		<view class="bottom-bar">
 			<view class="confirm-btn" :class="{ 'btn-disabled': !selectedStoreId }" @click="confirmSelect">
-				<text class="confirm-text">{{ i18n.t('storeSelect.confirmSelect') }}</text>
+				<text class="confirm-text">{{ t('storeSelect.confirmSelect') }}</text>
 			</view>
 		</view>
 	</view>
@@ -127,7 +132,10 @@
 <script>
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import {
-		getUserLocation
+		getUserLocation,
+		getLocationOrDefault,
+		openLocationSettings,
+		reverseGeocode
 	} from '@/utils/location.js'
 import { getNearbyStores } from '@/api/services/location.js'
 import { getStores } from '@/api/services/store.js'
@@ -140,6 +148,7 @@ export default {
 	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			mapHeight: 280,
@@ -157,6 +166,7 @@ export default {
 			lastClickTime: 0,
 			isLocating: false,
 			isLoading: false,
+			locationDenied: false,
 			// 分页
 			page: 1,
 			pageSize: 20
@@ -179,7 +189,22 @@ export default {
 
 		this.initLocation()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
@@ -206,16 +231,36 @@ export default {
 		async initLocation() {
 			this.isLocating = true
 			try {
-				const loc = await getUserLocation()
+				const loc = await getLocationOrDefault()
+				this.locationDenied = !!loc.denied
 				this.currentLocation = {
 					latitude: loc.latitude,
 					longitude: loc.longitude
 				}
+				// 优先用系统返回的 address；没有就调 Google 反向地理编码
 				if (loc.address) {
-					this.currentAddress = loc.address
+					this.currentAddress = typeof loc.address === 'string'
+						? loc.address
+						: (loc.address.formatted_address || loc.address.street || '')
+				} else if (loc.denied) {
+					this.currentAddress = ''
+				} else {
+					// 等待 Google 反向地理编码（不显示坐标，看起来像 IP）
+					this.currentAddress = i18n.t('storeSelect.locating')
+					reverseGeocode(loc.latitude, loc.longitude).then(addr => {
+						if (addr && typeof addr === 'string') {
+							this.currentAddress = addr
+						} else {
+							// 反查失败，用「定位成功」兜底（不显示坐标）
+							this.currentAddress = i18n.t('storeSelect.locationReady') || '已定位'
+						}
+					}).catch(() => {
+						this.currentAddress = i18n.t('storeSelect.locationReady') || '已定位'
+					})
 				}
 			} catch (e) {
 				console.warn('定位失败，使用默认位置:', e)
+				this.locationDenied = true
 			} finally {
 				this.isLocating = false
 			}
@@ -225,6 +270,17 @@ export default {
 		async refreshLocation() {
 			if (this.isLocating) return
 			await this.initLocation()
+		},
+
+		// 用户点击「开启定位」按钮 — 打开系统设置（APP）或显示提示（H5）
+		handleEnableLocation() {
+			openLocationSettings()
+			// APP 端用户从设置返回后，自动尝试重新定位
+			// #ifdef APP-PLUS
+			setTimeout(() => {
+				this.refreshLocation()
+			}, 1500)
+			// #endif
 		},
 
 		// ===================== 加载附近门店 (文档 5.1) =====================
@@ -262,27 +318,58 @@ export default {
 				}
 
 				// 标准化门店数据：统一字段名
-				const normalizeStore = (s) => ({
-					store_id: s.store_id || s.id,
-					store_name: s.store_name || s.name,
-					store_latitude: s.store_latitude || s.latitude,
-					store_longitude: s.store_longitude || s.longitude,
-					name_en: s.name_en || '',
-					name_th: s.name_th || '',
-					logo_url: fixMinioUrl(s.logo_url) || '',
-					logo: s.logo || '/static/images/store-placeholder.svg',
-					phone: s.phone || '',
-					formatted_address: s.formatted_address || '',
-					is_deliverable: s.is_deliverable || s.delivery_enabled || false,
-					is_open: s.is_open || (s.status === 'OPEN'),
-					business_hours: s.business_hours || '',
-					business_types: s.business_types || [],
+				const normalizeStore = (s) => {
+					// 兼容多种营业时间字段：config.opening_time/closing_time、business_hours 字符串、
+					// businessHours、opening_hours、分开的 opening_time/closing_time
+					let businessHours = ''
+					const cfg = s.config || s.store_config
+					if (cfg && cfg.opening_time && cfg.closing_time) {
+						const open = String(cfg.opening_time).slice(0, 5)
+						const close = String(cfg.closing_time).slice(0, 5)
+						if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+							businessHours = `${open}-${close}`
+						}
+					}
+					if (!businessHours) {
+						const str = s.business_hours || s.businessHours || s.opening_hours
+						if (str && typeof str === 'string' && !str.includes('undefined') && str !== '-' && str !== ' - ') {
+							businessHours = str
+						}
+					}
+					if (!businessHours && s.opening_time && s.closing_time) {
+						const open = String(s.opening_time).slice(0, 5)
+						const close = String(s.closing_time).slice(0, 5)
+						if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+							businessHours = `${open}-${close}`
+						}
+					}
+					return {
+						store_id: s.store_id || s.id,
+						store_name: s.store_name || s.name,
+						store_latitude: s.store_latitude || s.latitude,
+						store_longitude: s.store_longitude || s.longitude,
+						name_en: s.name_en || '',
+						name_th: s.name_th || '',
+						logo_url: fixMinioUrl(s.logo_url) || '',
+						logo: s.logo || '/static/images/store-placeholder.svg',
+						phone: s.phone || '',
+						formatted_address: s.formatted_address || '',
+						formatted_address_en: s.formatted_address_en || '',
+						formatted_address_th: s.formatted_address_th || '',
+						address: s.address || '',
+						address_en: s.address_en || '',
+						address_th: s.address_th || '',
+						is_deliverable: s.is_deliverable || s.delivery_enabled || false,
+						is_open: s.is_open || (s.status === 'OPEN'),
+						business_hours: businessHours,
+						business_types: s.business_types || [],
 
-					distance_text: s.distance_text || '',
-					distance_m: s.distance_m || null,
-					eta_min: s.eta_min || null,
-					delivery_fee: s.delivery_fee || null
-				})
+						distance_text: s.distance_text || '',
+						distance_m: s.distance_m || null,
+						eta_min: s.eta_min || null,
+						delivery_fee: s.delivery_fee || null
+					}
+				}
 
 				// 合并去重：nearby优先，allStore补充
 				const nearbyIds = new Set(nearbyStores.map(s => s.store_id || s.id))
@@ -592,19 +679,41 @@ export default {
 .location-text-wrapper {
 	flex: 1;
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0 6px;
+	min-width: 0;
 }
 
 .location-label {
 	font-size: 12px;
 	color: #00000099;
+	flex-shrink: 0;
 }
 
 .location-address {
 	font-size: 14px;
 	color: #000000CC;
 	font-weight: 500;
+	flex: 1;
+	min-width: 0;
+	word-break: break-word;
+}
+
+.location-address.location-denied {
+	color: #DA3300;
+}
+
+.enable-location-btn {
+	padding: 6px 14px;
+	background-color: #F2B131;
+	border-radius: 14px;
+}
+
+.enable-location-text {
+	color: #FFFFFF;
+	font-size: 12px;
+	font-weight: 600;
 }
 
 .refresh-btn {

@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('settings.title') }}</text>
+			<text class="nav-title">{{ t('settings.title') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -17,39 +17,39 @@
 			<!-- 账号设置 -->
 			<view class="settings-section">
 				<view class="section-title">
-					<text class="title-text">{{ i18n.t('settings.accountSettings') }}</text>
+					<text class="title-text">{{ t('settings.accountSettings') }}</text>
 				</view>
 				<view class="settings-card">
 						<view class="setting-item" @click="handleAvatarClick">
-						<text class="setting-label">{{ i18n.t('settings.avatar') }}</text>
+						<text class="setting-label">{{ t('settings.avatar') }}</text>
 						<view class="setting-right">
 							<image class="setting-avatar-preview" :src="fixMinioUrl(userInfo?.avatar_url) || '/static/images/04_default_avatar.png'" mode="aspectFill"></image>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="setting-item" @click="openNicknameModal">
-						<text class="setting-label">{{ i18n.t('settings.nickname') }}</text>
+						<text class="setting-label">{{ t('settings.nickname') }}</text>
 						<view class="setting-right">
 							<text class="setting-value">{{ userNickname }}</text>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="setting-item" @click="handleSettingClick('phone')">
-						<text class="setting-label">{{ i18n.t('settings.phone') }}</text>
+						<text class="setting-label">{{ t('settings.phone') }}</text>
 						<view class="setting-right">
 							<text class="setting-value">{{ userInfo?.phone || '-' }}</text>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="setting-item" @click="openBirthdayModal">
-						<text class="setting-label">{{ i18n.t('settings.birthday') }}</text>
+						<text class="setting-label">{{ t('settings.birthday') }}</text>
 						<view class="setting-right">
 							<text class="setting-value">{{ userBirthday || i18n.t('settings.notSet') }}</text>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="setting-item" @click="openPasswordModal">
-						<text class="setting-label">{{ i18n.t('settings.changePassword') }}</text>
+						<text class="setting-label">{{ t('settings.changePassword') }}</text>
 						<view class="setting-right">
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
@@ -60,58 +60,64 @@
 			<!-- 通用设置 -->
 			<view class="settings-section">
 				<view class="section-title">
-					<text class="title-text">{{ i18n.t('settings.generalSettings') }}</text>
+					<text class="title-text">{{ t('settings.generalSettings') }}</text>
 				</view>
 				<view class="settings-card">
+					<!-- #ifndef H5 -->
+					<!-- APP 端独有：通知开关（H5 无原生推送） -->
 					<view class="setting-item">
-						<text class="setting-label">{{ i18n.t('settings.notifications') }}</text>
+						<text class="setting-label">{{ t('settings.notifications') }}</text>
 						<view class="setting-right">
 							<switch :checked="notificationEnabled" @change="handleNotificationChange" color="#F2B131" />
 						</view>
 					</view>
+					<!-- #endif -->
 					<view class="setting-item" @click="handleSettingClick('language')">
-						<text class="setting-label">{{ i18n.t('settings.language') }}</text>
+						<text class="setting-label">{{ t('settings.language') }}</text>
 						<view class="setting-right">
-							<text class="setting-value">{{ i18n.t('settings.currentLanguage') }}</text>
+							<text class="setting-value">{{ t('settings.currentLanguage') }}</text>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
+					<!-- #ifndef H5 -->
+					<!-- APP 端独有：清除缓存（H5 由浏览器管理） -->
 					<view class="setting-item" @click="handleSettingClick('cache')">
-						<text class="setting-label">{{ i18n.t('settings.cache') }}</text>
+						<text class="setting-label">{{ t('settings.cache') }}</text>
 						<view class="setting-right">
 							<text class="setting-value">12.5MB</text>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
+					<!-- #endif -->
 				</view>
 			</view>
 
 			<!-- 关于 -->
 			<view class="settings-section">
 				<view class="section-title">
-					<text class="title-text">{{ i18n.t('settings.aboutSection') }}</text>
+					<text class="title-text">{{ t('settings.aboutSection') }}</text>
 				</view>
 				<view class="settings-card">
 					<view class="setting-item" @click="handleSettingClick('about')">
-						<text class="setting-label">{{ i18n.t('settings.about') }}</text>
+						<text class="setting-label">{{ t('settings.about') }}</text>
 						<view class="setting-right">
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="setting-item" @click="handleSettingClick('privacy')">
-						<text class="setting-label">{{ i18n.t('settings.privacy') }}</text>
+						<text class="setting-label">{{ t('settings.privacy') }}</text>
 						<view class="setting-right">
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="setting-item" @click="handleSettingClick('agreement')">
-						<text class="setting-label">{{ i18n.t('settings.agreement') }}</text>
+						<text class="setting-label">{{ t('settings.agreement') }}</text>
 						<view class="setting-right">
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
 					<view class="setting-item">
-						<text class="setting-label">{{ i18n.t('settings.version') }}</text>
+						<text class="setting-label">{{ t('settings.version') }}</text>
 						<view class="setting-right">
 							<text class="setting-value">v1.0.0</text>
 						</view>
@@ -122,7 +128,7 @@
 			<!-- 退出登录按钮 -->
 			<view class="logout-section">
 				<view class="logout-btn" @click="handleLogout">
-					<text class="logout-text">{{ i18n.t('settings.logout') }}</text>
+					<text class="logout-text">{{ t('settings.logout') }}</text>
 				</view>
 			</view>
 
@@ -133,17 +139,17 @@
 		<!-- 昵称编辑弹窗 -->
 		<view class="modal-mask" v-if="showNicknameModal" @click.self="showNicknameModal = false">
 			<view class="modal-box">
-				<text class="modal-box-title">{{ i18n.t('settings.editNickname') }}</text>
+				<text class="modal-box-title">{{ t('settings.editNickname') }}</text>
 				<view class="modal-box-body">
 					<input class="modal-input" v-model="nicknameInput"
 						:placeholder="i18n.t('settings.nicknamePlaceholder')" maxlength="20" />
 				</view>
 				<view class="modal-box-footer">
 					<view class="modal-box-btn" @click="showNicknameModal = false">
-						<text class="modal-box-btn-text cancel-text">{{ i18n.t('common.cancel') }}</text>
+						<text class="modal-box-btn-text cancel-text">{{ t('common.cancel') }}</text>
 					</view>
 					<view class="modal-box-btn" @click="confirmNickname">
-						<text class="modal-box-btn-text confirm-text">{{ i18n.t('common.confirm') }}</text>
+						<text class="modal-box-btn-text confirm-text">{{ t('common.confirm') }}</text>
 					</view>
 				</view>
 			</view>
@@ -152,7 +158,7 @@
 		<!-- 出生日期弹窗 -->
 		<view class="modal-mask" v-if="showBirthdayModal" @click.self="showBirthdayModal = false">
 			<view class="modal-box birthday-modal">
-				<text class="modal-box-title">{{ i18n.t('settings.birthday') }}</text>
+				<text class="modal-box-title">{{ t('settings.birthday') }}</text>
 				<view class="modal-box-body">
 					<view class="date-picker-wrap">
 						<picker-view class="date-picker" :value="datePickerValue" @change="onDatePickerChange">
@@ -175,10 +181,10 @@
 				</view>
 				<view class="modal-box-footer">
 					<view class="modal-box-btn" @click="showBirthdayModal = false">
-						<text class="modal-box-btn-text cancel-text">{{ i18n.t('common.cancel') }}</text>
+						<text class="modal-box-btn-text cancel-text">{{ t('common.cancel') }}</text>
 					</view>
 					<view class="modal-box-btn" @click="confirmBirthday">
-						<text class="modal-box-btn-text confirm-text">{{ i18n.t('common.confirm') }}</text>
+						<text class="modal-box-btn-text confirm-text">{{ t('common.confirm') }}</text>
 					</view>
 				</view>
 			</view>
@@ -187,7 +193,7 @@
 		<!-- 修改密码弹窗 -->
 		<view class="modal-mask" v-if="showPasswordModal" @click.self="showPasswordModal = false">
 			<view class="modal-box">
-				<text class="modal-box-title">{{ i18n.t('settings.changePassword') }}</text>
+				<text class="modal-box-title">{{ t('settings.changePassword') }}</text>
 				<view class="modal-box-body">
 					<input class="modal-input" type="password" v-model="passwordForm.oldPassword"
 						:placeholder="i18n.t('settings.oldPasswordPlaceholder')" />
@@ -198,14 +204,20 @@
 				</view>
 				<view class="modal-box-footer">
 					<view class="modal-box-btn" @click="showPasswordModal = false">
-						<text class="modal-box-btn-text cancel-text">{{ i18n.t('common.cancel') }}</text>
+						<text class="modal-box-btn-text cancel-text">{{ t('common.cancel') }}</text>
 					</view>
 					<view class="modal-box-btn" @click="handleChangePassword">
-						<text class="modal-box-btn-text confirm-text">{{ i18n.t('common.confirm') }}</text>
+						<text class="modal-box-btn-text confirm-text">{{ t('common.confirm') }}</text>
 					</view>
 				</view>
 			</view>
 		</view>
+
+		<!-- 语言切换弹窗 -->
+		<language-modal
+			:visible="showLanguageModal"
+			@close="showLanguageModal = false"
+		></language-modal>
 	</view>
 </template>
 
@@ -216,14 +228,20 @@ import i18n from '@/i18n/index.js'
 import { getUserInfo, updateUserInfo, uploadAvatar } from '@/api/services/auth.js'
 import { resetPassword } from '@/api/services/password.js'
 import { toggleNotification, getNotificationSettings } from '@/api/services/notification.js'
+import LanguageModal from '@/components/language-modal.vue'
 
 export default {
+	components: {
+		LanguageModal
+	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			notificationEnabled: true,
+			showLanguageModal: false,
 			userInfo: null,
 			userBirthday: '',
 			showNicknameModal: false,
@@ -271,7 +289,22 @@ export default {
 			this.loadNotificationSettings()
 			this.loadLatestUserInfo()
 		},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 		async loadLatestUserInfo() {
 			try {
@@ -307,6 +340,14 @@ export default {
 					success: async (res) => {
 						if (!res.tempFilePaths || !res.tempFilePaths.length) return
 						const filePath = res.tempFilePaths[0]
+						// 5MB 大小限制
+						const MAX_AVATAR_SIZE = 5 * 1024 * 1024
+						const tempFile = res.tempFiles && res.tempFiles[0]
+						const size = tempFile?.size || 0
+						if (size > MAX_AVATAR_SIZE) {
+							showToast(i18n.t("settings.avatarTooLarge"))
+							return
+						}
 						showToast(i18n.t("common.loading"))
 						try {
 							const uploadRes = await uploadAvatar(filePath)
@@ -360,7 +401,7 @@ export default {
 			} else if (type === 'phone') {
 				showToast(this.i18n.t('settings.phone'))
 			} else if (type === 'language') {
-				showToast(type)
+				this.showLanguageModal = true
 			}
 		},
 
@@ -468,15 +509,22 @@ export default {
 					old_password: oldPassword,
 					new_password: newPassword
 				})
+				console.log('[change-password] response:', JSON.stringify(res))
 				if (res.code === 0) {
 					this.showPasswordModal = false
 					showToast(this.i18n.t('settings.passwordChanged'))
 				} else {
-					showToast(res.message || this.i18n.t('common.fail'))
+					// 优先用后端返回的具体错误消息
+					const msg = res.message || res.detail?.message || res.detail || this.i18n.t('common.fail')
+					showToast(typeof msg === 'string' ? msg : this.i18n.t('common.fail'))
 				}
 			} catch (e) {
-				console.error('handleChangePassword error:', e)
-				showToast(this.i18n.t('common.fail'))
+				console.error('[change-password] error:', e)
+				// modal-mask z-index=1000 会盖住 toast，所以失败时先关 modal，再提示
+				this.showPasswordModal = false
+				const rawMsg = e?.message || e?.detail?.message || e?.detail
+				const msg = (typeof rawMsg === 'string' && rawMsg) ? rawMsg : this.i18n.t('common.fail')
+				setTimeout(() => showToast(msg), 100)
 			}
 		},
 
@@ -670,7 +718,8 @@ export default {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	z-index: 1000;
+	/* z-index 必须 < 999（uni-toast 默认 z-index=999），否则 modal-mask 会盖住所有 toast */
+	z-index: 99;
 }
 
 .modal-box {

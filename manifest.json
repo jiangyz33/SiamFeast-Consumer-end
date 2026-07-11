@@ -22,22 +22,18 @@
             "android" : {
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
-                    "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\"/>",
                     "<uses-permission android:name=\"android.permission.VIBRATE\"/>",
-                    "<uses-permission android:name=\"android.permission.READ_LOGS\"/>",
                     "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\"/>",
                     "<uses-feature android:name=\"android.hardware.camera.autofocus\"/>",
                     "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.CAMERA\"/>",
-                    "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\"/>",
-                    "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\"/>",
                     "<uses-permission android:name=\"android.permission.WAKE_LOCK\"/>",
-                    "<uses-permission android:name=\"android.permission.FLASHLIGHT\"/>",
                     "<uses-feature android:name=\"android.hardware.camera\"/>",
-                    "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
                     "<uses-permission android:name=\"android.permission.ACCESS_FINE_LOCATION\"/>",
-                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>"
+                    "<uses-permission android:name=\"android.permission.ACCESS_COARSE_LOCATION\"/>",
+                    "<uses-permission android:name=\"android.permission.READ_EXTERNAL_STORAGE\"/>",
+                    "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>"
                 ]
             },
             "ios" : {
@@ -81,17 +77,17 @@
             },
             "splashscreen" : {
                 "android" : {
-                    "hdpi" : "static/images/03_splash.png",
-                    "xhdpi" : "static/images/03_splash.png",
-                    "xxhdpi" : "static/images/03_splash.png",
-                    "xxxhdpi" : "static/images/03_splash.png"
+                    "hdpi" : "static/images/06_banner_01.png",
+                    "xhdpi" : "static/images/06_banner_01.png",
+                    "xxhdpi" : "static/images/06_banner_01.png",
+                    "xxxhdpi" : "static/images/06_banner_01.png"
                 },
                 "ios" : {
                     "iphone" : {
-                        "portrait-896h@3x" : "static/images/03_splash.png"
+                        "portrait-896h@3x" : "static/images/06_banner_01.png"
                     },
                     "ipad" : {
-                        "portrait-1366h@2x" : "static/images/03_splash.png"
+                        "portrait-1366h@2x" : "static/images/06_banner_01.png"
                     }
                 }
             },
@@ -118,5 +114,28 @@
     "uniStatistics" : {
         "enable" : false
     },
-    "vueVersion" : "3"
+    "vueVersion" : "3",
+    "h5" : {
+        "title" : "SiamFeast",
+        "router" : {
+            "mode" : "history",
+            "base" : "/"
+        },
+        "optimization" : {
+            "treeShaking" : {
+                "enable" : true
+            }
+        },
+        "sdkConfigs" : {
+            "maps" : {
+                "google" : {
+                    "key" : "AIzaSyAyM66cLMc7pJ15UU2w5dvmeCco_vn0WkA"
+                }
+            }
+        },
+        "devServer" : {
+            "https" : true,
+            "port" : 80
+        }
+    }
 }

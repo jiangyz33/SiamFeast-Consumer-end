@@ -6,7 +6,32 @@
 export const USE_MOCK = false
 
 // API 基础地址
-export const API_BASE_URL = 'http://34.15.175.23:8082/api/v1'
+// - 本地开发（vite dev server / HBuilderX 运行到浏览器 / 本地 serve 预览构建产物）：
+//   用相对路径 '/api/v1'，由 vite.config.js 的 proxy 转发，避免 CORS
+// - 生产环境（部署到 h5.siamfeast.com、APP、小程序）：用完整 API 域名
+// - 临时强制本地：把 FORCE_DEV 设为 true 可绕过自动判断（自测用，提交前记得改回 false）
+const FORCE_DEV = false
+const isDev = (() => {
+	if (FORCE_DEV) return true
+	try {
+		// 优先用 vite 内置变量（vite dev server 是 true，构建产物是 false）
+		if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV === true) {
+			return true
+		}
+		// 兜底：浏览器 location 是 localhost / 127.0.0.1 / 局域网 IP（用于本地 serve 预览构建产物）
+		if (typeof window !== 'undefined' && window.location) {
+			const h = window.location.hostname
+			return h === 'localhost'
+				|| h === '127.0.0.1'
+				|| /^192\.168\./.test(h)
+				|| /^10\./.test(h)
+				|| /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(h)
+		}
+	} catch (e) {}
+	return false
+})()
+
+export const API_BASE_URL = isDev ? '/api/v1' : 'https://consumer.siamfeast.com/api/v1'
 
 // 请求超时时间
 export const REQUEST_TIMEOUT = 30000

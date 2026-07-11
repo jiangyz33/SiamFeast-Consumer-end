@@ -6,13 +6,13 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('groupBuy.title') }}</text>
+			<text class="nav-title">{{ t('groupBuy.title') }}</text>
 
 		</view>
 
 		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<view v-if="loading" class="loading-state">
-				<text class="loading-text">{{ i18n.t('common.loading') }}</text>
+				<text class="loading-text">{{ t('common.loading') }}</text>
 			</view>
 
 			<view v-else-if="product" class="content-wrapper">
@@ -22,10 +22,10 @@
 				<!-- 价格区域 -->
 				<view class="price-section">
 					<view class="price-row">
-						<text class="group-price-label">{{ i18n.t('groupBuy.groupPrice') }}</text>
+						<text class="group-price-label">{{ t('groupBuy.groupPrice') }}</text>
 						<text class="group-price-symbol">฿</text>
 						<text class="group-price-num">{{ product.group_price }}</text>
-						<view class="original-price-box" v-if="product.original_price">
+						<view class="original-price-box" v-if="product.original_price && Number(product.original_price) > Number(product.price)">
 							<text class="original-price-text">฿{{ product.original_price }}</text>
 						</view>
 						<view class="discount-tag" v-if="product.discount_rate">
@@ -43,19 +43,19 @@
 				<!-- 库存进度 -->
 				<view class="info-card">
 					<view class="quota-row">
-						<text class="quota-label">{{ i18n.t('groupBuy.remainCount') }}{{ remainCount }}份</text>
+						<text class="quota-label">{{ t('groupBuy.remainCount') }}{{ remainCount }}份</text>
 					</view>
 					<view class="progress-bar">
 						<view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
 					</view>
 					<view class="quota-row" v-if="product.max_per_user">
-						<text class="quota-label">{{ i18n.t('groupBuy.limitPerUser') }}{{ product.max_per_user }}份</text>
+						<text class="quota-label">{{ t('groupBuy.limitPerUser') }}{{ product.max_per_user }}份</text>
 					</view>
 				</view>
 
 				<!-- 数量选择 -->
 				<view class="info-card quantity-card">
-					<text class="quantity-label">{{ i18n.t('groupBuy.quantityLabel') }}</text>
+					<text class="quantity-label">{{ t('groupBuy.quantityLabel') }}</text>
 					<view class="quantity-control">
 						<view class="qty-btn" @click="changeQuantity(-1)">
 							<text class="qty-btn-text">-</text>
@@ -69,13 +69,13 @@
 
 				<!-- 合计 -->
 				<view class="info-card total-card">
-					<text class="total-label">{{ i18n.t('groupBuy.totalLabel') }}</text>
+					<text class="total-label">{{ t('groupBuy.totalLabel') }}</text>
 					<text class="total-value">฿{{ totalPrice }}</text>
 				</view>
 			</view>
 
 			<view v-else class="empty-state">
-				<text class="empty-text">{{ i18n.t('groupBuy.noProducts') }}</text>
+				<text class="empty-text">{{ t('groupBuy.noProducts') }}</text>
 			</view>
 
 			<view class="bottom-placeholder"></view>
@@ -84,7 +84,7 @@
 		<!-- 底部按钮 -->
 		<view class="bottom-bar" v-if="product && !loading">
 			<view class="total-section">
-				<text class="bar-total-label">{{ i18n.t('groupBuy.totalLabel') }}</text>
+				<text class="bar-total-label">{{ t('groupBuy.totalLabel') }}</text>
 				<text class="bar-total-price">฿{{ totalPrice }}</text>
 			</view>
 			<view
@@ -107,6 +107,7 @@ import appStore from '@/store/index.js'
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -151,7 +152,22 @@ export default {
 			this.loadProduct(options.id)
 		}
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 		formatDiscount(rate) {
 			if (!rate) return ''

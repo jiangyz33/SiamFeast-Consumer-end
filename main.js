@@ -1,5 +1,10 @@
 import App from './App'
 import { startLoading, finishLoading, injectLoadingBarCSS } from './utils/loading.js'
+import { autoSetPageTitle, setI18nInstance } from './utils/setPageTitle.js'
+import i18n from './i18n/index.js'
+
+// 注入 i18n 实例给 setPageTitle 使用
+setI18nInstance(i18n)
 
 // #ifndef VUE3
 import Vue from 'vue'
@@ -26,12 +31,20 @@ export function createApp() {
 // #ifdef H5
 injectLoadingBarCSS()
 
-// 拦截页面跳转 — 显示顶部加载条
+// 拦截页面跳转 — 显示顶部加载条 + 自动设置页面标题
 const navMethods = ['navigateTo', 'redirectTo', 'reLaunch', 'switchTab']
 navMethods.forEach(method => {
   uni.addInterceptor(method, {
-    invoke() {
+    invoke(args) {
       startLoading()
+      // 提取目标 URL 中的页面路径
+      try {
+        const url = (args && (args.url || args.path)) || ''
+        const path = url.split('?')[0].replace(/^\//, '')
+        if (path) {
+          setTimeout(() => autoSetPageTitle(path), 100)
+        }
+      } catch (e) {}
     },
     success() {
       // 给页面一点渲染时间再结束
@@ -42,4 +55,7 @@ navMethods.forEach(method => {
     }
   })
 })
+
+// 首次加载时也设置一次标题
+try { autoSetPageTitle() } catch (e) {}
 // #endif

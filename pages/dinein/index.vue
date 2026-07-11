@@ -26,23 +26,28 @@
 					<view class="shop-rating">
 						<text class="rating-text" v-if="shopInfo.phone">{{ shopInfo.phone }}</text>
 					</view>
-					<text class="shop-time">{{ i18n.t('dinein.businessHours') }}：{{ shopInfo.businessHours }}</text>
-						<text class="delivery-badge" v-if="shopInfo.delivery_enabled">{{ i18n.t('dinein.deliverySupported') }}</text>
+					<text class="shop-time" v-if="shopInfo.businessHours">{{ t('dinein.businessHours') }}：{{ shopInfo.businessHours }}</text>
+						<text class="store-status-badge" :class="shopInfo.status === 'OPEN' ? 'badge-open' : 'badge-closed'">{{ shopInfo.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
 					<view class="shop-distance" v-if="shopInfo.distance">
-						<text class="distance-item">{{ i18n.t('dinein.distance') }} {{ shopInfo.distance }}</text>
+						<text class="distance-item">{{ t('dinein.distance') }} {{ shopInfo.distance }}</text>
 						<text class="distance-divider">|</text>
-						<text class="distance-item">{{ i18n.t('dinein.bikeTime') }} {{ shopInfo.bikeTime }}</text>
+						<text class="distance-item">{{ t('dinein.bikeTime') }} {{ shopInfo.bikeTime }}</text>
 						<text class="distance-divider">|</text>
-						<text class="distance-item">{{ i18n.t('dinein.walkTime') }} {{ shopInfo.walkTime }}</text>
+						<text class="distance-item">{{ t('dinein.walkTime') }} {{ shopInfo.walkTime }}</text>
 					</view>
 					<view class="shop-address">
 						<image class="address-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-						<text class="address-text">{{ shopInfo.formatted_address || shopInfo.address }}</text>
+						<text class="address-text">{{ shopInfo['formatted_address_' + i18n.getLanguage()] || shopInfo['address_' + i18n.getLanguage()] || shopInfo.formatted_address || shopInfo.address }}</text>
 					</view>
 				</view>
 				<view class="shop-info-right">
 					<image class="share-icon" src="/static/icons/share.svg" mode="aspectFit" @click="handleShareShop"></image>
 				</view>
+			</view>
+
+			<!-- 门店位置地图 -->
+			<view class="shop-map" v-if="shopInfo.latitude && shopInfo.longitude">
+				<iframe class="map-iframe" :src="mapEmbedUrl" frameborder="0" allowfullscreen></iframe>
 			</view>
 
 				<!-- category tabs -->
@@ -81,7 +86,7 @@
 							<view class="product-price">
 								<text class="price-symbol">฿</text>
 								<text class="price-num">{{ item.price }}</text>
-								<text class="price-original" v-if="item.originalPrice">฿{{ item.originalPrice }}</text>
+								<text class="price-original" v-if="item.originalPrice && Number(item.originalPrice) > Number(item.price)">฿{{ item.originalPrice }}</text>
 							</view>
 							<view class="add-btn" @click.stop="handleAddToCart(item)">
 								<text class="add-icon">+</text>
@@ -110,7 +115,7 @@
 					</view>
 				</view>
 				<view class="cart-bar-checkout" @click="handleCartClick">
-					<text class="cart-bar-checkout-text">{{ i18n.t('dinein.checkout') }}</text>
+					<text class="cart-bar-checkout-text">{{ t('dinein.checkout') }}</text>
 					</view>
 			</view>
 
@@ -118,13 +123,13 @@
 			<view class="cart-popup-mask" v-if="showCartPopup" @click="toggleCartPopup"></view>
 			<view class="cart-popup" :class="{ 'cart-popup-show': showCartPopup }" v-if="cartCount > 0">
 				<view class="cart-popup-header">
-					<text class="cart-popup-title">{{ i18n.t('dinein.cartTitle') }}</text>
+					<text class="cart-popup-title">{{ t('dinein.cartTitle') }}</text>
 					<view class="cart-popup-clear" @click="handleClearCart">
-						<text class="cart-popup-clear-text">{{ i18n.t('dinein.clearCart') }}</text>
+						<text class="cart-popup-clear-text">{{ t('dinein.clearCart') }}</text>
 					</view>
 				</view>
 				<scroll-view class="cart-popup-list" scroll-y>
-					<view class="cart-popup-item" v-for="(item, idx) in cartItems" :key="idx">
+					<view class="cart-popup-item" v-for="(item, idx) in cartItems" :key="item.id + '_' + idx + '_' + item.quantity">
 						<image class="cart-popup-item-img" :src="item.image" mode="aspectFill"></image>
 						<view class="cart-popup-item-info">
 							<text class="cart-popup-item-name">{{ item.name }}</text>
@@ -144,7 +149,7 @@
 						</view>
 					</view>
 					<view class="cart-popup-empty" v-if="cartItems.length === 0">
-						<text class="cart-popup-empty-text">{{ i18n.t('dinein.cartEmpty') }}</text>
+						<text class="cart-popup-empty-text">{{ t('dinein.cartEmpty') }}</text>
 					</view>
 				</scroll-view>
 			</view>
@@ -193,7 +198,7 @@
 							</view>
 						</view>
 						<view class="spec-qty-row">
-							<text class="spec-qty-label">{{ i18n.t('productDetail.quantity') }}</text>
+							<text class="spec-qty-label">{{ t('productDetail.quantity') }}</text>
 							<view class="spec-qty-control">
 								<view class="spec-qty-btn" @click="changeSpecQuantity(-1)"><text class="spec-qty-btn-text">−</text></view>
 								<text class="spec-qty-num">{{ specQuantity }}</text>
@@ -203,7 +208,7 @@
 					</scroll-view>
 					<view class="spec-footer">
 						<view class="spec-confirm-btn" @click="confirmSpec">
-							<text class="spec-confirm-text">{{ i18n.t('common.confirm') }}</text>
+							<text class="spec-confirm-text">{{ t('common.confirm') }}</text>
 						</view>
 					</view>
 				</view>
@@ -220,7 +225,7 @@ import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 import { getStore } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
-import { getConsumerCategories, getConsumerMenuItems, } from '@/api/services/menu.js'
+import { getConsumerCategories, getConsumerMenuItems, getStoreMenu } from '@/api/services/menu.js'
 
 export default {
 	components: {
@@ -229,6 +234,7 @@ export default {
 	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -250,10 +256,10 @@ export default {
 				id: null,
 				name: '',
 				fullName: '',
-				banner: 'http://34.15.175.23:9000/sf-uploads/store_logo/2026/05/85f3b58e-5d6e-4b53-a1cc-c5508e5aa00b.webp',
+				banner: 'https://minio.siamfeast.com/sf-uploads/store_logo/2026/05/85f3b58e-5d6e-4b53-a1cc-c5508e5aa00b.webp',
 				logo: '/static/images/store-placeholder.svg',
 				phone: '',
-				businessHours: '11:00-22:00',
+				businessHours: '',
 				distance: '',
 				bikeTime: '',
 				walkTime: '',
@@ -272,13 +278,24 @@ export default {
 			currentProducts() {
 				if (this.activeCategory === -1) return []
 				if (this.categories.length === 0) return this.allProducts
-				const catId = this.categories[this.activeCategory].id
 				const cat = this.categories[this.activeCategory]
+				if (!cat) return []
+				// 新路径：分类对象自带 items（来自 /stores/{id}/menu）
+				if (Array.isArray(cat.items) && cat.items.length > 0) {
+					return cat.items
+				}
+				// 兜底：从 allProducts 按 catIds 过滤
 				if (cat.catIds) {
 					return this.allProducts.filter(p => cat.catIds.includes(p.category_id))
 				}
-				return this.allProducts.filter(p => p.store_menu_category_id === catId || p.category_id === catId)
+				return this.allProducts.filter(p => p.store_menu_category_id === cat.id || p.category_id === cat.id)
 			},
+		mapEmbedUrl() {
+			const lat = this.shopInfo.latitude
+			const lng = this.shopInfo.longitude
+			if (!lat || !lng) return ''
+			return `https://www.google.com/maps?q=${lat},${lng}&z=15&output=embed`
+		},
 	},
 	onLoad(options) {
 			this.orderType = options.orderType || 'dinein'
@@ -291,7 +308,22 @@ export default {
 	onShow() {
 		this.restoreCart()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		/**
 		 * 初始化门店信息
 		 */
@@ -305,14 +337,15 @@ export default {
 					name_en: currentStore.name_en || '',
 					name_th: currentStore.name_th || '',
 					fullName: currentStore.name,
-					banner: currentStore.banner || 'http://34.15.175.23:9000/sf-uploads/store_logo/2026/05/85f3b58e-5d6e-4b53-a1cc-c5508e5aa00b.webp',
+					banner: currentStore.banner || 'https://minio.siamfeast.com/sf-uploads/store_logo/2026/05/85f3b58e-5d6e-4b53-a1cc-c5508e5aa00b.webp',
 					logo: fixMinioUrl(currentStore.logo_url || currentStore.logo) || '/static/images/store-placeholder.svg',
 					phone: currentStore.phone || '',
 					formatted_address: currentStore.formatted_address || '',
 					latitude: currentStore.latitude,
 					longitude: currentStore.longitude,
 					delivery_enabled: currentStore.delivery_enabled || false,
-					businessHours: currentStore.businessHours || '11:00-22:00',
+					businessHours: this.formatBusinessHours(currentStore),
+					status: currentStore.status || 'OPEN',
 					distance: currentStore.distance || '',
 					bikeTime: currentStore.bikeTime || '',
 					walkTime: currentStore.walkTime || '',
@@ -387,22 +420,26 @@ export default {
 						name_en: s.name_en || '',
 						name_th: s.name_th || '',
 						fullName: s.name,
-						banner: fixMinioUrl(s.background_image_url || s.banner_image || s.banner) || 'http://34.15.175.23:9000/sf-uploads/store_logo/2026/05/85f3b58e-5d6e-4b53-a1cc-c5508e5aa00b.webp',
+						banner: fixMinioUrl(s.background_image_url || s.banner_image || s.banner) || 'https://minio.siamfeast.com/sf-uploads/store_logo/2026/05/85f3b58e-5d6e-4b53-a1cc-c5508e5aa00b.webp',
 						logo: fixMinioUrl(s.logo_url || s.logo) || '/static/images/store-placeholder.svg',
 						phone: s.phone || '',
 						formatted_address: s.formatted_address || '',
+						formatted_address_en: s.formatted_address_en || '',
+						formatted_address_th: s.formatted_address_th || '',
 						latitude: s.latitude,
 						longitude: s.longitude,
 						delivery_enabled: s.delivery_enabled || false,
-						businessHours: s.config
-							? `${s.config.opening_time?.slice(0, 5)}-${s.config.closing_time?.slice(0, 5)}`
-							: (s.business_hours || s.businessHours || '11:00-22:00'),
+						businessHours: this.formatBusinessHours(s),
+						status: s.status || 'OPEN',
 						distance: s.distance || '',
 						bikeTime: s.bikeTime || '',
 						walkTime: s.walkTime || '',
 						address: s.address || '',
+						address_en: s.address_en || '',
+						address_th: s.address_th || '',
 						business_types: storeBusinessTypes
 					}
+					console.log('[dinein] formatted businessHours:', this.shopInfo.businessHours)
 					this.updateShopDistance()
 
 				}
@@ -412,35 +449,99 @@ export default {
 					footprintManager.addStoreFootprint({
 						id: this.shopInfo.id,
 						name: this.shopInfo.name,
+						name_zh: this.shopInfo.name_zh || this.shopInfo.name,
+						name_en: this.shopInfo.name_en,
+						name_th: this.shopInfo.name_th,
 						logo: this.shopInfo.logo,
 						address: this.shopInfo.formatted_address || this.shopInfo.address,
+						address_zh: this.shopInfo.formatted_address_zh || this.shopInfo.address_zh || this.shopInfo.address,
+						address_en: this.shopInfo.formatted_address_en || this.shopInfo.address_en,
+						address_th: this.shopInfo.formatted_address_th || this.shopInfo.address_th,
+						formatted_address_zh: this.shopInfo.formatted_address_zh,
+						formatted_address_en: this.shopInfo.formatted_address_en,
+						formatted_address_th: this.shopInfo.formatted_address_th,
 						rating: this.shopInfo.rating || 4.5,
 						status: this.shopInfo.status || 'OPEN',
 						businessHours: this.shopInfo.businessHours
 					})
 				}
 
-				// Step 2: Load all products for this store first
+				// Step 2: Load menu (categories + items) via /stores/{id}/menu
 				try {
-					const allItemsRes = await getConsumerMenuItems(this.shopInfo.id, { page_size: 200 })
-					if (allItemsRes.code === 0 && allItemsRes.data) {
-						const items = Array.isArray(allItemsRes.data) ? allItemsRes.data : (allItemsRes.data.items || [])
-						this.allProducts = items.map(item => this.normalizeProduct(item))
+					const menuRes = await getStoreMenu(this.shopInfo.id)
+					if (menuRes.code === 0 && menuRes.data) {
+						const data = menuRes.data
+						const categories = Array.isArray(data.categories) ? data.categories : []
+						const uncategorized = Array.isArray(data.uncategorized_items) ? data.uncategorized_items : []
+
+						// Build categories list for tabs
+						this.categories = categories.map(cat => ({
+							id: cat.id,
+							catIds: [cat.id],
+							nameKey: cat.name || '',
+							name: cat.name || '',
+							name_en: cat.name_en || '',
+							name_th: cat.name_th || '',
+							sortOrder: cat.sort_order || 0,
+							items: (cat.items || []).map(it => this.normalizeProduct(it))
+						})).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+
+						// All products flattened (for "all" tab and cart reference)
+						this.allProducts = this.categories.flatMap(c => c.items)
+						// 兜底：无分类的菜品单独建一个分类
+						if (uncategorized.length > 0) {
+							const unkCat = {
+								id: 'uncategorized',
+								catIds: ['uncategorized'],
+								nameKey: '其他',
+								name: '其他',
+								name_en: 'Others',
+								name_th: 'อื่น ๆ',
+								sortOrder: 999,
+								items: uncategorized.map(it => this.normalizeProduct(it))
+							}
+							this.categories.push(unkCat)
+							this.allProducts = this.allProducts.concat(unkCat.items)
+						}
+
+						// 兜底：接口失败或为空时，退回旧路径
+						if (this.allProducts.length === 0) {
+							console.warn('[dinein] /stores/{id}/menu returned empty, fallback to old path')
+							await this.loadLegacyMenu()
+						}
+						if (this.categories.length > 0) {
+							this.activeCategory = 0
+						}
+					} else {
+						// 接口失败 → 退回旧路径
+						await this.loadLegacyMenu()
 					}
 				} catch (e) {
-					console.error('loadProducts error:', e)
+					console.error('[dinein] loadStoreMenu error:', e)
+					await this.loadLegacyMenu()
 				}
-
-					// Step 3: Load categories from global categories API
-					await this.loadFallbackCategories()
-					if (this.categories.length > 0) {
-						this.activeCategory = 0
-					}
 
 			} catch (e) {
 				console.error('loadStoreData error:', e)
 			} finally {
 				this.loading = false
+			}
+		},
+
+		// 旧路径兜底：调 /public/menu-items + 本地分组（接口 /stores/{id}/menu 异常时用）
+		async loadLegacyMenu() {
+			try {
+				const allItemsRes = await getConsumerMenuItems(this.shopInfo.id, { page_size: 200 })
+				if (allItemsRes.code === 0 && allItemsRes.data) {
+					const items = Array.isArray(allItemsRes.data) ? allItemsRes.data : (allItemsRes.data.items || [])
+					this.allProducts = items.map(item => this.normalizeProduct(item))
+				}
+				await this.loadFallbackCategories()
+				if (this.categories.length > 0) {
+					this.activeCategory = 0
+				}
+			} catch (e) {
+				console.error('[dinein] loadLegacyMenu error:', e)
 			}
 		},
 
@@ -489,23 +590,40 @@ export default {
 					}).sort((a, b) => a.sortOrder - b.sortOrder)
 				},
 
-		// Map store business_types (JSONB array) to category business_type filter
-		mapBusinessType(businessTypes) {
-
-			if (!businessTypes || !businessTypes.length) return null
-
-			// Match the first known food business_type
-
-			const foodTypes = ["HOTPOT_BUFFET", "HOTPOT_PER_ITEM", "MALA_TANG", "SEAFOOD_NOODLE", "STANDARD_FOOD"]
-
-			for (const ft of foodTypes) {
-
-				if (businessTypes.includes(ft)) return ft
-
+		// 格式化营业时间：兼容 config.opening_time/closing_time、business_hours 字符串、businessHours 等多种形态
+		formatBusinessHours(s) {
+			if (!s) {
+				console.log('[dinein] formatBusinessHours: input empty')
+				return ''
 			}
-
-			return null
-			},
+			console.log('[dinein] formatBusinessHours input:', JSON.stringify({
+				config: s.config,
+				store_config: s.store_config,
+				business_hours: s.business_hours,
+				businessHours: s.businessHours,
+				opening_hours: s.opening_hours,
+				opening_time: s.opening_time,
+				closing_time: s.closing_time
+			}))
+			// 形态1：config 对象里有 opening_time / closing_time
+			const cfg = s.config || s.store_config
+			if (cfg && cfg.opening_time && cfg.closing_time) {
+				const open = String(cfg.opening_time).slice(0, 5)
+				const close = String(cfg.closing_time).slice(0, 5)
+				if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+					return `${open}-${close}`
+				}
+			}
+			// 形态2：直接是字符串
+			const str = s.business_hours || s.businessHours || s.opening_hours
+			if (str && typeof str === 'string' && !str.includes('undefined') && str !== '-') return str
+			// 形态3：分开的 opening_time / closing_time 字段（不在 config 里）
+			if (s.opening_time && s.closing_time) {
+				return `${String(s.opening_time).slice(0, 5)}-${String(s.closing_time).slice(0, 5)}`
+			}
+			console.log('[dinein] formatBusinessHours: no time field found, returning empty')
+			return ''
+		},
 
 		normalizeProduct(item) {
 			const lang = i18n.getLanguage()
@@ -532,7 +650,6 @@ export default {
 				tags: item.tags || [],
 				stock: item.stock,
 				is_sold_out: item.is_sold_out || false,
-				business_type: item.business_type,
 				specs_config: item.specs_config || {}
 			}
 		},
@@ -570,6 +687,26 @@ export default {
 				showToast(this.i18n.t('dinein.soldOut'))
 				return
 			}
+			// 商家关业确认（每次进入门店首次加购时弹一次）
+			if (this.shopInfo.status && this.shopInfo.status !== 'OPEN' && !this._closedConfirmed) {
+				uni.showModal({
+					title: this.i18n.t('dinein.storeClosedTitle'),
+					content: this.i18n.t('dinein.storeClosedContent'),
+					confirmText: this.i18n.t('dinein.storeClosedConfirm'),
+					cancelText: this.i18n.t('dinein.storeClosedCancel'),
+					success: (res) => {
+						if (res.confirm) {
+							this._closedConfirmed = true
+							this._doAddToCartFlow(item)
+						}
+					}
+				})
+				return
+			}
+			this._doAddToCartFlow(item)
+		},
+
+		_doAddToCartFlow(item) {
 			// 有规格则弹出选择弹窗
 			const specs = item.specs_config
 			const hasValidSpecs = specs && Object.keys(specs).some(k => specs[k] && specs[k].length > 0)
@@ -661,25 +798,33 @@ export default {
 			this.cartTotal = Math.round((this.cartTotal + item.price * quantity) * 100) / 100
 
 			// 查找购物车中是否已有同商品同规格的项
-			const specsKey = specs ? JSON.stringify(specs) : ''
+			// 注意：specs 必须标准化（用空对象而不是 null，避免 stringify 结果不一致）
+			const normalizedSpecs = specs && Object.keys(specs).length > 0 ? { ...specs } : {}
+			const specsKey = JSON.stringify(normalizedSpecs)
 			const existIdx = this.cartItems.findIndex(ci =>
 				ci.id === item.id && JSON.stringify(ci.specs || {}) === specsKey
 			)
 
-				if (existIdx >= 0) {
-					this.cartItems[existIdx].quantity += quantity
-				} else {
-					this.cartItems.push({
-						id: item.id,
-						name: item.name,
-						price: item.price,
-						image: item.image,
-						quantity: quantity,
-						specs: specs ? { ...specs } : {},
-						store_id: this.shopInfo.id
-					})
-				}
-			showToast(this.i18n.t('dinein.addToCart'))
+			if (existIdx >= 0) {
+				// Vue 3 修改数组元素属性，用 splice 触发响应式更新（避免直接赋值失效）
+				const updated = { ...this.cartItems[existIdx], quantity: this.cartItems[existIdx].quantity + quantity }
+				this.cartItems.splice(existIdx, 1, updated)
+			} else {
+				this.cartItems.push({
+					id: item.id,
+					name: item.name,
+					price: item.price,
+					image: item.image,
+					quantity: quantity,
+					specs: normalizedSpecs,
+					store_id: this.shopInfo.id
+				})
+			}
+			// 防抖：连续加购时合并多次 toast，避免快速触发卡 UI
+			if (this._toastTimer) clearTimeout(this._toastTimer)
+			this._toastTimer = setTimeout(() => {
+				showToast(this.i18n.t('dinein.addToCart'))
+			}, 200)
 			this.syncCartToStore()
 		},
 
@@ -711,7 +856,8 @@ export default {
 			if (newQty <= 0) {
 				this.cartItems.splice(idx, 1)
 			} else {
-				item.quantity = newQty
+				// 用 splice 触发响应式更新（避免直接赋值失效）
+				this.cartItems.splice(idx, 1, { ...item, quantity: newQty })
 			}
 			this.recalcCart()
 			this.syncCartToStore()
@@ -745,9 +891,12 @@ export default {
 		// 分享门店
 		async handleShareShop() {
 			try {
+				// 按当前语言取店名（默认中文，回退到 fullName/name）
+				const lang = i18n.getLanguage()
+				const shopName = this.shopInfo['name_' + lang] || this.shopInfo.fullName || this.shopInfo.name
 				const result = await shareShop({
 					id: this.shopInfo.id || 1,
-					name: this.shopInfo.fullName || this.shopInfo.name,
+					name: shopName,
 					logo: this.shopInfo.logo,
 					banner: this.shopInfo.banner
 				})
@@ -756,7 +905,7 @@ export default {
 					this.shareInfo = {
 						type: 'shop',
 						id: this.shopInfo.id || 1,
-						name: this.shopInfo.fullName || this.shopInfo.name,
+						name: shopName,
 						image: this.shopInfo.logo || this.shopInfo.banner
 					}
 					this.showShareModal = true
@@ -773,16 +922,19 @@ export default {
 		// 分享菜品
 		async handleShareProduct(product) {
 			try {
+				const lang = i18n.getLanguage()
+				const shopName = this.shopInfo['name_' + lang] || this.shopInfo.fullName || this.shopInfo.name
+				const productName = product['name_' + lang] || product.name
 				const result = await shareProduct(
 					{
 						id: product.id,
-						name: product.name,
+						name: productName,
 						price: product.price,
 						image: product.image
 					},
 					{
 						id: this.shopInfo.id || 1,
-						name: this.shopInfo.fullName || this.shopInfo.name
+						name: shopName
 					}
 				)
 
@@ -790,11 +942,11 @@ export default {
 					this.shareInfo = {
 						type: 'product',
 						id: product.id,
-						name: product.name,
+						name: productName,
 						price: product.price,
 						image: product.image,
 						shopId: this.shopInfo.id || 1,
-						shopName: this.shopInfo.fullName || this.shopInfo.name
+						shopName: shopName
 					}
 					this.showShareModal = true
 					showToast(this.i18n.t('dinein.shareSuccess'))
@@ -928,6 +1080,22 @@ export default {
 	color: rgba(0, 0, 0, 0.9);
 }
 
+.store-status-badge {
+	font-size: 10px;
+	font-weight: 600;
+	padding: 2px 6px;
+	border-radius: 4px;
+	margin-left: 6px;
+}
+.badge-open {
+	color: #52C41A;
+	background-color: rgba(82, 196, 26, 0.1);
+}
+.badge-closed {
+	color: #DA3300;
+	background-color: rgba(218, 51, 0, 0.1);
+}
+
 .delivery-badge {
 	font-size: 11px;
 	font-weight: 500;
@@ -973,6 +1141,21 @@ export default {
 	font-size: 11px;
 	font-weight: 500;
 	color: #949494;
+}
+
+.shop-map {
+	margin: 12px 16px 0;
+	border-radius: 12px;
+	overflow: hidden;
+	height: 180px;
+	background-color: #F5F5F5;
+}
+
+.map-iframe {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	display: block;
 }
 
 .shop-info-right {
@@ -1294,12 +1477,14 @@ export default {
 	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 	transform: translateY(20px);
 	opacity: 0;
+	pointer-events: none;
 	transition: transform 0.25s ease, opacity 0.2s ease;
 }
 
 .cart-popup-show {
 	transform: translateY(0);
 	opacity: 1;
+	pointer-events: auto;
 }
 
 .cart-popup-header {

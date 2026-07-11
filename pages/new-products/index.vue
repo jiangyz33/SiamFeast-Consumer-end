@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('newProducts.title') || '新品上市' }}</text>
+			<text class="nav-title">{{ t('newProducts.title') || '新品上市' }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -22,23 +22,28 @@
 					class="product-card"
 					@click="handleProductClick(item)"
 				>
-					<view class="product-image-wrapper">
-						<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
-						<view class="product-shop">
-							<view class="shop-logo-wrapper">
+					<!-- 左侧：正方形商品图 -->
+					<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+
+					<!-- 右侧：商品信息（垂直分布：上=商品名+门店，下=价格+按钮） -->
+					<view class="product-info">
+						<!-- 上半部分：商品名 + 门店（logo 在左，店名在右） -->
+						<view class="product-top">
+							<text class="product-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
+							<view class="shop-row" v-if="item.storeName">
 								<image class="shop-logo" :src="item.storeLogo || '/static/images/banner-placeholder.svg'" mode="aspectFill"></image>
+								<text class="shop-name">{{ item.storeName }}</text>
 							</view>
-							<text class="shop-name">{{ item.storeName }}</text>
 						</view>
-					</view>
-					<view class="product-info-overlay">
-						<text class="product-name">{{ item['name_' + i18n.getLanguage()] || item.name }}</text>
-						<view class="product-price-row">
-							<text class="product-price">฿{{ item.price }}</text>
-							<text class="original-price" v-if="item.original_price">฿{{ item.original_price }}</text>
-							<text class="sales-text">{{ i18n.t('mine.monthlySales') }}{{ item.sales_count || 0 }}</text>
+						<!-- 下半部分：价格 + 月销 + 按钮 -->
+						<view class="product-bottom">
+							<view class="price-row">
+								<text class="product-price">฿{{ item.price }}</text>
+								<text class="original-price" v-if="item.original_price && Number(item.original_price) > Number(item.price)">฿{{ item.original_price }}</text>
+								<text class="sales-text" v-if="item.sales_count > 0">· {{ t('mine.monthlySales') }}{{ item.sales_count }}</text>
+							</view>
 							<view class="buy-btn" @click.stop="handleBuyNow(item)">
-								<text class="buy-btn-text">{{ i18n.t('newProducts.buyNow') || '购买' }}</text>
+								<text class="buy-btn-text">{{ t('hotProducts.grab') }}</text>
 							</view>
 						</view>
 					</view>
@@ -47,15 +52,15 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">{{ i18n.t('common.loading') }}</text>
-				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t('order.noMore') }}</text>
+				<text v-if="loading" class="tip-text">{{ t('common.loading') }}</text>
+				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ t('order.noMore') }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view v-if="!loading && products.length === 0" class="empty-state">
 				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t('common.empty.product') }}</text>
-				<text class="empty-desc">{{ i18n.t('common.empty.productDesc') }}</text>
+				<text class="empty-title">{{ t('common.empty.product') }}</text>
+				<text class="empty-desc">{{ t('common.empty.productDesc') }}</text>
 			</view>
 
 			<view class="bottom-placeholder"></view>
@@ -78,6 +83,7 @@ export default {
 	components: { CustomTabbar },
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -93,7 +99,22 @@ export default {
 		this.initPage()
 		this.loadStores()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
@@ -147,7 +168,7 @@ export default {
 						image_url: fixMinioUrl(p.image_url || ''),
 						store_id: p.store_id,
 						storeName: store['name_' + i18n.getLanguage()] || store.name || '',
-						storeLogo: store.logo || '/static/images/banner-placeholder.svg'
+						storeLogo: fixMinioUrl(store.logo_url || store.logo) || '/static/images/store-placeholder.svg'
 					}
 				})
 				if (append) {
@@ -255,76 +276,96 @@ export default {
 }
 
 .product-card {
+	display: flex;
 	background-color: #FFFFFF;
-	border-radius: 8px;
-	overflow: hidden;
-}
-
-.product-image-wrapper {
-	width: 100%;
-	height: 160px;
-	position: relative;
-}
-
-.product-image {
-	width: 100%;
-	height: 100%;
-}
-
-.product-shop {
-	position: absolute;
-	top: 0;
-	left: 0;
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	background-color: rgba(0, 0, 0, 0.6);
-	padding: 6px 0 0 6px;
-	border-radius: 0 0 7px 0;
-}
-
-.shop-logo-wrapper {
-	width: 24px;
-	height: 24px;
-	background-color: #F2B131;
 	border-radius: 12px;
+	overflow: hidden;
+	padding: 12px;
+	gap: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 左侧：正方形商品图 */
+.product-image {
+	width: 100px;
+	height: 100px;
+	border-radius: 10px;
+	background-color: #F5F5F5;
+	flex-shrink: 0;
+}
+
+/* 右侧：商品信息 */
+.product-info {
+	flex: 1;
 	display: flex;
-	align-items: center;
-	justify-content: center;
+	flex-direction: column;
+	justify-content: space-between;
+	min-width: 0;
+	padding: 2px 0;
 }
 
-.shop-logo {
-	width: 18px;
-	height: 18px;
-	border-radius: 9px;
-}
-
-.shop-name {
-	font-size: 12px;
-	font-weight: 500;
-	color: #FFFFFF;
-}
-
-.product-info-overlay {
-	padding: 8px 10px;
+/* 上半部分：商品名（最多 2 行）+ 门店（logo 在左，店名在右） */
+.product-top {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
 }
 
 .product-name {
 	font-size: 14px;
 	font-weight: 600;
+	color: #000000CC;
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
 }
 
-.product-price-row {
+.shop-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.shop-logo {
+	width: 20px;
+	height: 20px;
+	border-radius: 10px;
+	background-color: #F5F5F5;
+}
+
+.shop-name {
+	font-size: 13px;
+	color: rgba(0, 0, 0, 0.6);
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1;
+	min-width: 0;
+}
+
+/* 下半部分：价格 + 月销 + 抢按钮 */
+.product-bottom {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.price-row {
 	display: flex;
 	align-items: baseline;
 	gap: 6px;
-	margin-top: 4px;
+	overflow: hidden;
 }
 
 .product-price {
-	font-size: 14px;
-	font-weight: 600;
-	color: #F2B131;
+	font-size: 15px;
+	font-weight: 700;
+	color: #DA3300;
 }
 
 .original-price {
@@ -336,20 +377,22 @@ export default {
 .sales-text {
 	font-size: 11px;
 	color: #949494;
-	margin-left: auto;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .buy-btn {
-	margin-left: auto;
-	background-color: #F2B131;
-	padding: 4px 10px;
-	border-radius: 12px;
+	background: linear-gradient(135deg, #F2B131 0%, #E5A02E 100%);
+	padding: 5px 14px;
+	border-radius: 14px;
 	flex-shrink: 0;
+	box-shadow: 0 2px 6px rgba(242, 177, 49, 0.25);
 }
 
 .buy-btn-text {
 	font-size: 12px;
-	font-weight: 500;
+	font-weight: 600;
 	color: #FFFFFF;
 }
 

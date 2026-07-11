@@ -80,9 +80,9 @@
 				<!-- 优惠专区 -->
 				<view class="zone-card" @click="handleZoneClick('discount')">
 					<view class="zone-header">
-						<text class="zone-title">{{ i18n.t("dinein.categories.discount") }}</text>
+						<text class="zone-title">{{ t("dinein.categories.discount") }}</text>
 						<view class="zone-more">
-							<text class="more-text">{{ i18n.t("common.more") || "更多" }}</text>
+							<text class="more-text">{{ t("common.more") || "更多" }}</text>
 							<image class="more-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
@@ -99,16 +99,16 @@
 					<view class="zone-content" v-else>
 						<image class="zone-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 						<view class="zone-info">
-							<text class="zone-name">{{ i18n.t("common.empty.noData") }}</text>
+							<text class="zone-name">{{ t("common.empty.noData") }}</text>
 						</view>
 					</view>
 				</view>
 				<!-- 拼单专区 -->
 				<view class="zone-card" @click="handleZoneClick('group')">
 					<view class="zone-header">
-						<text class="zone-title">{{ i18n.t("dinein.categories.group") }}</text>
+						<text class="zone-title">{{ t("dinein.categories.group") }}</text>
 						<view class="zone-more">
-							<text class="more-text">{{ i18n.t("common.more") || "更多" }}</text>
+							<text class="more-text">{{ t("common.more") || "更多" }}</text>
 							<image class="more-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
@@ -125,7 +125,7 @@
 					<view class="zone-content" v-else>
 						<image class="zone-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 						<view class="zone-info">
-							<text class="zone-name">{{ i18n.t("common.empty.noData") }}</text>
+							<text class="zone-name">{{ t("common.empty.noData") }}</text>
 						</view>
 					</view>
 				</view>
@@ -153,8 +153,8 @@
 							<view class="store-card-info-row">
 								<text class="store-card-hours">{{ store.businessHours }}</text>
 							</view>
-							<view class="store-card-delivery" v-if="store.delivery_enabled">
-								<text class="delivery-text">{{ i18n.t("dinein.deliverySupported") }}</text>
+							<view class="store-card-delivery" v-if="false">
+								<text class="delivery-text">{{ t("dinein.deliverySupported") }}</text>
 							</view>
 							<view class="store-card-tags" v-if="store.business_types && store.business_types.length > 0">
 								<text class="store-card-tag" v-for="(type, idx) in getBusinessTypeText(store.business_types)" :key="idx">{{ type }}</text>
@@ -165,11 +165,11 @@
 						<view class="store-card-distance">
 							<image class="store-card-distance-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 							<text class="store-card-distance-text" v-if="store.distance">{{ store.distance }}</text>
-							<text class="store-card-distance-text" v-else>{{ store.formatted_address || store.address }}</text>
+							<text class="store-card-distance-text" v-else>{{ store['formatted_address_' + i18n.getLanguage()] || store['address_' + i18n.getLanguage()] || store.formatted_address || store.address }}</text>
 						</view>
 						<view class="store-card-actions">
 							<view class="store-card-enter">
-								<text class="store-card-enter-text">{{ i18n.t("mine.enterStore") }}</text>
+								<text class="store-card-enter-text">{{ t("mine.enterStore") }}</text>
 							</view>
 						</view>
 					</view>
@@ -178,7 +178,7 @@
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="stores.length === 0 && !loading">
-				<text class="empty-text">{{ i18n.t('common.noData') }}</text>
+				<text class="empty-text">{{ t('common.noData') }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -215,6 +215,7 @@ export default {
 	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			showLanguageModal: false,
 			statusBarHeight: 20,
@@ -240,8 +241,41 @@ export default {
 	onShow() {
 		this.loadMallData()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
+		// 格式化营业时间：兼容多种后端字段形态
+		formatBusinessHours(s) {
+			if (!s) return ''
+			const cfg = s.config || s.store_config
+			if (cfg && cfg.opening_time && cfg.closing_time) {
+				const open = String(cfg.opening_time).slice(0, 5)
+				const close = String(cfg.closing_time).slice(0, 5)
+				if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+					return `${open}-${close}`
+				}
+			}
+			const str = s.business_hours || s.businessHours || s.opening_hours
+			if (str && typeof str === 'string' && !str.includes('undefined') && str !== '-') return str
+			if (s.opening_time && s.closing_time) {
+				return `${String(s.opening_time).slice(0, 5)}-${String(s.closing_time).slice(0, 5)}`
+			}
+			return ''
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -328,13 +362,15 @@ export default {
 						phone: store.phone || '',
 						status: store.status || 'OPEN',
 						address: store.address || '',
+						address_en: store.address_en || '',
+						address_th: store.address_th || '',
 						formatted_address: store.formatted_address || '',
+						formatted_address_en: store.formatted_address_en || '',
+						formatted_address_th: store.formatted_address_th || '',
 						latitude: store.latitude,
 						longitude: store.longitude,
 						delivery_enabled: store.delivery_enabled || false,
-						businessHours: store.config
-							? store.config.opening_time?.slice(0,5) + '-' + store.config.closing_time?.slice(0,5)
-							: '11:00-22:00',
+						businessHours: this.formatBusinessHours(store) || '11:00-22:00',
 						distance: '',
 						distanceKm: Infinity,
 						business_types: store.business_types || []

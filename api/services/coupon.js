@@ -27,18 +27,26 @@ export function getMyCoupons(params = {}) {
 
 /**
  * 获取可用优惠券（下单时使用）
- * 从我的优惠券中筛选 status=ACTIVE 且满足门槛的
+ * 后端新增的专用接口：GET /coupons/available
+ * 已按订单上下文过滤（用户拥有 + ACTIVE + 金额门槛满足 + 未过期）
  * @param {Object} params 查询参数
  * @param {Number} params.store_id 门店ID
- * @param {Number} params.amount 订单金额
- * @param {String} params.order_type 订单类型 (dinein/delivery)
+ * @param {Number} params.order_amount 订单金额
+ * @param {String} [params.order_type] 订单类型 (dinein/delivery/groupbuy/hostel)
  * @returns {Promise}
  */
 export function getAvailableCoupons(params) {
 	if (USE_MOCK) {
 		return mockGetAvailableCoupons(params)
 	}
-	return get('/coupons', { status: 'ACTIVE', page_size: 100 })
+	// 传所有上下文参数给后端，让后端按规则过滤
+	const query = { page_size: 100 }
+	if (params?.order_amount !== undefined && params?.order_amount !== null) {
+		query.order_amount = params.order_amount
+	}
+	if (params?.store_id) query.store_id = params.store_id
+	if (params?.order_type) query.order_type = params.order_type
+	return get('/coupons/available', query)
 }
 
 /**

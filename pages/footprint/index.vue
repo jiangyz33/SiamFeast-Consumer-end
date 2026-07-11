@@ -1,5 +1,5 @@
 <template>
-	<view class="footprint-page">
+	<view class="footprint-page" :data-lang="langVersion">
 		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
@@ -8,9 +8,9 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('footprint.title') }}</text>
+			<text class="nav-title">{{ t('footprint.title') }}</text>
 			<view class="nav-right">
-				<text class="clear-btn" @click="showClearConfirm" v-if="hasData">{{ i18n.t('common.clear') }}</text>
+				<text class="clear-btn" @click="showClearConfirm" v-if="hasData">{{ t('common.clear') }}</text>
 			</view>
 		</view>
 
@@ -21,7 +21,7 @@
 				:class="{ 'tab-active': activeTab === 0 }"
 				@click="switchTab(0)"
 			>
-				<text class="tab-text">{{ i18n.t('footprint.products') }}</text>
+				<text class="tab-text">{{ t('footprint.products') }}</text>
 				<text class="tab-count" v-if="productCount > 0">({{ productCount }})</text>
 			</view>
 			<view
@@ -29,7 +29,7 @@
 				:class="{ 'tab-active': activeTab === 1 }"
 				@click="switchTab(1)"
 			>
-				<text class="tab-text">{{ i18n.t('footprint.stores') }}</text>
+				<text class="tab-text">{{ t('footprint.stores') }}</text>
 				<text class="tab-count" v-if="storeCount > 0">({{ storeCount }})</text>
 			</view>
 		</view>
@@ -57,7 +57,7 @@
 							<view class="product-price">
 								<text class="price-symbol">฿</text>
 								<text class="price-num">{{ item.price }}</text>
-								<text class="price-original" v-if="item.originalPrice">฿{{ item.originalPrice }}</text>
+								<text class="price-original" v-if="item.originalPrice && Number(item.originalPrice) > Number(item.price)">฿{{ item.originalPrice }}</text>
 							</view>
 							<text class="view-time">{{ item.viewTimeText }}</text>
 						</view>
@@ -70,10 +70,10 @@
 				<!-- 空状态 -->
 				<view class="empty-state" v-if="productFootprints.length === 0">
 					<image class="empty-icon" src="/static/images/empty-footprint.svg" mode="aspectFit"></image>
-					<text class="empty-title">{{ i18n.t('common.empty.footprint') }}</text>
-					<text class="empty-desc">{{ i18n.t('common.empty.footprintDesc') }}</text>
+					<text class="empty-title">{{ t('common.empty.footprint') }}</text>
+					<text class="empty-desc">{{ t('common.empty.footprintDesc') }}</text>
 					<view class="empty-btn" @click="goToMall">
-						<text class="empty-btn-text">{{ i18n.t('footprint.goBrowse') }}</text>
+						<text class="empty-btn-text">{{ t('footprint.goBrowse') }}</text>
 					</view>
 				</view>
 			</view>
@@ -91,7 +91,7 @@
 					</view>
 					<view class="store-info">
 						<view class="store-header">
-							<text class="store-name">{{ item.name || item.name_en }}</text>
+							<text class="store-name">{{ item["name_" + i18n.getLanguage()] || item.name || item.name_en }}</text>
 							<view class="store-status" :class="item.status === 'OPEN' ? 'status-open' : 'status-closed'">
 								<text class="status-text">{{ item.status === 'OPEN' ? i18n.t('storeSelect.open') : i18n.t('storeSelect.closed') }}</text>
 							</view>
@@ -100,7 +100,7 @@
 							<image class="star-icon" src="/static/icons/star.svg" mode="aspectFit"></image>
 							<text class="rating-text">{{ item.rating }}</text>
 						</view>
-						<text class="store-address" v-if="item.address">{{ item.address }}</text>
+						<text class="store-address" v-if="item.address || item.formatted_address_zh || item.formatted_address_en || item.formatted_address_th">{{ item['formatted_address_' + i18n.getLanguage()] || item['address_' + i18n.getLanguage()] || item.address }}</text>
 						<view class="store-footer">
 							<text class="distance-text" v-if="item.distance">{{ item.distance }}</text>
 							<text class="view-time">{{ item.viewTimeText }}</text>
@@ -114,10 +114,10 @@
 				<!-- 空状态 -->
 				<view class="empty-state" v-if="storeFootprints.length === 0">
 					<image class="empty-icon" src="/static/images/empty-store.svg" mode="aspectFit"></image>
-					<text class="empty-title">{{ i18n.t('common.empty.store') }}</text>
-					<text class="empty-desc">{{ i18n.t('common.empty.storeDesc') }}</text>
+					<text class="empty-title">{{ t('common.empty.store') }}</text>
+					<text class="empty-desc">{{ t('common.empty.storeDesc') }}</text>
 					<view class="empty-btn" @click="goToStoreSelect">
-						<text class="empty-btn-text">{{ i18n.t('footprint.goBrowse') }}</text>
+						<text class="empty-btn-text">{{ t('footprint.goBrowse') }}</text>
 					</view>
 				</view>
 			</view>
@@ -129,13 +129,13 @@
 		<!-- 清空确认弹窗 -->
 		<view class="confirm-modal" v-if="showConfirmModal" @click="hideClearConfirm">
 			<view class="modal-content" @click.stop>
-				<text class="modal-title">{{ i18n.t('footprint.confirmClear') }}</text>
+				<text class="modal-title">{{ t('footprint.confirmClear') }}</text>
 				<view class="modal-buttons">
 					<view class="modal-btn modal-btn-cancel" @click="hideClearConfirm">
-						<text class="modal-btn-text">{{ i18n.t('common.cancel') }}</text>
+						<text class="modal-btn-text">{{ t('common.cancel') }}</text>
 					</view>
 					<view class="modal-btn modal-btn-confirm" @click="confirmClear">
-						<text class="modal-btn-text">{{ i18n.t('common.confirm') }}</text>
+						<text class="modal-btn-text">{{ t('common.confirm') }}</text>
 					</view>
 				</view>
 			</view>
@@ -151,6 +151,7 @@ import i18n from '@/i18n/index.js'
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -159,7 +160,8 @@ export default {
 			productFootprints: [],
 			storeFootprints: [],
 			productCount: 0,
-			storeCount: 0
+			storeCount: 0,
+			langVersion: 0
 		}
 	},
 	computed: {
@@ -170,11 +172,23 @@ export default {
 	onLoad(options) {
 		this.initPage()
 		this.loadData()
+		uni.$on('languageChanged', this.onLanguageChanged)
 	},
 	onShow() {
 		this.loadData()
 	},
+	onUnload() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
 	methods: {
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
+		onLanguageChanged() {
+			this.langVersion++
+			this.loadData()
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -261,17 +275,17 @@ export default {
 			showToast(this.i18n.t('common.success'))
 		},
 
-		// 去商城逛逛
+		// 去首页逛逛（switchTab 切回首页 Tab，不进新页面栈）
 		goToMall() {
-			uni.navigateTo({
-				url: '/pages/mall/index'
+			uni.switchTab({
+				url: '/pages/index/index'
 			})
 		},
 
-		// 去选择门店
+		// 去选择门店（首页有门店列表入口）
 		goToStoreSelect() {
-			uni.navigateTo({
-				url: '/pages/store-select/index'
+			uni.switchTab({
+				url: '/pages/index/index'
 			})
 		}
 	}

@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('address.title') }}</text>
+			<text class="nav-title">{{ t('address.title') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -28,24 +28,24 @@
 							<text class="address-name">{{ item.name }}</text>
 							<text class="address-phone">{{ item.phone }}</text>
 							<view class="default-tag" v-if="item.isDefault">
-								<text class="default-tag-text">{{ i18n.t('address.default') }}</text>
+								<text class="default-tag-text">{{ t('address.default') }}</text>
 							</view>
 						</view>
 						<text class="address-detail">{{ item.province }}{{ item.city }}{{ item.district }}{{ item.detail }}</text>
-						<text class="address-remark" v-if="item.remark">{{ i18n.t('address.remark') }}: {{ item.remark }}</text>
+						<text class="address-remark" v-if="item.remark">{{ t('address.remark') }}: {{ item.remark }}</text>
 					</view>
 					<view class="address-actions">
 						<view class="action-btn" @click.stop="handleSetDefault(item, index)">
 							<image class="action-icon" :src="item.isDefault ? '/static/icons/check.svg' : '/static/icons/circle.svg'" mode="aspectFit"></image>
-							<text class="action-text">{{ i18n.t('address.setDefault') }}</text>
+							<text class="action-text">{{ t('address.setDefault') }}</text>
 						</view>
 						<view class="action-btn" @click.stop="handleEditAddress(item)">
 							<image class="action-icon" src="/static/icons/edit.svg" mode="aspectFit"></image>
-							<text class="action-text">{{ i18n.t('address.edit') }}</text>
+							<text class="action-text">{{ t('address.edit') }}</text>
 						</view>
 						<view class="action-btn" @click.stop="handleDeleteAddress(item, index)">
 							<image class="action-icon" src="/static/icons/delete.svg" mode="aspectFit"></image>
-							<text class="action-text">{{ i18n.t('address.delete') }}</text>
+							<text class="action-text">{{ t('address.delete') }}</text>
 						</view>
 					</view>
 				</view>
@@ -54,10 +54,10 @@
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="addressList.length === 0">
 				<image class="empty-icon" src="/static/images/empty-address.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t('common.empty.address') }}</text>
-				<text class="empty-desc">{{ i18n.t('common.empty.addressDesc') }}</text>
+				<text class="empty-title">{{ t('common.empty.address') }}</text>
+				<text class="empty-desc">{{ t('common.empty.addressDesc') }}</text>
 				<view class="empty-btn" @click="handleAddAddress">
-					<text class="empty-btn-text">{{ i18n.t('address.add') }}</text>
+					<text class="empty-btn-text">{{ t('address.add') }}</text>
 				</view>
 			</view>
 
@@ -69,7 +69,7 @@
 		<view class="bottom-bar">
 			<view class="add-btn" @click="handleAddAddress">
 				<image class="add-icon" src="/static/icons/add.svg" mode="aspectFit"></image>
-				<text class="add-text">{{ i18n.t('address.add') }}</text>
+				<text class="add-text">{{ t('address.add') }}</text>
 			</view>
 		</view>
 
@@ -93,25 +93,25 @@
 						<!-- 定位按钮 -->
 						<view class="location-btn" @click="handleGetLocation">
 							<image class="location-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-							<text class="location-text">{{ i18n.t('address.getLocation') }}</text>
-							<text class="location-status" v-if="locating">{{ i18n.t('storeSelect.locating') }}</text>
+							<text class="location-text">{{ t('address.getLocation') }}</text>
+							<text class="location-status" v-if="locating">{{ t('storeSelect.locating') }}</text>
 						</view>
 
 						<!-- 联系人 -->
 						<view class="form-item">
-							<text class="form-label">{{ i18n.t('address.contact') }}</text>
+							<text class="form-label">{{ t('address.contact') }}</text>
 							<input class="form-input" v-model="formData.name" :placeholder="i18n.t('address.contactPlaceholder')" />
 						</view>
 
 						<!-- 手机号 -->
 						<view class="form-item">
-							<text class="form-label">{{ i18n.t('address.phone') }}</text>
+							<text class="form-label">{{ t('address.phone') }}</text>
 							<input class="form-input" v-model="formData.phone" type="tel" :placeholder="i18n.t('login.phonePlaceholder')" />
 						</view>
 
 						<!-- 地区选择 -->
 						<view class="form-item" @click="showRegionPicker = true">
-							<text class="form-label">{{ i18n.t('address.region') }}</text>
+							<text class="form-label">{{ t('address.region') }}</text>
 							<view class="form-picker">
 								<text class="picker-text" :class="{ 'placeholder': !formData.province }">
 									{{ formData.province ? `${formData.province} ${formData.city} ${formData.district}` : i18n.t('address.selectRegion') }}
@@ -122,19 +122,19 @@
 
 						<!-- 详细地址 -->
 						<view class="form-item">
-							<text class="form-label">{{ i18n.t('address.address') }}</text>
+							<text class="form-label">{{ t('address.address') }}</text>
 							<textarea class="form-textarea" v-model="formData.detail" :placeholder="i18n.t('address.addressPlaceholder')" />
 						</view>
 
 						<!-- 门牌号 -->
 						<view class="form-item">
-							<text class="form-label">{{ i18n.t('address.houseNumber') }}</text>
+							<text class="form-label">{{ t('address.houseNumber') }}</text>
 							<input class="form-input" v-model="formData.houseNumber" :placeholder="i18n.t('address.houseNumberPlaceholder')" />
 						</view>
 
 						<!-- 地址标签 -->
 						<view class="form-item">
-							<text class="form-label">{{ i18n.t('address.label') }}</text>
+							<text class="form-label">{{ t('address.label') }}</text>
 							<view class="label-list">
 								<view
 									class="label-item"
@@ -150,13 +150,13 @@
 
 						<!-- 备注 -->
 						<view class="form-item">
-							<text class="form-label">{{ i18n.t('address.remark') }}</text>
+							<text class="form-label">{{ t('address.remark') }}</text>
 							<input class="form-input" v-model="formData.remark" :placeholder="i18n.t('address.remarkPlaceholder')" />
 						</view>
 
 						<!-- 设为默认 -->
 						<view class="form-item default-setting">
-							<text class="form-label">{{ i18n.t('address.setDefault') }}</text>
+							<text class="form-label">{{ t('address.setDefault') }}</text>
 							<switch :checked="formData.isDefault" @change="formData.isDefault = $event.detail.value" color="#F2B131" />
 						</view>
 					</view>
@@ -164,7 +164,7 @@
 
 				<view class="modal-footer">
 					<view class="save-btn" @click="handleSaveAddress">
-						<text class="save-text">{{ i18n.t('address.save') }}</text>
+						<text class="save-text">{{ t('address.save') }}</text>
 					</view>
 				</view>
 			</view>
@@ -174,7 +174,7 @@
 		<view class="region-picker" v-if="showRegionPicker" @click="showRegionPicker = false">
 			<view class="picker-content" @click.stop>
 				<view class="picker-header">
-					<text class="picker-title">{{ i18n.t('address.selectRegion') }}</text>
+					<text class="picker-title">{{ t('address.selectRegion') }}</text>
 					<view class="picker-close" @click="showRegionPicker = false">
 						<text class="close-text">✕</text>
 					</view>
@@ -626,6 +626,7 @@ import {
 export default {
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -678,7 +679,24 @@ export default {
 		this.localizeRegions()
 		this.loadAddressList()
 	},
+	created() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		localizeRegions() {
 			const lang = i18n.getLanguage()
 			console.log('[address] localizeRegions, lang:', lang)

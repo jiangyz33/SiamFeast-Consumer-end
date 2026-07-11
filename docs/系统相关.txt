@@ -1,7 +1,0 @@
-# 系统相关地址
-
-# Swagger API 文档（后端主服务）
-http://106.12.91.224:8080/swagger/index.html
-
-# Consumer API 健康检查
-http://106.12.91.224:8082/health

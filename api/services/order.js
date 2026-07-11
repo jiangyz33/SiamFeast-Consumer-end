@@ -8,7 +8,8 @@ import {
 	mockGetUserOrders,
 	mockGetOrderDetail,
 	mockCreateOrder,
-	mockCancelOrder
+	mockCancelOrder,
+	mockGetOrderStatus
 } from '../mock/order.js'
 
 /**
@@ -114,16 +115,7 @@ export function reorder(orderId) {
  */
 export function getOrderStatus(orderId) {
 	if (USE_MOCK) {
-		return new Promise((resolve) => {
-			const order = mockOrders.find(o => o.id === parseInt(orderId))
-			resolve({
-				code: 0,
-				data: {
-					order_id: orderId,
-					status: order?.status || 'UNKNOWN'
-				}
-			})
-		})
+		return mockGetOrderStatus(orderId)
 	}
 	return get(`/user-orders/${orderId}/status`)
 }

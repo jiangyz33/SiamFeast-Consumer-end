@@ -3,10 +3,40 @@
  */
 import { API_BASE_URL, REQUEST_TIMEOUT, TOKEN_KEY, RESPONSE_CODE } from './config.js'
 import { getErrorMessage } from '../utils/index.js'
+import i18n from '@/i18n/index.js'
 
-const MINIO_BASE = 'http://34.15.175.23:9000'
-const OLD_MINIO_HOSTS = ['106.12.91.224:9000', '106.13.161.35:9000', 'localhost:9000', '127.0.0.1:9000']
-const IMAGE_KEYS = ['image_url', 'logo_url', 'avatar_url', 'banner_url', 'icon_url', 'cover_url', 'img_url', 'photo_url', 'background_image_url', 'banner_image', 'thumb_url']
+const TOKEN_KICKED_MESSAGES = {
+	zh: '您的账号已在其他设备登录',
+	en: 'Account is logged in on another device',
+	th: 'บัญชีถูกเข้าสู่ระบบจากอุปกรณ์อื่น'
+}
+
+function getAcceptLanguage() {
+	try {
+		return i18n.getLanguage?.() || 'zh'
+	} catch (e) {
+		return 'zh'
+	}
+}
+
+function showKickedToast() {
+	let msg = TOKEN_KICKED_MESSAGES.zh
+	try {
+		msg = i18n.t('common.kicked') || msg
+	} catch (e) {}
+	uni.removeStorageSync(TOKEN_KEY)
+	uni.removeStorageSync('siamfeast_userInfo')
+	if (uni.showToast) {
+		uni.showToast({ title: msg, icon: 'none', duration: 2000 })
+	}
+	setTimeout(() => {
+		try { uni.reLaunch({ url: '/pages/login/index' }) } catch (e) {}
+	}, 1500)
+}
+
+const MINIO_BASE = 'https://minio.siamfeast.com'
+const OLD_MINIO_HOSTS = ['106.12.91.224:9000', '106.13.161.35:9000', 'localhost:9000', '127.0.0.1:9000', '34.15.175.23:9000', 'test.siamfeast.wenshuai.space', 'siamfeast.wenshuai.space']
+const IMAGE_KEYS = ['image_url', 'logo_url', 'avatar_url', 'banner_url', 'icon_url', 'cover_url', 'img_url', 'photo_url', 'background_image_url', 'banner_image', 'thumb_url', 'product_image']
 
 /**
  * 递归修正后端返回的图片相对路径为完整 MinIO URL
@@ -20,7 +50,16 @@ function fixImageUrls(obj) {
 			if (val.includes('example.com')) {
 				obj[key] = ''
 			} else if (OLD_MINIO_HOSTS.some(h => val.includes(h))) {
-				let fixed = val; for (const h of OLD_MINIO_HOSTS) { fixed = fixed.replace(h, '34.15.175.23:9000') }; obj[key] = fixed
+				// 后端通过反代返回的 URL 形如：
+				//   https://test.siamfeast.wenshuai.space/minio/sf-uploads/menu_image/xxx.png
+				// 重写为直连 MinIO：
+				//   http://34.15.175.23:9000/sf-uploads/menu_image/xxx.png
+				let fixed = val
+				for (const h of OLD_MINIO_HOSTS) {
+					fixed = fixed.replace(new RegExp('https?://' + h.replace('.', '\\.') + '/minio/', 'g'), MINIO_BASE + '/')
+					fixed = fixed.replace(new RegExp('https?://' + h.replace('.', '\\.'), 'g'), MINIO_BASE)
+				}
+				obj[key] = fixed
 			} else if (val.startsWith('/minio-files/')) {
 				obj[key] = MINIO_BASE + val.replace('/minio-files/', '/')
 			} else if (val.startsWith('/') && !val.startsWith('/static')) {
@@ -56,6 +95,7 @@ export function request(options) {
 		// 构建请求头
 		const requestHeader = {
 			'Content-Type': 'application/json',
+			'Accept-Language': getAcceptLanguage(),
 			...header
 		}
 
@@ -121,6 +161,14 @@ export function request(options) {
 						uni.removeStorageSync(TOKEN_KEY)
 						uni.removeStorageSync('siamfeast_userInfo')
 
+						// 单会话踢人：后端返回 code=TOKEN_KICKED（字符串或数字 40010）
+						const bizCode = responseData.biz_code || responseData.code
+						if (bizCode === 'TOKEN_KICKED' || bizCode === 40010 || bizCode === 'TOKEN_EXPIRED') {
+							showKickedToast()
+							reject(responseData)
+							return
+						}
+
 						// 跳转到登录页
 						if (!silent) {
 						uni.showToast({
@@ -172,38 +220,79 @@ export function request(options) {
 						reject(responseData)
 					}
 				} else if (statusCode === 401 || statusCode === 403) {
-					// 未授权
-					uni.removeStorageSync(TOKEN_KEY)
-					uni.removeStorageSync('siamfeast_userInfo')
-					if (!silent) {
-					uni.showToast({
-						title: '请重新登录',
-						icon: 'none'
-					})
+					// 单会话踢人优先处理
+					const bizCode = responseData && (responseData.biz_code || responseData.code)
+					if (bizCode === 'TOKEN_KICKED' || bizCode === 40010 || bizCode === 'TOKEN_EXPIRED') {
+						showKickedToast()
+						reject(responseData || { code: 401, message: 'kicked' })
+						return
 					}
-					setTimeout(() => {
-						uni.reLaunch({
-							url: '/pages/login/index'
-						})
-					}, 1500)
-					reject({ code: 401, message: '未授权' })
-				} else {
-					// 422 参数校验 / 其他 HTTP 错误
-					let errMsg = '请求失败'
-					if (statusCode === 422 && responseData.detail) {
-						if (Array.isArray(responseData.detail)) {
-							errMsg = responseData.detail.map(e => {
-								const field = e.loc ? e.loc.join('.') : ''
-								return field ? `${field}: ${e.msg}` : e.msg
-							}).join('; ')
-						} else if (responseData.detail.message) {
-							errMsg = responseData.detail.message
+
+					// 业务认证错误（登录密码错、验证码错等）：直接显示后端消息，不清 token、不跳转
+					// 常见 bizCode：INVALID_CREDENTIALS / INVALID_VERIFY_CODE / UNAUTHENTICATED（无 token 时）
+					const businessAuthErrors = [
+						'INVALID_CREDENTIALS',    // 密码错
+						'INVALID_VERIFY_CODE',    // 验证码错
+						'PASSWORD_SAME_AS_OLD',   // 新旧密码相同
+						'PASSWORD_TOO_SHORT',     // 密码太短
+						'INVALID_OLD_PASSWORD',   // 旧密码错
+						'USER_NOT_FOUND',         // 用户不存在
+						'RATE_LIMITED'            // 限流
+					]
+					if (bizCode && businessAuthErrors.includes(bizCode)) {
+						const errMsg = (responseData && responseData.message) || '操作失败'
+						if (!silent) {
+							uni.showToast({ title: errMsg, icon: 'none' })
 						}
-					} else if (responseData.detail && responseData.detail.message) {
-						errMsg = responseData.detail.message
-					} else if (responseData.message) {
-						errMsg = responseData.message
+						reject({ code: statusCode, message: errMsg, bizCode })
+						return
 					}
+
+					// 真正的 token 过期（用户已登录但 token 失效）
+					const hasToken = !!uni.getStorageSync(TOKEN_KEY)
+					if (hasToken) {
+						uni.removeStorageSync(TOKEN_KEY)
+						uni.removeStorageSync('siamfeast_userInfo')
+						if (!silent) {
+							uni.showToast({ title: '请重新登录', icon: 'none' })
+						}
+						setTimeout(() => {
+							uni.reLaunch({ url: '/pages/login/index' })
+						}, 1500)
+					} else {
+						// 没 token 时收到 401：直接显示后端消息（不重复弹 toast）
+						const errMsg = (responseData && responseData.message) || '未授权'
+						if (!silent) {
+							uni.showToast({ title: errMsg, icon: 'none' })
+						}
+					}
+					reject({ code: 401, message: (responseData && responseData.message) || '未授权', bizCode })
+				} else {
+					// 4xx / 5xx HTTP 错误：优先用 bizCode + message 反查 i18n，没有才回退到后端原文
+					let errMsg = ''
+					// 1) 先用 bizCode + 后端 message 反查 i18n（避免后端没做 i18n 时仍显示中文）
+					errMsg = getErrorMessage({
+						code: responseData && (responseData.biz_code || responseData.code || (responseData.detail && responseData.detail.code)),
+						message: responseData && (responseData.message || (responseData.detail && responseData.detail.message))
+					}) || ''
+					// 2) 没命中 i18n，按 422/detail/message 顺序取后端消息
+					if (!errMsg) {
+						if (statusCode === 422 && responseData.detail) {
+							if (Array.isArray(responseData.detail)) {
+								errMsg = responseData.detail.map(e => {
+									const field = e.loc ? e.loc.join('.') : ''
+									return field ? `${field}: ${e.msg}` : e.msg
+								}).join('; ')
+							} else if (responseData.detail.message) {
+								errMsg = responseData.detail.message
+							}
+						} else if (responseData.detail && responseData.detail.message) {
+							errMsg = responseData.detail.message
+						} else if (responseData.message) {
+							errMsg = responseData.message
+						}
+					}
+					if (!errMsg) errMsg = i18n.t?.('common.fail') || '请求失败'
 					if (!silent) {
 					uni.showToast({
 						title: errMsg,
@@ -308,7 +397,8 @@ export function upload(url, filePath, name = 'file', formData = {}) {
 			name,
 			formData,
 			header: {
-				'Authorization': token ? `Bearer ${token}` : ''
+				'Authorization': token ? `Bearer ${token}` : '',
+				'Accept-Language': getAcceptLanguage()
 			},
 			success: (res) => {
 				try {

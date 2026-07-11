@@ -12,6 +12,16 @@ import {
 } from '../mock/menu.js'
 
 /**
+ * 获取门店菜单（分类树 + 菜品，按门店菜单分类组织）
+ * GET /stores/:id/menu
+ * @param {number} storeId 门店ID
+ * @returns {Promise} { categories: [{ id, name, items: [...] }], uncategorized_items: [...] }
+ */
+export function getStoreMenu(storeId) {
+	return get(`/stores/${storeId}/menu`, {}, { silent: true })
+}
+
+/**
  * 获取菜单分类列表（管理端）
  * @param {number} storeId 门店ID
  * @returns {Promise}
@@ -25,12 +35,11 @@ export function getCategories(storeId) {
 
 /**
  * 获取菜单分类列表（C端，全局分类）
- * 后端已改为查询全局分类（store_id=0），不再按门店查询
- * @param {string} [businessType] 业态类型过滤（可选），如 'hotpot'
+ * 后端已改为查询全局分类（store_id=0），不再按业态过滤
  * @returns {Promise}
  */
-export function getConsumerCategories(businessType) {
-	return get('/public/categories', businessType ? { business_type: businessType } : {})
+export function getConsumerCategories() {
+	return get('/public/categories')
 }
 
 /**

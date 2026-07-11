@@ -93,15 +93,15 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">{{ i18n.t("common.loading") }}</text>
-				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ i18n.t("order.noMore") }}</text>
+				<text v-if="loading" class="tip-text">{{ t("common.loading") }}</text>
+				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ t("order.noMore") }}</text>
 			</view>
 
 			<!-- 空状态 -->
 			<view class="empty-state" v-if="!loading && products.length === 0">
 				<image class="empty-icon" src="/static/images/empty-product.svg" mode="aspectFit"></image>
-				<text class="empty-title">{{ i18n.t("discount.noProducts") }}</text>
-				<text class="empty-desc">{{ i18n.t("discount.noProductsDesc") }}</text>
+				<text class="empty-title">{{ t("discount.noProducts") }}</text>
+				<text class="empty-desc">{{ t("discount.noProductsDesc") }}</text>
 			</view>
 
 			<!-- 底部占位 -->
@@ -151,11 +151,22 @@ export default {
 		}
 	},
 	onLoad() {
+		uni.$on('languageChanged', this.onLanguageChanged)
 		this.initPage()
 		this.loadCategories()
 		this.loadProducts()
 	},
+	onUnload() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()

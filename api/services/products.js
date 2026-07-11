@@ -34,7 +34,7 @@ export function getNewProducts(params = {}) {
 	if (USE_MOCK) {
 		return mockGetNewProducts(params)
 	}
-	return get('/products/new', params)
+	return get('/products/new', params, { silent: true })
 }
 
 /**
@@ -49,7 +49,7 @@ export function getHotProducts(params = {}) {
 	if (USE_MOCK) {
 		return mockGetHotProducts(params)
 	}
-	return get('/products/hot', params)
+	return get('/products/hot', params, { silent: true })
 }
 
 /**

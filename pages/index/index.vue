@@ -43,16 +43,20 @@
 				<swiper-item
 					v-for="banner in banners"
 					:key="banner.id"
-					@click="handleBannerClick(banner)"
 				>
-					<image class="banner-image" :src="banner.image_url" mode="aspectFill"></image>
+					<image
+						class="banner-image"
+						:src="banner.image_url"
+						mode="aspectFill"
+						@click.stop="handleBannerClick(banner)"
+					></image>
 				</swiper-item>
 			</swiper>
 			<view v-else class="top-banner">
 				<image class="banner-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 			</view>
 
-			<!-- 堂食/外卖 Tab切换 -->
+			<!-- 堂食 Tab -->
 			<view class="main-tabs">
 				<view class="main-tabs-wrapper">
 					<view
@@ -66,23 +70,12 @@
 						</view>
 						<image class="tab-icon" src="/static/icons/dine-in.svg" mode="aspectFit"></image>
 					</view>
-					<view
-						class="main-tab-item"
-						:class="{ 'main-tab-active': activeMainTab === 1 }"
-						@click="switchMainTab(1)"
-					>
-						<view class="tab-content">
-							<text class="tab-title">{{ t('index.mall') }}</text>
-							<text class="tab-subtitle">{{ t('index.mallDesc') }}</text>
-						</view>
-						<image class="tab-icon" src="/static/images/05_delivery_icon.png" mode="aspectFit"></image>
-					</view>
 				</view>
 			</view>
 
 			<!-- 会员信息卡片 -->
 			<view class="member-card">
-				<view class="member-left">
+				<view class="member-left" @click="goSettings">
 					<image class="member-avatar" :src="memberInfo.avatar_url || '/static/images/04_default_avatar.png'" mode="aspectFill"></image>
 					<view class="member-info">
 						<text class="member-name">{{ memberInfo.nickname || '用户名称' }}</text>
@@ -96,11 +89,11 @@
 						<text class="stat-num">{{ couponCount }}</text>
 						<text class="stat-label">{{ t('index.coupons') }}</text>
 					</view>
-					<view class="stat-item">
+					<view class="stat-item" @click="handleFeature('coins')">
 						<text class="stat-num">{{ coinBalance }}</text>
 						<text class="stat-label">{{ t('index.coins') }}</text>
 					</view>
-					<view class="stat-item">
+					<view class="stat-item" @click="handleFeature('points')">
 						<text class="stat-num">{{ points }}</text>
 						<text class="stat-label">{{ t('index.points') }}</text>
 					</view>
@@ -123,7 +116,7 @@
 					></image>
 					<image v-else class="feature-icon" src="/static/icons/new-product.svg" mode="aspectFit"></image>
 				</view>
-				<!-- 右侧热销榜单和积分商城 -->
+				<!-- 右侧热销榜单和兑换商城 -->
 				<view class="feature-right">
 					<view class="feature-small" @click="handleFeature('hot')">
 						<view class="feature-small-content">
@@ -169,6 +162,13 @@
 			@close="handleLanguageModalClose"
 			@change="handleLanguageChange"
 		></language-modal>
+
+		<!-- 横幅介绍图弹窗（支持多图滑动） -->
+		<banner-detail-modal
+			:visible="showBannerDetail"
+			:images="currentBannerDetailImages"
+			@close="handleBannerDetailClose"
+		></banner-detail-modal>
 	</view>
 </template>
 
@@ -178,6 +178,7 @@ import { parseShareLink, clearShareParams, ShareType } from '@/utils/share.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import ShareModal from '@/components/share-modal.vue'
 import LanguageModal from '@/components/language-modal.vue'
+import BannerDetailModal from '@/components/banner-detail-modal.vue'
 import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 import {
@@ -190,12 +191,14 @@ import {
 import { getUnreadCount } from '@/api/services/notification.js'
 import { getMemberProgress } from '@/api/services/member.js'
 import { getUserInfo } from '@/api/services/auth.js'
+import { getStore } from '@/api/services/store.js'
 
 export default {
 	components: {
 		CustomTabbar,
 		ShareModal,
-		LanguageModal
+		LanguageModal,
+		BannerDetailModal
 	},
 	data() {
 		return {
@@ -208,6 +211,8 @@ export default {
 			activeMainTab: 0,
 			showShareModal: false,
 			showLanguageModal: false,
+			showBannerDetail: false,
+			currentBannerDetailImages: [],
 			banners: [],
 				langVersion: 0,
 				memberInfo: {},
@@ -229,6 +234,13 @@ export default {
 		}
 	},
 	onLoad(options) {
+		// 启动时检查登录态：没 token 直接跳登录页
+		const token = uni.getStorageSync('siamfeast_token')
+		if (!token) {
+			console.log('[home] no token, redirect to login')
+			uni.reLaunch({ url: '/pages/login/index' })
+			return
+		}
 		this.initPage()
 			// Pre-populate memberInfo from cache for instant avatar display
 			const cachedUser = appStore.getUserInfo()
@@ -249,7 +261,7 @@ export default {
 	},
 	onShow() {
 		// #ifdef APP-PLUS
-		try { uni.hideTabBar({ animation: false }) } catch(e) {}
+		uni.hideTabBar({ animation: false, fail: () => {} })
 		// #endif
 		uni.$emit("tabbarUpdate")
 		// 每次显示时刷新会员数据和统计
@@ -280,7 +292,33 @@ export default {
 		async loadBanners() {
 			try {
 				const res = await getHomeBanners()
-				this.banners = (res.data.items || res.data || []).map(b => ({ ...b, image_url: fixMinioUrl(b.image_url) }))
+				// === DEBUG: 看 banner 原始字段（排查弹窗不显示）===
+				console.log('[banner-debug] raw response:', JSON.stringify(res.data, null, 2))
+				// === END DEBUG ===
+				this.banners = (res.data.items || res.data || []).map(b => {
+					// 后端字段 detail_images 是 JSONB 数组（字符串 URL/file_key 数组）
+					let detailImages = []
+					if (Array.isArray(b.detail_images)) {
+						detailImages = b.detail_images.map(u => fixMinioUrl(u)).filter(Boolean)
+					} else if (typeof b.detail_images === 'string') {
+						// 兜底：后端偶尔可能返回 JSON 字符串
+						try {
+							const parsed = JSON.parse(b.detail_images)
+							if (Array.isArray(parsed)) {
+								detailImages = parsed.map(u => fixMinioUrl(u)).filter(Boolean)
+							}
+						} catch (e) {}
+					}
+					// 兼容老字段 detail_image_url（如果后端某些环境还在用）
+					if (detailImages.length === 0 && b.detail_image_url) {
+						detailImages = [fixMinioUrl(b.detail_image_url)]
+					}
+					return {
+						...b,
+						image_url: fixMinioUrl(b.image_url),
+						detail_images: detailImages
+					}
+				})
 			} catch (e) {
 				console.error('loadBanners error:', e)
 				this.banners = []
@@ -291,17 +329,34 @@ export default {
 		 * 轮播图点击
 		 */
 		handleBannerClick(banner) {
-			if (banner.link_type === 'PAGE' && banner.link_value) {
+			// === DEBUG: 确认点击触发 + 看数据 ===
+			console.log('[banner-click] banner clicked:', banner.id, 'detail_images:', banner.detail_images)
+			// === END DEBUG ===
+			// 优先：挂了竖屏介绍图（多图数组）→ 弹窗显示
+			if (Array.isArray(banner.detail_images) && banner.detail_images.length > 0) {
+				this.currentBannerDetailImages = banner.detail_images
+				this.showBannerDetail = true
+				console.log('[banner-click] opening modal with images:', this.currentBannerDetailImages)
+				return
+			}
+			// 兜底：走原 link_type 跳转（兼容大小写）
+			const linkType = (banner.link_type || '').toUpperCase()
+			if (linkType === 'PAGE' && banner.link_value) {
 				uni.navigateTo({ url: banner.link_value })
-			} else if (banner.link_type === 'PRODUCT' && banner.link_value) {
+			} else if (linkType === 'PRODUCT' && banner.link_value) {
 				uni.navigateTo({
 					url: `/pages/product-detail/index?productId=${banner.link_value}`
 				})
-			} else if (banner.link_type === 'STORE' && banner.link_value) {
+			} else if (linkType === 'STORE' && banner.link_value) {
 				uni.navigateTo({
 					url: `/pages/dinein/index?shopId=${banner.link_value}`
 				})
 			}
+		},
+
+		handleBannerDetailClose() {
+			this.showBannerDetail = false
+			this.currentBannerDetailImages = []
 		},
 
 		/**
@@ -381,6 +436,28 @@ export default {
 				this.currentLocation = currentStore["name_" + lang] || currentStore.name
 				this.currentStoreLogo = fixMinioUrl(currentStore.logo_url || currentStore.logo || '')
 				this.currentStoreId = currentStore.id
+				// 缓存里若缺当前语言字段（老数据），拉一次最新门店数据补齐
+				this.refreshStoreIfNeeded(currentStore, lang)
+			}
+		},
+
+		async refreshStoreIfNeeded(currentStore, lang) {
+			if (!currentStore || !currentStore.id) return
+			const hasLangField = !!currentStore["name_" + lang]
+			if (hasLangField) return
+			try {
+				// silent: true — 这是后台刷新多语言字段，失败时不该弹「服务器错误」打扰用户
+				const res = await getStore(currentStore.id, { silent: true })
+				if (res && res.code === 0 && res.data) {
+					const fresh = res.data
+					// 合并老缓存里的运行时字段（distance 等），保留新增的多语言字段
+					const merged = { ...currentStore, ...fresh }
+					appStore.setCurrentStore(merged)
+					this.currentLocation = merged["name_" + lang] || merged.name || this.currentLocation
+					this.currentStoreLogo = fixMinioUrl(merged.logo_url || merged.logo || '')
+				}
+			} catch (e) {
+				// 静默失败：用老缓存即可，不影响用户体验
 			}
 		},
 
@@ -510,17 +587,8 @@ export default {
 					url: '/pages/mall/index'
 				})
 			} else {
-				// 堂食
-				const store = appStore.getCurrentStore()
-				if (store && store.id && !store.delivery_enabled) {
-					// 已选择堂食店
-					uni.navigateTo({ url: '/pages/dinein/index?shopId=' + store.id })
-				} else {
-					if (store && store.delivery_enabled) {
-						uni.showToast({ title: '当前门店为外卖店，请选择堂食门店', icon: 'none' })
-					}
-					uni.navigateTo({ url: '/pages/dinein-stores/index' })
-				}
+				// 堂食 - 总是进门店列表，让用户自己选（列表按距离排序，最近门店在最前）
+				uni.navigateTo({ url: '/pages/dinein-stores/index' })
 			}
 		},
 
@@ -532,12 +600,22 @@ export default {
 					uni.navigateTo({ url: "/pages/hot-products/index?shopId=" + sid })
 				} else if (type === "points") {
 					uni.navigateTo({ url: "/pages/points-mall/index" })
+				} else if (type === "coins") {
+					uni.navigateTo({ url: "/pages/points-mall/index?tab=1" })
+				} else if (type === "vending") {
+					uni.navigateTo({ url: "/pages/vending-machine/index" })
 			}
 		},
 
 		handleCouponClick() {
 			uni.navigateTo({
 				url: '/pages/coupons/index'
+			})
+		},
+
+		goSettings() {
+			uni.navigateTo({
+				url: '/pages/settings/index'
 			})
 		}
 	}
@@ -972,6 +1050,42 @@ export default {
 	background-color: #FFF8E1;
 	padding: 4px;
 	box-sizing: border-box;
+}
+
+/* 快捷入口 */
+.quick-entry {
+	display: flex;
+	justify-content: space-around;
+	padding: 16px 16px 0;
+	gap: 12px;
+}
+
+.quick-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	flex: 1;
+}
+
+.quick-icon-wrap {
+	width: 48px;
+	height: 48px;
+	border-radius: 14px;
+	background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.quick-icon {
+	width: 24px;
+	height: 24px;
+}
+
+.quick-text {
+	font-size: 11px;
+	color: #5D4037;
 }
 
 /* 底部占位 */

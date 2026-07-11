@@ -10,7 +10,9 @@ import {
 	mockGetMemberPoints,
 	mockGetPointsBenefits,
 	mockGetBalanceBenefits,
-	mockExchangeBenefit
+	mockExchangeBenefit,
+	mockGetMemberCode,
+	mockGetMallOrderStatus
 } from '../mock/member.js'
 
 /**
@@ -82,16 +84,14 @@ export function getBalanceBenefits(params = {}) {
 }
 
 /**
- * 兑换商品（POST /mall/redeem）
+ * 兑换商品（核销模式：POST /mall/redeem）
  * @param {Object} data 兑换数据
- * @param {Number} data.benefit_id 商品ID
+ * @param {Number} data.product_id 商品ID
  * @param {String} data.exchange_type 兑换类型 (points/balance)
  * @param {Number} data.quantity 数量
- * @param {Number} data.coin_amount 金币数量（余额兑换时必传）
+ * @param {Number} data.store_id 门店ID（核销门店）
  * @param {Number} data.points_amount 积分数量（积分兑换时必传）
- * @param {String} data.recipient_name 收货人姓名
- * @param {String} data.recipient_phone 收货人电话
- * @param {String} data.recipient_address 收货人地址
+ * @param {Number} data.coin_amount 金币数量（余额兑换时必传）
  * @returns {Promise}
  */
 export function exchangeBenefit(data) {
@@ -101,16 +101,24 @@ export function exchangeBenefit(data) {
 	const payload = {
 		product_id: data.product_id || data.benefit_id,
 		quantity: data.quantity || 1,
-		exchange_type: data.exchange_type || 'points'
+		exchange_type: data.exchange_type || 'points',
+		store_id: data.store_id
 	}
 	if (data.coin_amount) payload.coin_amount = data.coin_amount
 	if (data.points_amount) payload.points_amount = data.points_amount
-	if (data.recipient_name) payload.recipient_name = data.recipient_name
-	if (data.recipient_phone) payload.recipient_phone = data.recipient_phone
-	if (data.recipient_address) payload.recipient_address = data.recipient_address
 	return post('/mall/redeem', payload)
 }
 
+/**
+ * 获取会员码（invite_code，用于收银端扫码识别用户）
+ * @returns {Promise}
+ */
+export function getMemberCode() {
+	if (USE_MOCK) {
+		return mockGetMemberCode()
+	}
+	return get('/member/code')
+}
 
 /**
  * 每日签到
@@ -161,6 +169,18 @@ export function getMallOrderDetail(orderId) {
 }
 
 /**
+ * 获取兑换订单状态（轮询核销状态）
+ * @param {number} orderId 订单ID
+ * @returns {Promise}
+ */
+export function getMallOrderStatus(orderId) {
+	if (USE_MOCK) {
+		return mockGetMallOrderStatus(orderId)
+	}
+	return get('/mall/my-orders/' + orderId)
+}
+
+/**
  * 取消兑换订单
  * @param {number} orderId 订单ID
  * @returns {Promise}
@@ -180,10 +200,12 @@ export const memberApi = {
 	getPointsBenefits,
 	getBalanceBenefits,
 	exchangeBenefit,
+	getMemberCode,
 	checkin,
 	getCheckinStatus,
 	getMallOrders,
 	getMallOrderDetail,
+	getMallOrderStatus,
 	cancelMallOrder
 }
 

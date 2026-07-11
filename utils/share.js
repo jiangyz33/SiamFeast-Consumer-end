@@ -5,7 +5,21 @@
  */
 
 // 分享链接基础配置
-const SHARE_BASE_URL = 'http://localhost:5173'
+// - 本地自测：FORCE_LOCAL = true，用 window.location.origin（便于自测回链）
+// - 上线前：FORCE_LOCAL = false，永远用线上 H5 域名（即便本机 localhost 复制出去也能对外访问）
+const FORCE_LOCAL = false
+const SHARE_BASE_URL = (() => {
+	if (FORCE_LOCAL) {
+		// #ifdef H5
+		try {
+			if (typeof window !== 'undefined' && window.location && window.location.origin) {
+				return window.location.origin
+			}
+		} catch (e) {}
+		// #endif
+	}
+	return 'https://h5.siamfeast.com'
+})()
 
 /**
  * 分享类型枚举

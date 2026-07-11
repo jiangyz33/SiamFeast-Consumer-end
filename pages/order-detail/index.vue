@@ -8,13 +8,13 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t("orderDetail.title") }}</text>
+			<text class="nav-title">{{ t("orderDetail.title") }}</text>
 			<view class="nav-right"></view>
 		</view>
 
 		<!-- 加载状态 -->
 		<view class="loading-state" v-if="loading">
-			<text class="loading-text">{{ i18n.t("orderDetail.loading") }}</text>
+			<text class="loading-text">{{ t("orderDetail.loading") }}</text>
 		</view>
 
 		<!-- 内容区域 -->
@@ -27,26 +27,26 @@
 					</view>
 					<view class="status-info">
 						<text class="status-title">{{ statusText }}</text>
-						<text class="status-desc" v-if="deliveryInfo && deliveryInfo.estimated_time">
-							{{ i18n.t("orderDetail.estDelivery", { time: deliveryInfo.estimated_time }) }}
+						<text class="status-desc" v-if="false">
+							{{ t("orderDetail.estDelivery", { time: deliveryInfo.estimated_time }) }}
 						</text>
 						<text class="status-desc" v-else-if="orderData.table_number">
-							{{ i18n.t("orderDetail.tableNo", { no: orderData.table_number }) }}
+							{{ t("orderDetail.tableNo", { no: orderData.table_number }) }}
 						</text>
 					</view>
 				</view>
 			</view>
 
 			
-				<!-- 取餐码 -->
-				<view class="pickup-code-section" v-if="pickupCode">
-					<view class="section-card pickup-card">
-						<text class="pickup-label">{{ i18n.t("orderDetail.pickupCode") }}</text>
-						<text class="pickup-code">{{ pickupCode }}</text>
+				<!-- 待支付二维码 -->
+					<view class="qr-pay-section" v-if="orderData.status === 'PENDING_PAYMENT'">
+						<view class="section-card qr-card">
+							<image v-if="orderQRImageUrl" class="qr-image" :src="orderQRImageUrl" mode="aspectFit"></image>
+							<text class="qr-hint">{{ t('payment.showQR') }}</text>
+						</view>
 					</view>
-				</view>
-				<!-- 配送信息 -->
-			<view class="delivery-section" v-if="deliveryInfo && deliveryInfo.delivery_type === 'delivery' && deliveryInfo.address">
+					<!-- 配送信息 -->
+			<view class="delivery-section" v-if="false">
 				<view class="section-card">
 					<view class="delivery-header">
 						<image class="delivery-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
@@ -76,14 +76,14 @@
 					</view>
 				</view>
 			</view>
-			<!-- 门店信息（从订单数据） -->
-			<view class="shop-section" v-else-if="orderData.extra_data && orderData.extra_data.store_name">
+			<!-- 门店信息（优先用 getStore 返回的多语言字段，回退到 extra_data） -->
+			<view class="shop-section" v-else-if="displayShopName">
 				<view class="section-card">
 					<view class="shop-header">
 						<image class="shop-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 						<view class="shop-info">
-							<text class="shop-name">{{ orderData.extra_data["store_name_" + i18n.getLanguage()] || orderData.extra_data.store_name }}</text>
-							<text class="shop-address" v-if="orderData.extra_data.store_address">{{ orderData.extra_data["store_address_" + i18n.getLanguage()] || orderData.extra_data.store_address }}</text>
+							<text class="shop-name">{{ displayShopName }}</text>
+							<text class="shop-address" v-if="displayShopAddress">{{ displayShopAddress }}</text>
 						</view>
 					</view>
 				</view>
@@ -94,28 +94,28 @@
 				<view class="room-section" v-if="hostelBooking">
 					<view class="section-card">
 						<view class="section-title">
-							<text class="title-text">{{ i18n.t("orderDetail.roomInfo") }}</text>
+							<text class="title-text">{{ t("orderDetail.roomInfo") }}</text>
 						</view>
 						<view class="room-info-list">
 							<view class="room-info-row" v-if="hostelBooking.room_name">
-								<text class="room-label">{{ i18n.t("orderDetail.roomName") }}</text>
+								<text class="room-label">{{ t("orderDetail.roomName") }}</text>
 								<text class="room-value">{{ hostelBooking["room_name_" + i18n.getLanguage()] || hostelBooking.room_name }}</text>
 							</view>
 							<view class="room-info-row" v-if="hostelBooking.room_type">
-								<text class="room-label">{{ i18n.t("orderDetail.roomType") }}</text>
+								<text class="room-label">{{ t("orderDetail.roomType") }}</text>
 								<text class="room-value">{{ hostelBooking.room_type }}</text>
 							</view>
 							<view class="room-info-row" v-if="hostelBooking.check_in">
-								<text class="room-label">{{ i18n.t("orderDetail.checkInDate") }}</text>
+								<text class="room-label">{{ t("orderDetail.checkInDate") }}</text>
 								<text class="room-value">{{ formatDate(hostelBooking.check_in) }}</text>
 							</view>
 							<view class="room-info-row" v-if="hostelBooking.check_out">
-								<text class="room-label">{{ i18n.t("orderDetail.checkOutDate") }}</text>
+								<text class="room-label">{{ t("orderDetail.checkOutDate") }}</text>
 								<text class="room-value">{{ formatDate(hostelBooking.check_out) }}</text>
 							</view>
 							<view class="room-info-row" v-if="hostelBooking.nights">
-								<text class="room-label">{{ i18n.t("orderDetail.nightsCount", {n: hostelBooking.nights}) }}</text>
-								<text class="room-value" v-if="hostelBooking.guests">{{ i18n.t("orderDetail.guestsCount", {n: hostelBooking.guests}) }}</text>
+								<text class="room-label">{{ t("orderDetail.nightsCount", {n: hostelBooking.nights}) }}</text>
+								<text class="room-value" v-if="hostelBooking.guests">{{ t("orderDetail.guestsCount", {n: hostelBooking.guests}) }}</text>
 							</view>
 						</view>
 					</view>
@@ -124,7 +124,7 @@
 				<view class="order-type-section" v-if="orderData.order_type">
 					<view class="section-card">
 						<view class="order-type-row">
-						<text class="order-type-label">{{ i18n.t("orderDetail.orderTypeLabel") }}</text>
+						<text class="order-type-label">{{ t("orderDetail.orderTypeLabel") }}</text>
 						<text class="order-type-value">{{ formatOrderType(orderData.order_type) }}</text>
 					</view>
 				</view>
@@ -137,11 +137,11 @@
 			<view class="products-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">{{ i18n.t("orderDetail.productInfo") }}</text>
+						<text class="title-text">{{ t("orderDetail.productInfo") }}</text>
 					</view>
 					<view class="products-list">
 						<view class="product-item" v-for="(item, index) in orderData.items" :key="index">
-							<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+							<image class="product-image" :src="getItemImage(item)" mode="aspectFill" @error="onImageError($event, item, 'image')"></image>
 							<view class="product-info">
 							<text class="product-name">{{ getItemName(item) }}</text>
 						<view class="product-specs" v-if="hasSpecs(item)">
@@ -165,31 +165,31 @@
 			<view class="info-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">{{ i18n.t("orderDetail.feeDetail") }}</text>
+						<text class="title-text">{{ t("orderDetail.feeDetail") }}</text>
 					</view>
 					<view class="info-list">
 						<view class="info-row">
-							<text class="info-label">{{ i18n.t("orderDetail.subtotal") }}</text>
+							<text class="info-label">{{ t("orderDetail.subtotal") }}</text>
 							<text class="info-value">฿{{ orderData.subtotal || 0 }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.discount_amount > 0">
-							<text class="info-label">{{ i18n.t("orderDetail.discount") }}</text>
+							<text class="info-label">{{ t("orderDetail.discount") }}</text>
 							<text class="info-value discount">-฿{{ orderData.discount_amount }}</text>
 						</view>
 							<view class="info-row" v-if="orderData.coin_deduct_amount > 0">
-								<text class="info-label">{{ i18n.t("orderDetail.coinDeduct") }}</text>
-								<text class="info-value discount">-฿{{ orderData.coin_deduct_amount }}<text v-if="orderData.coins_used"> ({{ i18n.t("orderDetail.coinsCount", { n: orderData.coins_used }) }})</text></text>
+								<text class="info-label">{{ t("orderDetail.coinDeduct") }}</text>
+								<text class="info-value discount">-฿{{ orderData.coin_deduct_amount }}<text v-if="orderData.coins_used"> ({{ t("orderDetail.coinsCount", { n: orderData.coins_used }) }})</text></text>
 							</view>
 							<view class="info-row" v-if="memberSettlement && memberSettlement.coins_earned > 0">
-								<text class="info-label">{{ i18n.t("orderDetail.coinsEarned") }}</text>
-								<text class="info-value">{{ i18n.t("orderDetail.coinsUnit", { n: memberSettlement.coins_earned }) }}</text>
+								<text class="info-label">{{ t("orderDetail.coinsEarned") }}</text>
+								<text class="info-value">{{ t("orderDetail.coinsUnit", { n: memberSettlement.coins_earned }) }}</text>
 							</view>
 							<view class="info-row" v-if="memberSettlement && memberSettlement.points_earned > 0">
-								<text class="info-label">{{ i18n.t("orderDetail.pointsEarned") }}</text>
-								<text class="info-value">{{ i18n.t("orderDetail.pointsUnit", { n: memberSettlement.points_earned }) }}</text>
+								<text class="info-label">{{ t("orderDetail.pointsEarned") }}</text>
+								<text class="info-value">{{ t("orderDetail.pointsUnit", { n: memberSettlement.points_earned }) }}</text>
 							</view>
 						<view class="info-row total-row">
-							<text class="info-label">{{ i18n.t("orderDetail.actualPay") }}</text>
+							<text class="info-label">{{ t("orderDetail.actualPay") }}</text>
 							<text class="info-value total">฿{{ orderData.total_amount || 0 }}</text>
 						</view>
 					</view>
@@ -203,31 +203,31 @@
 			<view class="info-section">
 				<view class="section-card">
 					<view class="section-title">
-						<text class="title-text">{{ i18n.t("orderDetail.orderInfo") }}</text>
+						<text class="title-text">{{ t("orderDetail.orderInfo") }}</text>
 					</view>
 					<view class="info-list">
 						<view class="info-row">
-							<text class="info-label">{{ i18n.t("orderDetail.orderNo") }}</text>
+							<text class="info-label">{{ t("orderDetail.orderNo") }}</text>
 							<text class="info-value">{{ orderData.order_no }}</text>
 						</view>
 						<view class="info-row">
-							<text class="info-label">{{ i18n.t("orderDetail.orderTime") }}</text>
+							<text class="info-label">{{ t("orderDetail.orderTime") }}</text>
 							<text class="info-value">{{ formatTime(orderData.created_at) }}</text>
 						</view>
 						<view class="info-row">
-							<text class="info-label">{{ i18n.t("orderDetail.orderSource") }}</text>
+							<text class="info-label">{{ t("orderDetail.orderSource") }}</text>
 							<text class="info-value">{{ formatOrderSource(orderData.order_source) }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.remark">
-							<text class="info-label">{{ i18n.t("orderDetail.remark") }}</text>
+							<text class="info-label">{{ t("orderDetail.remark") }}</text>
 							<text class="info-value">{{ orderData.remark }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.payment_method">
-							<text class="info-label">{{ i18n.t("orderDetail.payMethod") }}</text>
+							<text class="info-label">{{ t("orderDetail.payMethod") }}</text>
 							<text class="info-value">{{ formatPaymentMethod(orderData.payment_method) }}</text>
 						</view>
 						<view class="info-row" v-if="orderData.paid_at">
-							<text class="info-label">{{ i18n.t("orderDetail.payTime") }}</text>
+							<text class="info-label">{{ t("orderDetail.payTime") }}</text>
 							<text class="info-value">{{ formatTime(orderData.paid_at) }}</text>
 						</view>
 					</view>
@@ -241,12 +241,13 @@
 		<!-- 底部操作栏 -->
 		<view class="bottom-bar">
 			<view class="action-btn contact-btn" @click="handleContact">
-				<text class="action-btn-text">{{ i18n.t("orderDetail.contactStore") }}</text>
+				<text class="action-btn-text">{{ t("orderDetail.contactStore") }}</text>
 			</view>
 			<view class="action-btn reorder-btn" @click="handleReorder">
-				<text class="action-btn-text">{{ i18n.t("orderDetail.reorder") }}</text>
+				<text class="action-btn-text">{{ t("orderDetail.reorder") }}</text>
 			</view>
 		</view>
+		<canvas canvas-id="qrCanvasOrder" style="position:fixed;left:-9999px;width:200px;height:200px;"></canvas>
 	</view>
 </template>
 
@@ -254,15 +255,18 @@
 import { getOrderDetail } from '@/api/services/order.js'
 import { getStore } from '@/api/services/store.js'
 import { getBooking } from '@/api/services/hostel.js'
+import { getConsumerMenuItems } from '@/api/services/menu.js'
 
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
+import { generateQRImage } from '@/utils/qrcode.js'
 
 const STATUS_I18N_KEYS = {
 	'PENDING_PAYMENT': 'order.pending',
-	'PAID': 'order.paid',
-	'PREPARING': 'order.preparing',
-	'READY': 'order.ready',
+	// 业务简化：先吃后付，付款 = 完成。PAID/PREPARING/READY 都显示为"已完成"
+	'PAID': 'order.completed',
+	'PREPARING': 'order.completed',
+	'READY': 'order.completed',
 	'COMPLETED': 'order.completed',
 	'CANCELLED': 'order.cancelled'
 }
@@ -303,10 +307,12 @@ export default {
 			orderId: '',
 			loading: true,
 			orderData: {},
+			storeInfo: null,
 			storePhone: '',
+			langVersion: 0,
 			deliveryInfo: null,
-				pickupCode: "",
-				hostelBooking: null
+				hostelBooking: null,
+				orderQRImageUrl: ''
 		}
 	},
 	computed: {
@@ -319,6 +325,27 @@ export default {
 				return extra.member_settlement
 			}
 			return null
+		},
+		displayShopName() {
+			void this.langVersion
+			const lang = i18n.getLanguage()
+			const s = this.storeInfo
+			if (s) {
+				return s['name_' + lang] || s.name || ''
+			}
+			const extra = this.orderData.extra_data || {}
+			return extra['store_name_' + lang] || extra.store_name || ''
+		},
+		displayShopAddress() {
+			void this.langVersion
+			const lang = i18n.getLanguage()
+			const s = this.storeInfo
+			if (s) {
+				return s['formatted_address_' + lang] || s.formatted_address
+					|| s['address_' + lang] || s.address || ''
+			}
+			const extra = this.orderData.extra_data || {}
+			return extra['store_address_' + lang] || extra.store_address || ''
 		}
 	},
 	onLoad(options) {
@@ -327,17 +354,29 @@ export default {
 		}
 		this.initPage()
 		this.loadOrderDetail()
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+	onUnload() {
+		uni.$off('languageChanged', this.onLanguageChanged)
 	},
 	methods: {
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
+		onLanguageChanged() {
+			this.langVersion++
+		},
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
 			const navBarHeight = 44
 			const bottomBarHeight = 64
-			const tabBarHeight = 50
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
-			this.contentHeight = systemInfo.windowHeight - navBarHeight - bottomBarHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
+			// 该页面没有 tabbar（原生 tabBar 在 H5 端已 hide，APP 端也隐藏），bottom-bar 直接贴底
+			// scroll-view 高度减去 bottom-bar 高度 + safe-area，避免最后内容被遮
+			this.contentHeight = systemInfo.windowHeight - navBarHeight - bottomBarHeight - safeAreaBottom - this.statusBarHeight
 		},
 
 		async loadOrderDetail() {
@@ -349,9 +388,13 @@ export default {
 
 				if (orderRes.status === 'fulfilled' && orderRes.value.code === 0 && orderRes.value.data) {
 					const dd = orderRes.value.data; if (dd.order && dd.items) { this.orderData = { ...dd.order, items: dd.items } } else { this.orderData = dd }
+					// 诊断：打印首个 item 的所有字段，方便确认后端返回的图片字段名
+					if (this.orderData.items && this.orderData.items[0]) {
+						console.log('[order-detail] first item keys:', Object.keys(this.orderData.items[0]).join(','), 'sample:', JSON.stringify(this.orderData.items[0]).substring(0, 400))
+					}
 
 					// Read pickup code from localStorage
-					try { this.pickupCode = uni.getStorageSync("pickup_code_" + this.orderId) || "" } catch(e) {}
+					
 					// Parse extra_data if it is a JSON string
 					if (this.orderData.extra_data && typeof this.orderData.extra_data === "string") { try { this.orderData.extra_data = JSON.parse(this.orderData.extra_data) } catch(e) {} }
 					// Load hostel booking room info
@@ -370,17 +413,46 @@ export default {
 						try {
 							const sRes = await getStore(sid)
 							if (sRes.code === 0 && sRes.data) {
+								this.storeInfo = sRes.data
 								this.storePhone = sRes.data.phone || ''
+								console.log('[order-detail] storeInfo address fields:', JSON.stringify({
+									name: sRes.data.name,
+									name_zh: sRes.data.name_zh,
+									name_en: sRes.data.name_en,
+									name_th: sRes.data.name_th,
+									address: sRes.data.address,
+									address_zh: sRes.data.address_zh,
+									address_en: sRes.data.address_en,
+									address_th: sRes.data.address_th,
+									formatted_address: sRes.data.formatted_address,
+									formatted_address_zh: sRes.data.formatted_address_zh,
+									formatted_address_en: sRes.data.formatted_address_en,
+									formatted_address_th: sRes.data.formatted_address_th
+								}))
 							}
 						} catch(e) {}
+						// 后端 order_items 不存图片，从门店菜单反查 item_id → image_url
+						await this.enrichItemsWithMenuImages(sid)
 					}
+				// Generate QR for pending payment orders
+				if (this.orderData.status === 'PENDING_PAYMENT') {
+					this.generateOrderQR()
 				}
-
-			} catch (e) {
+			}
+			} catch(e) {
 				console.error('Load order detail failed:', e)
-				showToast(this.i18n.t('orderDetail.loadFailed'))
 			} finally {
 				this.loading = false
+			}
+		},
+
+		async generateOrderQR() {
+			const qrData = this.orderData.unique_code
+			if (!qrData) return
+			try {
+				this.orderQRImageUrl = await generateQRImage(qrData, { size: 180, canvasId: 'qrCanvasOrder', componentInstance: this })
+			} catch (err) {
+				console.error('[order-detail] generateQR error:', err)
 			}
 		},
 
@@ -421,6 +493,54 @@ export default {
 			return name || ''
 		},
 
+		// 兼容多种图片字段名 + 占位符兜底
+		getItemImage(item) {
+			// 优先用 image_url；后端可能用其他字段名
+			const raw = item.image_url || item.item_image_url || item.item_image || item.product_image || item.img_url || item.photo_url || ''
+			if (!raw) {
+				return '/static/images/img-placeholder.svg'
+			}
+			// 过滤掉明显无效的占位符（开发环境的假数据）
+			if (raw.includes('example.com') || raw === 'string' || raw === 'null') {
+				return '/static/images/img-placeholder.svg'
+			}
+			const fixed = fixMinioUrl(raw)
+			return fixed || '/static/images/img-placeholder.svg'
+		},
+
+		// 后端 order_items 不存图片，从门店菜单反查 item_id → image_url
+		async enrichItemsWithMenuImages(storeId) {
+			if (!this.orderData.items || this.orderData.items.length === 0) return
+			// 只处理缺图片的 items
+			const needImage = this.orderData.items.filter(it => !it.image_url && it.item_id)
+			if (needImage.length === 0) return
+			try {
+				const res = await getConsumerMenuItems(storeId, { page_size: 200 })
+				if (res.code !== 0 || !res.data) return
+				const menuItems = res.data.items || res.data || []
+				// 建立 item_id → image_url 映射
+				const imgMap = {}
+				for (const m of menuItems) {
+					if (m.id && m.image_url) imgMap[m.id] = m.image_url
+				}
+				// 注入到订单 items
+				this.orderData.items = this.orderData.items.map(it => {
+					if (!it.image_url && it.item_id && imgMap[it.item_id]) {
+						return { ...it, image_url: imgMap[it.item_id] }
+					}
+					return it
+				})
+				console.log('[order-detail] enriched images from menu, count=' + needImage.length)
+			} catch (e) {
+				console.error('[order-detail] enrich menu images failed:', e)
+			}
+		},
+
+		// 图片加载失败 → 换占位图
+		onImageError(e, item, field) {
+			console.warn('[order-detail] image load failed, field=' + field + ', item=' + (item.item_name || item.id), 'raw=' + (item.image_url || item.product_image || ''))
+		},
+
 		hasSpecs(item) {
 			const specs = item.specs || item.specs_config
 			if (!specs) return false
@@ -457,7 +577,7 @@ export default {
 		handleReorder() {
 			if (this.orderData.items && this.orderData.items.length > 0) {
 				const products = this.orderData.items.map(item => ({
-					id: item.id,
+					id: item.item_id || item.id,
 					name: item.item_name,
 					price: item.unit_price,
 					image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
@@ -477,6 +597,7 @@ export default {
 		}
 	}
 }
+	
 </script>
 
 <style scoped>
@@ -815,21 +936,26 @@ export default {
 }
 
 .bottom-placeholder {
-	height: 20px;
+	height: 32px;
 }
 
 .bottom-bar {
 	position: fixed;
-	bottom: 50px;
+	bottom: 0;
 	left: 0;
 	right: 0;
 	height: 64px;
+	/* 关键：让按钮避开 iPhone Home Indicator */
+	padding-bottom: constant(safe-area-inset-bottom);
+	padding-bottom: env(safe-area-inset-bottom);
 	background-color: #FFFFFF;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	gap: 16px;
-	padding: 0 16px;
+	padding-left: 16px;
+	padding-right: 16px;
+	box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .action-btn {
@@ -860,5 +986,26 @@ export default {
 .action-btn-text {
 	font-size: 14px;
 	font-weight: 500;
+}
+
+/* QR支付 */
+.qr-pay-section { padding: 0 16px; }
+.qr-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
+	background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+}
+.qr-image {
+	width: 180px;
+	height: 180px;
+	background-color: #FFFFFF;
+	border-radius: 8px;
+}
+.qr-hint {
+	margin-top: 12px;
+	font-size: 12px;
+	color: #5D4037;
 }
 </style>

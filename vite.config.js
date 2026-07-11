@@ -6,8 +6,15 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api/v1': {
-				target: 'http://34.15.175.23:8082',
-				changeOrigin: true
+				target: 'https://consumer.siamfeast.com',
+				changeOrigin: true,
+				secure: true
+			},
+			// MinIO 图片代理（如果本地测试图片加载失败可以加这个）
+			'/sf-uploads': {
+				target: 'https://minio.siamfeast.com',
+				changeOrigin: true,
+				secure: true
 			}
 		}
 	}

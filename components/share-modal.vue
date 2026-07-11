@@ -1,5 +1,5 @@
 <template>
-	<view class="share-modal-overlay" v-if="visible" @click.stop>
+	<view class="share-modal-overlay" v-if="visible" :data-lang="langVersion" @click.stop>
 		<view class="share-modal-container" @click.stop>
 			<!-- 关闭按钮 -->
 			<view class="close-btn" @click="handleClose">
@@ -11,13 +11,13 @@
 				<view class="share-header">
 					<image class="share-image" :src="shareInfo.image || defaultImage" mode="aspectFill"></image>
 					<view class="share-title-row">
-						<text class="share-type-tag">好店推荐</text>
-						<text class="share-name">{{ shareInfo.name || '门店' }}</text>
+						<text class="share-type-tag">{{ i18n.t('share.shopRecommend') }}</text>
+						<text class="share-name">{{ shareInfo.name || i18n.t('share.shopDefaultName') }}</text>
 						<text class="share-id">ID: {{ shareInfo.id }}</text>
 					</view>
 				</view>
 				<view class="share-desc">
-					<text class="desc-text">发现一家不错的店铺，快来看看吧！</text>
+					<text class="desc-text">{{ i18n.t('share.shopDesc') }}</text>
 				</view>
 			</view>
 
@@ -26,34 +26,34 @@
 				<view class="share-header">
 					<image class="share-image" :src="shareInfo.image || defaultImage" mode="aspectFill"></image>
 					<view class="share-title-row">
-						<text class="share-type-tag">美食推荐</text>
-						<text class="share-name">{{ shareInfo.name || '菜品' }}</text>
+						<text class="share-type-tag">{{ i18n.t('share.productRecommend') }}</text>
+						<text class="share-name">{{ shareInfo.name || i18n.t('share.productDefaultName') }}</text>
 						<view class="share-price-row" v-if="shareInfo.price">
 							<text class="share-price-label">฿</text>
 							<text class="share-price">{{ shareInfo.price }}</text>
 						</view>
 						<text class="share-shop-name" v-if="shareInfo.shopName">{{ shareInfo.shopName }}</text>
-						<text class="share-id">菜品ID: {{ shareInfo.id }} | 门店ID: {{ shareInfo.shopId }}</text>
+						<text class="share-id">{{ i18n.t('share.productIdLabel') }}: {{ shareInfo.id }} | {{ i18n.t('share.shopIdLabel') }}: {{ shareInfo.shopId }}</text>
 					</view>
 				</view>
 				<view class="share-desc">
-					<text class="desc-text">发现一道美食，快来看看吧！</text>
+					<text class="desc-text">{{ i18n.t('share.productDesc') }}</text>
 				</view>
 			</view>
 
 			<!-- 操作按钮 -->
 			<view class="share-actions">
 				<view class="action-btn primary-btn" @click="handleConfirm">
-					<text class="btn-text">立即查看</text>
+					<text class="btn-text">{{ i18n.t('share.viewNow') }}</text>
 				</view>
 				<view class="action-btn secondary-btn" @click="handleClose">
-					<text class="btn-text">取消</text>
+					<text class="btn-text">{{ i18n.t('share.cancel') }}</text>
 				</view>
 			</view>
 
 			<!-- 提示信息 -->
 			<view class="share-tip">
-				<text class="tip-text">链接已复制，可直接分享给好友</text>
+				<text class="tip-text">{{ i18n.t('share.linkCopied') }}</text>
 			</view>
 		</view>
 	</view>
@@ -61,6 +61,7 @@
 
 <script>
 import { clearShareParams } from '@/utils/share.js'
+import i18n from '@/i18n/index.js'
 
 export default {
 	name: 'ShareModal',
@@ -84,10 +85,22 @@ export default {
 	},
 	data() {
 		return {
-			defaultImage: '/static/images/img-placeholder.svg'
+			i18n: i18n,
+			defaultImage: '/static/images/img-placeholder.svg',
+			langVersion: 0
 		}
 	},
+	mounted() {
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+	beforeDestroy() {
+		uni.$off('languageChanged', this.onLanguageChanged)
+	},
 	methods: {
+		onLanguageChanged() {
+			this.langVersion++
+		},
+
 		handleClose() {
 			clearShareParams()
 			this.$emit('close')

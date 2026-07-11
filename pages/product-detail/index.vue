@@ -1,5 +1,5 @@
 <template>
-	<view class="product-detail-page">
+	<view class="product-detail-page" :data-lang="langVersion">
 		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
@@ -8,7 +8,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ i18n.t('productDetail.specs') }}</text>
+			<text class="nav-title">{{ t('productDetail.specs') }}</text>
 			<view class="nav-right">
 				<view class="fav-btn" @click="handleToggleFavorite">
 					<image
@@ -22,7 +22,7 @@
 
 		<!-- 加载状态 -->
 		<view class="loading-wrapper" v-if="loading">
-			<text class="loading-text">{{ i18n.t('common.loading') }}</text>
+			<text class="loading-text">{{ t('common.loading') }}</text>
 		</view>
 
 		<!-- 内容区域 -->
@@ -39,10 +39,9 @@
 						<text class="price-symbol">฿</text>
 						<text class="price-num">{{ product.price }}</text>
 					</view>
-					<text class="price-original" v-if="product.original_price">฿{{ product.original_price }}</text>
+					<text class="price-original" v-if="product.original_price && Number(product.original_price) > Number(product.price)">฿{{ product.original_price }}</text>
 				</view>
 				<text class="product-name">{{ product['name_' + i18n.getLanguage()] || product.name || product.name_en }}</text>
-				<text class="product-desc" v-if="product.description">{{ product['description_' + i18n.getLanguage()] || product.description }}</text>
 
 				<!-- 标签 -->
 				<view class="product-tags" v-if="product.tags && product.tags.length > 0">
@@ -53,7 +52,7 @@
 				<view class="stats-row" v-if="product.sales_count || product.repeat_customers">
 					<view class="stat-item" v-if="product.sales_count">
 						<text class="stat-num">{{ product.sales_count }}</text>
-						<text class="stat-label">{{ i18n.t('mine.monthlySales') }}</text>
+						<text class="stat-label">{{ t('mine.monthlySales') }}</text>
 					</view>
 					<view class="stat-divider" v-if="product.sales_count && product.repeat_customers"></view>
 					<view class="stat-item" v-if="product.repeat_customers">
@@ -75,7 +74,7 @@
 
 			<!-- 商品详情 -->
 			<view class="detail-card">
-				<text class="card-title">商品详情</text>
+				<text class="card-title">{{ t('productDetail.detailTitle') }}</text>
 				<view class="detail-content">
 					<image
 						v-if="product.detail_image"
@@ -90,22 +89,22 @@
 
 			<!-- 购买须知 -->
 			<view class="notice-card">
-				<text class="card-title">购买须知</text>
+				<text class="card-title">{{ t('productDetail.purchaseNotice') }}</text>
 				<view class="notice-list">
 					<view class="notice-item">
 						<text class="notice-dot">·</text>
-						<text class="notice-text">商品以实物为准，图片仅供参考</text>
+						<text class="notice-text">{{ t('productDetail.noticeImage') }}</text>
 					</view>
 					<view class="notice-item">
 						<text class="notice-dot">·</text>
-						<text class="notice-text">如有过敏食材请提前告知店员</text>
+						<text class="notice-text">{{ t('productDetail.noticeAllergy') }}</text>
 					</view>
 				</view>
 			</view>
 
 			<!-- 更多推荐 -->
 			<view class="recommend-card" v-if="recommendations.length > 0">
-				<text class="card-title">{{ i18n.t('productDetail.recommend') }}</text>
+				<text class="card-title">{{ t('productDetail.recommend') }}</text>
 				<view class="recommend-list">
 					<view
 						v-for="item in recommendations"
@@ -132,15 +131,15 @@
 			<view class="buy-bar-left">
 				<view class="bar-action" @click="handleShareProduct">
 					<image class="bar-action-icon" src="/static/icons/share.svg" mode="aspectFit"></image>
-					<text class="bar-action-text">分享</text>
+					<text class="bar-action-text">{{ t('productDetail.share') }}</text>
 				</view>
 			</view>
 			<view class="buy-bar-right">
 				<view class="buy-btn buy-btn-cart" @click="handleAddToCart">
-					<text class="buy-btn-text">{{ i18n.t('productDetail.addToCart') }}</text>
+					<text class="buy-btn-text">{{ t('productDetail.addToCart') }}</text>
 				</view>
 				<view class="buy-btn buy-btn-now" @click="handleBuyNow">
-					<text class="buy-btn-text">{{ i18n.t('productDetail.buyNow') }}</text>
+					<text class="buy-btn-text">{{ t('productDetail.buyNow') }}</text>
 				</view>
 			</view>
 		</view>
@@ -173,6 +172,7 @@ export default {
 	},
 	data() {
 		return {
+			langVersion: 0,
 			i18n: i18n,
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -189,7 +189,8 @@ export default {
 				id: '',
 				name: '',
 				image: ''
-			}
+			},
+			langVersion: 0
 		}
 	},
 	onLoad(options) {
@@ -208,9 +209,22 @@ export default {
 		if (this.productId) {
 			this.loadProductDetail()
 		}
+		uni.$on('languageChanged', this.onLanguageChanged)
+	},
+	onUnload() {
+		uni.$off('languageChanged', this.onLanguageChanged)
 	},
 	methods: {
+		t(key, params) {
+			void this.langVersion
+			return i18n.t(key, params)
+		},
 		fixMinioUrl,
+
+		onLanguageChanged() {
+			this.langVersion++
+		},
+
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
@@ -240,6 +254,9 @@ export default {
 					footprintManager.addProductFootprint({
 						id: this.product.id,
 						name: this.product.name,
+						name_zh: this.product.name_zh || this.product.name,
+						name_en: this.product.name_en,
+						name_th: this.product.name_th,
 						image: fixMinioUrl(this.product.image_url),
 						price: this.product.price,
 						tags: this.product.tags,
@@ -365,11 +382,13 @@ export default {
 
 		async handleShareProduct() {
 			try {
+				const lang = i18n.getLanguage()
+				const productName = this.product['name_' + lang] || this.product.name || ''
 				const shopName = ''
 				const result = await shareProduct(
 					{
 						id: this.productId,
-						name: this.product.name || '',
+						name: productName,
 						price: this.product.price || 0,
 						image: fixMinioUrl(this.product.image_url) || ''
 					},
@@ -383,20 +402,20 @@ export default {
 					this.shareInfo = {
 						type: 'product',
 						id: this.productId,
-						name: this.product.name || '',
+						name: productName,
 						price: this.product.price || 0,
 						image: fixMinioUrl(this.product.image_url) || '',
 						shopId: this.shopId || 1,
 						shopName: shopName
 					}
 					this.showShareModal = true
-					showToast('链接已复制')
+					showToast(i18n.t('productDetail.linkCopied'))
 				} else {
-					showToast('复制失败，请重试')
+					showToast(i18n.t('productDetail.copyFailed'))
 				}
 			} catch (e) {
 				console.error('分享失败:', e)
-				showToast('分享失败，请重试')
+				showToast(i18n.t('productDetail.shareFailed'))
 			}
 		},
 

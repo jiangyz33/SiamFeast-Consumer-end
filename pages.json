@@ -269,6 +269,33 @@
 					"titleNView": false
 				}
 			}
+		},
+		{
+			"path": "pages/referral/index",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/exchange-success/index",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/member-code/index",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
 		}
 	],
 	"globalStyle": {
@@ -302,6 +329,15 @@
 				"text": "会员中心",
 				"iconPath": "static/icons/user.svg",
 				"selectedIconPath": "static/icons/user-active.svg"
+			},
+			{
+				"path": "pages/vending-machine/index",
+				"style": {
+					"navigationStyle": "custom",
+					"app-plus": {
+						"titleNView": false
+					}
+				}
 			}
 		],
 		"app-plus": {
