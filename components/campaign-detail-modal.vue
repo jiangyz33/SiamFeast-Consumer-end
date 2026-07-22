@@ -65,24 +65,24 @@
 					<view v-else>
 						<view
 							v-for="coupon in claimableCoupons"
-							:key="coupon.template_id"
+							:key="coupon.coupon_id"
 							class="coupon-card"
 						>
 							<view class="coupon-left">
 								<text class="coupon-value">{{ formatCouponValue(coupon) }}</text>
-								<text v-if="coupon.min_amount > 0" class="coupon-threshold">
-									{{ t('campaign.spendThreshold', { amount: coupon.min_amount }) }}
+								<text v-if="coupon.min_spend > 0" class="coupon-threshold">
+									{{ t('campaign.spendThreshold', { amount: coupon.min_spend }) }}
 								</text>
 								<text v-else class="coupon-threshold">{{ t('campaign.noThreshold') }}</text>
 							</view>
 							<view class="coupon-divider"></view>
 							<view class="coupon-right">
 								<text class="coupon-name">{{ getCouponName(coupon) }}</text>
-								<text class="coupon-remaining">{{ t('campaign.remaining', { n: coupon.remaining, total: coupon.total_quantity }) }}</text>
+								<text class="coupon-remaining">{{ formatRemaining(coupon) }}</text>
 								<view
 									class="claim-btn"
 									:class="{
-										'claim-btn-disabled': !coupon.user_can_claim || claimingId === coupon.template_id,
+										'claim-btn-disabled': !coupon.user_can_claim || claimingId === coupon.coupon_id,
 										'claim-btn-done': coupon.user_claimed
 									}"
 									@click="handleClaim(coupon)"
@@ -160,9 +160,13 @@ export default {
 			return getLocalizedText(this.campaign, 'name')
 		},
 		rulesDescription() {
-			const rules = this.campaign && this.campaign.rules
-			if (!rules) return ''
-			return getLocalizedText(rules, 'description')
+			if (!this.campaign) return ''
+			// 兼容两种数据格式:
+			// 1. 后端方案 A 文档:rules.description / rules.description_en / rules.description_th
+			// 2. 后端实际实现:campaign.description / description_en / description_th(顶层)
+			const fromRules = this.campaign.rules ? getLocalizedText(this.campaign.rules, 'description') : ''
+			const fromCampaign = getLocalizedText(this.campaign, 'description')
+			return fromRules || fromCampaign || ''
 		}
 	},
 	watch: {
@@ -186,16 +190,24 @@ export default {
 			return getLocalizedText(coupon, 'name')
 		},
 		formatCouponValue(coupon) {
-			if (coupon.coupon_type === 'PERCENTAGE') {
-				const pct = Math.round((1 - coupon.discount_value) * 10)
+			// 后端 v2:type=FIXED 表示固定金额,PERCENT 表示折扣
+			if (coupon.type === 'PERCENT') {
+				const pct = Math.round(coupon.value * 10) / 10
 				return `${pct}折`
 			}
-			return `฿${coupon.discount_value}`
+			return `฿${coupon.value}`
+		},
+		formatRemaining(coupon) {
+			// total_quota = -1 表示无限制
+			if (coupon.total_quota < 0) {
+				return this.t('campaign.remainingUnlimited', { claimed: coupon.claimed_count })
+			}
+			return this.t('campaign.remaining', { n: coupon.remaining, total: coupon.total_quota })
 		},
 		getCouponBtnText(coupon) {
-			if (this.claimingId === coupon.template_id) return this.t('common.loading')
+			if (this.claimingId === coupon.coupon_id) return this.t('common.loading')
 			if (coupon.user_claimed) return this.t('campaign.claimed')
-			if (coupon.remaining <= 0) return this.t('campaign.soldOut')
+			if (coupon.total_quota >= 0 && coupon.remaining <= 0) return this.t('campaign.soldOut')
 			if (!coupon.user_can_claim) return this.t('campaign.cannotClaim')
 			return this.t('campaign.claimNow')
 		},
@@ -218,12 +230,12 @@ export default {
 
 		async handleClaim(coupon) {
 			if (!coupon.user_can_claim || this.claimingId) return
-			this.claimingId = coupon.template_id
+			this.claimingId = coupon.coupon_id
 			try {
 				if (USE_MOCK) {
-					await mockClaimCoupon(coupon.template_id)
+					await mockClaimCoupon(coupon.coupon_id)
 				} else {
-					await claimCoupon(coupon.template_id)
+					await claimCoupon(coupon.coupon_id)
 				}
 				// 成功:本地更新
 				coupon.user_claimed = true

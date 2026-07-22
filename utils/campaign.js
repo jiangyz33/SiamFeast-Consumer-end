@@ -3,11 +3,25 @@
  *
  * 后端接口(方案 A):
  *  - GET /banners(已增强,返回内嵌 campaign)
- *  - GET /user/campaigns/:id/claimable-coupons(可领优惠券列表)
- *  - POST /user/coupons/claim(抢券,已存在)
+ *  - GET /campaigns/:id/claimable-coupons(可领优惠券列表)
+ *  - POST /coupons/claim(抢券)
+ *
+ * ⚠️ 路径注意:后端 consumer 路由无 /user 前缀,直接 /api/v1/campaigns/* /coupons/*
  */
 
 import { get, post } from '@/api/request.js'
+import i18n from '@/i18n/index.js'
+
+/**
+ * 获取当前语言('zh' / 'en' / 'th')
+ */
+function getCurrentLang() {
+	try {
+		return (i18n && i18n.getLanguage && i18n.getLanguage()) || 'zh'
+	} catch (e) {
+		return 'zh'
+	}
+}
 
 // ============ 接口封装 ============
 
@@ -18,7 +32,7 @@ import { get, post } from '@/api/request.js'
  */
 export function getCampaignClaimableCoupons(campaignId) {
 	if (!campaignId) return Promise.reject({ code: 'INVALID_PARAMS', message: 'campaignId required' })
-	return get(`/user/campaigns/${campaignId}/claimable-coupons`).then(res => {
+	return get(`/campaigns/${campaignId}/claimable-coupons`).then(res => {
 		if (res.code === 0) return res.data
 		return Promise.reject(res)
 	})
@@ -38,7 +52,7 @@ export function getCampaignClaimableCoupons(campaignId) {
  */
 export function claimCoupon(templateId) {
 	if (!templateId) return Promise.reject({ code: 'INVALID_PARAMS', message: 'templateId required' })
-	return post('/user/coupons/claim', { coupon_id: templateId }).then(res => {
+	return post('/coupons/claim', { coupon_id: templateId }).then(res => {
 		if (res.code === 0) return res.data
 		return Promise.reject(res)
 	})
@@ -53,7 +67,7 @@ export function claimCoupon(templateId) {
  */
 export function getLocalizedText(obj, zhKey = 'name') {
 	if (!obj) return ''
-	const lang = (typeof i18n !== 'undefined' && i18n.getLanguage?.()) || 'zh'
+	const lang = getCurrentLang()
 	const enKey = `${zhKey}_en`
 	const thKey = `${zhKey}_th`
 	if (lang === 'en' && obj[enKey]) return obj[enKey]
@@ -77,7 +91,7 @@ export function getCampaignTypeIcon(type) {
  * 活动类型 → 本地化名称
  */
 export function getCampaignTypeName(type) {
-	const lang = (typeof i18n !== 'undefined' && i18n.getLanguage?.()) || 'zh'
+	const lang = getCurrentLang()
 	const m = {
 		DISCOUNT: { zh: '折扣活动', en: 'Discount', th: 'โปรโมชัน' },
 		FULL_REDUCTION: { zh: '满减活动', en: 'Spend & Save', th: 'ซื้อครบลด' },
