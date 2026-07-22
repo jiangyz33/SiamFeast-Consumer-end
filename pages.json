@@ -100,7 +100,25 @@
 			}
 		},
 		{
-			"path": "pages/login/verify",
+			"path": "pages/login/sms",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/login/password",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/login/register",
 			"style": {
 				"navigationStyle": "custom",
 				"app-plus": {

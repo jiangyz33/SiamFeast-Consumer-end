@@ -21,14 +21,13 @@
 
 		<!-- 内容区域 -->
 		<view class="content-section">
-			<!-- 输入框区域 -->
+			<!-- 账号密码登录表单(默认)-->
 			<view class="input-section">
-				<!-- 手机号输入框 -->
+				<!-- 手机号 -->
 				<view class="input-field" :style="{ borderColor: phoneError ? '#DA3300' : (phoneFocused ? '#F2B131' : '#E0E0E0') }">
-					<view class="country-picker" @click="showCountryPicker = true">
+					<view class="country-picker">
 						<text class="country-flag">{{ selectedCountry.flag }}</text>
 						<text class="country-code">{{ selectedCountry.code }}</text>
-						<text class="picker-arrow">&#9662;</text>
 					</view>
 					<view class="phone-divider"></view>
 					<input
@@ -40,12 +39,11 @@
 						v-model="phone"
 						@focus="phoneFocused = true; phoneError = ''"
 						@input="onPhoneInput"
-						@blur="onPhoneBlur"
 					/>
 				</view>
 				<text v-if="phoneError" class="field-error">{{ phoneError }}</text>
 
-				<!-- 密码输入框 -->
+				<!-- 密码 -->
 				<view class="input-field" :style="{ borderColor: passwordFocused ? '#F2B131' : '#E0E0E0' }">
 					<input
 						class="input"
@@ -55,9 +53,10 @@
 						v-model="password"
 						@focus="passwordFocused = true"
 						@blur="passwordFocused = false"
+						@confirm="handleLogin"
 					/>
 					<view class="password-toggle" @click="showPassword = !showPassword">
-						<text class="toggle-text">{{ showPassword ? 'Hide' : 'Show' }}</text>
+						<text class="toggle-text">{{ showPassword ? t('login.hide') : t('login.show') }}</text>
 					</view>
 				</view>
 
@@ -69,92 +68,59 @@
 				>
 					<text class="btn-text">{{ loading ? t('common.loading') : t('common.confirm') }}</text>
 				</view>
+			</view>
 
-				<!-- 登录链接 -->
-				<view class="login-links">
-					<view class="email-login-link" @click="goEmailLogin">
-						<text class="switch-text">{{ t('login.emailLogin') }}</text>
-					</view>
-					<view class="register-link" @click="goRegister">
-						<text class="register-text">{{ t('login.goRegister') }}</text>
-					</view>
+			<!-- 左下角:短信登录 / 右下角:注册账号 -->
+			<view class="bottom-links">
+				<view class="link-item" @click="goSmsLogin('login')">
+					<text class="link-text">{{ t('login.smsLogin') }}</text>
+				</view>
+				<view class="link-item" @click="goRegister">
+					<text class="link-text accent">{{ t('login.goRegister') }}</text>
 				</view>
 			</view>
 
-			<!-- 协议提示 -->
-			<view class="agreement">
-				<view class="agreement-check" @click="agreed = !agreed">
-					<view class="checkbox" :class="{ 'checkbox-active': agreed }">
-						<text v-if="agreed" class="check-icon">&#10003;</text>
-					</view>
-				</view>
-				<text class="agreement-text">{{ t('login.agreementPrefix') }}</text>
-				<text class="agreement-link" @click="openAgreement('terms')">{{ t('login.terms') }}</text>
-				<text class="agreement-text">{{ t('login.and') }}</text>
-				<text class="agreement-link" @click="openAgreement('privacy')">{{ t('login.privacy') }}</text>
-			</view>
+			<!-- 第三方 OAuth 登录入口(自定义基座才能用)-->
+			<CSocialButtons v-if="true" @login="handleSocialLogin" />
 		</view>
 
-		<!-- 国家选择弹窗 -->
-		<view class="picker-mask" v-if="showCountryPicker" @click="showCountryPicker = false">
-			<view class="picker-sheet" @click.stop>
-				<view class="picker-header">
-					<text class="picker-title">{{ t('login.selectCountry') }}</text>
-					<view class="picker-close" @click="showCountryPicker = false">
-						<text class="close-text">&#10005;</text>
-					</view>
+		<!-- 协议提示 -->
+		<view class="agreement">
+			<view class="agreement-check" @click="agreed = !agreed">
+				<view class="checkbox" :class="{ 'checkbox-active': agreed }">
+					<text v-if="agreed" class="check-icon">&#10003;</text>
 				</view>
-				<scroll-view class="picker-list" scroll-y>
-					<view
-						v-for="(c, i) in countries"
-						:key="i"
-						class="picker-item"
-						:class="{ 'picker-item-active': selectedCountry.code === c.code }"
-						@click="selectCountry(c)"
-					>
-						<text class="picker-flag">{{ c.flag }}</text>
-						<text class="picker-name">{{ c.name }}</text>
-						<text class="picker-code">{{ c.code }}</text>
-						<text v-if="selectedCountry.code === c.code" class="picker-check">&#10003;</text>
-					</view>
-				</scroll-view>
 			</view>
+			<text class="agreement-text">{{ t('login.agreementPrefix') }}</text>
+			<text class="agreement-link" @click="openAgreement('terms')">{{ t('login.terms') }}</text>
+			<text class="agreement-text">{{ t('login.and') }}</text>
+			<text class="agreement-link" @click="openAgreement('privacy')">{{ t('login.privacy') }}</text>
 		</view>
 
 		<!-- 安全区域底部 -->
 		<view class="safe-area-bottom"></view>
+
 	</view>
 </template>
 
 <script>
 import { validatePhone, getPhoneMaxLength, showToast } from '@/utils/index.js'
 import { loginByPassword, setCountryCode } from '@/api/services/auth.js'
+import {
+	signInWithGoogle,
+	signInWithFacebook,
+	exchangeOAuthTokenForJwt
+} from '@/utils/oauth.js'
 import store from '@/store/index.js'
 import i18n from '@/i18n/index.js'
+import CSocialButtons from '@/components/CSocialButtons.vue'
 
 const COUNTRY_LIST = [
-	{ code: '+66',  flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand',  name_zh: '泰国',  name_th: 'ประเทศไทย', min: 9, max: 9 },
-	{ code: '+86',  flag: '\u{1F1E8}\u{1F1F3}', name: 'China',     name_zh: '中国',  name_th: 'จีน', min: 11, max: 11 },
-	{ code: '+852', flag: '\u{1F1ED}\u{1F1F0}', name: 'Hong Kong', name_zh: '香港',  name_th: 'ฮ่องกง', min: 8, max: 8 },
-	{ code: '+853', flag: '\u{1F1F2}\u{1F1F4}', name: 'Macau',     name_zh: '澳门',  name_th: 'มาเกา', min: 8, max: 8 },
-	{ code: '+886', flag: '\u{1F1F9}\u{1F1FC}', name: 'Taiwan',    name_zh: '台湾',  name_th: 'ไต้วัน', min: 9, max: 9 },
-	{ code: '+65',  flag: '\u{1F1F8}\u{1F1EC}', name: 'Singapore', name_zh: '新加坡', name_th: 'สิงคโปร์', min: 8, max: 8 },
-	{ code: '+60',  flag: '\u{1F1F2}\u{1F1FE}', name: 'Malaysia',  name_zh: '马来西亚', name_th: 'มาเลเซีย', min: 9, max: 10 },
-	{ code: '+84',  flag: '\u{1F1FB}\u{1F1F3}', name: 'Vietnam',   name_zh: '越南',  name_th: 'เวียดนาม', min: 9, max: 10 },
-	{ code: '+95',  flag: '\u{1F1F2}\u{1F1E6}', name: 'Myanmar',   name_zh: '缅甸',  name_th: 'พม่า', min: 8, max: 9 },
-	{ code: '+855', flag: '\u{1F1F0}\u{1F1ED}', name: 'Cambodia',  name_zh: '柬埔寨', name_th: 'กัมพูชา', min: 8, max: 9 },
-	{ code: '+856', flag: '\u{1F1F1}\u{1F1E6}', name: 'Laos',      name_zh: '老挝',  name_th: 'ลาว', min: 8, max: 9 },
-	{ code: '+62',  flag: '\u{1F1EE}\u{1F1E9}', name: 'Indonesia', name_zh: '印尼',  name_th: 'อินโดนีเซีย', min: 8, max: 12 },
-	{ code: '+63',  flag: '\u{1F1F5}\u{1F1ED}', name: 'Philippines', name_zh: '菲律宾', name_th: 'ฟิลิปปินส์', min: 10, max: 10 },
-	{ code: '+82',  flag: '\u{1F1F0}\u{1F1F7}', name: 'South Korea', name_zh: '韩国', name_th: 'เกาหลีใต้', min: 9, max: 10 },
-	{ code: '+81',  flag: '\u{1F1EF}\u{1F1F5}', name: 'Japan',     name_zh: '日本',  name_th: 'ญี่ปุ่น', min: 9, max: 10 },
-	{ code: '+91',  flag: '\u{1F1EE}\u{1F1F3}', name: 'India',     name_zh: '印度',  name_th: 'อินเดีย', min: 10, max: 10 },
-	{ code: '+1',   flag: '\u{1F1FA}\u{1F1F8}', name: 'USA',       name_zh: '美国',  name_th: 'อเมริกา', min: 10, max: 10 },
-	{ code: '+44',  flag: '\u{1F1EC}\u{1F1E7}', name: 'UK',        name_zh: '英国',  name_th: 'อังกฤษ', min: 10, max: 10 },
-	{ code: '+61',  flag: '\u{1F1E6}\u{1F1FA}', name: 'Australia', name_zh: '澳大利亚', name_th: 'ออสเตรเลีย', min: 9, max: 10 },
+	{ code: '+66',  flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand',  name_zh: '泰国',  name_th: 'ประเทศไทย', min: 9, max: 10 }
 ]
 
 export default {
+	components: { CSocialButtons },
 	data() {
 		return {
 			i18n: i18n,
@@ -314,9 +280,23 @@ export default {
 			return this.t('common.networkError')
 		},
 
-		goEmailLogin() {
+		goSmsLogin(scene = 'login') {
 			uni.navigateTo({
-				url: '/pages/login/verify?type=login&mode=email&cc=' + encodeURIComponent(this.selectedCountry.code)
+				url: '/pages/login/sms?cc=' + encodeURIComponent(this.selectedCountry.code) + '&scene=' + scene
+			})
+		},
+
+		// 密码登录页(注册过的用户用手机号+密码登录,不需要收码)
+		goPasswordLogin() {
+			uni.navigateTo({
+				url: '/pages/login/password?cc=' + encodeURIComponent(this.selectedCountry.code)
+			})
+		},
+
+		// 注册页(手机号 + 密码 + 短信验证码一次性填写,无需邮箱)
+		goRegister() {
+			uni.navigateTo({
+				url: '/pages/login/register?cc=' + encodeURIComponent(this.selectedCountry.code)
 			})
 		},
 
@@ -330,18 +310,68 @@ export default {
 				showToast(this.t('language.switchSuccess'));
 			},
 
-		goRegister() {
-			uni.navigateTo({
-				url: '/pages/login/verify?type=register&mode=email&cc=' + encodeURIComponent(this.selectedCountry.code)
-			})
-		},
-
-		socialLogin(platform) {
+		handleSocialLogin(platform) {
 			if (!this.agreed) {
 				showToast(this.t('login.agreementRequired'))
 				return
 			}
-			showToast(`${platform} login coming soon`)
+			if (this.loading) return
+			this.doOAuthSocialLogin(platform)
+		},
+
+		async doOAuthSocialLogin(platform) {
+			this.loading = true
+			try {
+				// 1. 调对应 OAuth Provider 拉起原生授权,直接换自家 JWT
+				//    新工具 signInWithGoogle/Facebook 已经把 uni.login + 提交后端 + 拿 JWT 一站式封装
+				let data
+				if (platform === 'google') {
+					data = await signInWithGoogle()
+				} else if (platform === 'facebook') {
+					data = await signInWithFacebook()
+				} else {
+					showToast(`Unsupported platform: ${platform}`)
+					return
+				}
+
+				// 2. 处理后端返回的 JWT + 用户信息
+				//    signInWithGoogle/Facebook 返回的就是 /auth/{provider}-login 接口的 data 字段
+				if (data && data.access_token) {
+					store.setToken(data.access_token)
+					if (data.refresh_token) {
+						try { uni.setStorageSync('siamfeast_refresh_token', data.refresh_token) } catch (e) {}
+					}
+					if (data.user) {
+						store.setUserInfo(data.user)
+					}
+					// 通知 push.js 触发 cid 上报
+					uni.$emit('loginSuccess')
+				}
+
+				showToast(this.t('login.loginSuccess'))
+				setTimeout(() => {
+					if (data && data.is_new_user) {
+						uni.redirectTo({ url: '/pages/settings/index?newUser=1' })
+					} else {
+						uni.switchTab({ url: '/pages/index/index' })
+					}
+				}, 1500)
+			} catch (e) {
+				console.error(`[social-login] ${platform} failed:`, e)
+				showToast(this.resolveSocialErrorMessage(e))
+			} finally {
+				this.loading = false
+			}
+		},
+
+		resolveSocialErrorMessage(err) {
+			// 取消登录属于用户主动行为,不显示错误
+			if (err && err.code === 'CANCELLED') return ''
+			// 后端业务返回的本地化消息
+			const msg = (err && (err.message || err.msg)) || ''
+			if (typeof msg === 'string' && msg.trim()) return msg
+			// 兜底
+			return this.t('login.loginFailed') || '登录失败,请稍后重试'
 		},
 
 		openAgreement(type) {
@@ -487,6 +517,70 @@ export default {
 	color: #828282;
 }
 
+/* 新登录页样式 */
+/* 底部链接区:左下短信登录,右下注册账号 */
+.bottom-links {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	padding: 24rpx 8rpx;
+	margin-top: 16rpx;
+}
+
+.link-item {
+	padding: 8rpx 0;
+}
+
+.link-text {
+	font-size: 28rpx;
+	color: #828282;
+}
+
+.link-text.accent {
+	color: #F2B131;
+	font-weight: 600;
+}
+
+.welcome-section {
+	padding: 80rpx 40rpx 60rpx;
+	text-align: center;
+}
+
+.welcome-title {
+	display: block;
+	font-size: 44rpx;
+	font-weight: 600;
+	color: #1A1A1A;
+	margin-bottom: 16rpx;
+}
+
+.welcome-subtitle {
+	display: block;
+	font-size: 28rpx;
+	color: #828282;
+}
+
+.sms-btn {
+	margin-top: 80rpx !important;
+	height: 96rpx !important;
+	font-size: 32rpx;
+}
+
+.register-btn {
+	margin-top: 24rpx !important;
+	height: 96rpx !important;
+	font-size: 32rpx;
+	background-color: #FFFFFF !important;
+	border: 2rpx solid #F2B131 !important;
+	color: #F2B131 !important;
+}
+
+.register-btn .btn-text {
+	color: #F2B131 !important;
+}
+
+/* 老登录按钮样式(保留) */
 .login-btn {
 	display: flex;
 	align-items: center;

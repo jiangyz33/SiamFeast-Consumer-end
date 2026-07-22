@@ -1,0 +1,7 @@
+{
+  "name": "sf-push-gateway",
+  "dependencies": {},
+  "extensions": {
+    "uni-cloud-push": {}
+  }
+}

@@ -226,6 +226,10 @@ import store from '@/store/index.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 import { getUserInfo, updateUserInfo, uploadAvatar } from '@/api/services/auth.js'
+import { unregisterPush } from '@/utils/push.js'
+// #ifdef APP-PLUS
+import { chooseSystemMedia } from '@/uni_modules/uni-chooseSystemImage'
+// #endif
 import { resetPassword } from '@/api/services/password.js'
 import { toggleNotification, getNotificationSettings } from '@/api/services/notification.js'
 import LanguageModal from '@/components/language-modal.vue'
@@ -333,6 +337,45 @@ export default {
 			uni.navigateBack()
 		},
 			handleAvatarClick() {
+				// #ifdef APP-PLUS
+				// 用 DCloud 官方插件 chooseSystemMedia(Android 系统 Photo Picker)
+				// 这个方案符合 Google Play 新政策,不需要 READ_MEDIA_IMAGES 权限
+				chooseSystemMedia({
+					count: 1,
+					mediaType: ['image'],
+					pageOrientation: 'portrait',
+					success: async (e) => {
+						const filePaths = e.filePaths || []
+						if (!filePaths.length) return
+						const filePath = filePaths[0]
+						showToast(i18n.t("common.loading"))
+						try {
+							const uploadRes = await uploadAvatar(filePath)
+							if (uploadRes.code === 0) {
+								await this.loadLatestUserInfo()
+								showToast(i18n.t("common.success"))
+							} else {
+								showToast(uploadRes.message || i18n.t("common.fail"))
+							}
+						} catch (err) {
+							console.error("handleAvatarClick error:", err)
+							showToast(i18n.t("common.fail"))
+						}
+					},
+					fail: (e) => {
+						// 2101001 = 用户取消,正常行为不报错
+						if (e && e.errCode === 2101001) {
+							console.log('[chooseSystemMedia] user cancelled')
+							return
+						}
+						console.error("chooseSystemMedia fail:", e)
+						// 兜底:插件失败时回退到 uni.chooseImage
+						this._fallbackChooseImage()
+					}
+				})
+				// #endif
+				// #ifndef APP-PLUS
+				// H5/小程序用 uni.chooseImage
 				uni.chooseImage({
 					count: 1,
 					sizeType: ["compressed"],
@@ -340,14 +383,6 @@ export default {
 					success: async (res) => {
 						if (!res.tempFilePaths || !res.tempFilePaths.length) return
 						const filePath = res.tempFilePaths[0]
-						// 5MB 大小限制
-						const MAX_AVATAR_SIZE = 5 * 1024 * 1024
-						const tempFile = res.tempFiles && res.tempFiles[0]
-						const size = tempFile?.size || 0
-						if (size > MAX_AVATAR_SIZE) {
-							showToast(i18n.t("settings.avatarTooLarge"))
-							return
-						}
 						showToast(i18n.t("common.loading"))
 						try {
 							const uploadRes = await uploadAvatar(filePath)
@@ -362,9 +397,35 @@ export default {
 							showToast(i18n.t("common.fail"))
 						}
 					},
-					fail: (e) => {
-						console.error("chooseImage fail:", e)
-					}
+					fail: (e) => console.error("chooseImage fail:", e)
+				})
+				// #endif
+			},
+
+			// 插件失败时的兜底(用 uni.chooseImage)
+			_fallbackChooseImage() {
+				uni.chooseImage({
+					count: 1,
+					sizeType: ["compressed"],
+					sourceType: ["album", "camera"],
+					success: async (res) => {
+						if (!res.tempFilePaths || !res.tempFilePaths.length) return
+						const filePath = res.tempFilePaths[0]
+						showToast(i18n.t("common.loading"))
+						try {
+							const uploadRes = await uploadAvatar(filePath)
+							if (uploadRes.code === 0) {
+								await this.loadLatestUserInfo()
+								showToast(i18n.t("common.success"))
+							} else {
+								showToast(uploadRes.message || i18n.t("common.fail"))
+							}
+						} catch (e) {
+							console.error("handleAvatarClick error:", e)
+							showToast(i18n.t("common.fail"))
+						}
+					},
+					fail: (e) => console.error("chooseImage fallback fail:", e)
 				})
 			},
 
@@ -544,14 +605,16 @@ export default {
 			}
 		},
 
-		handleLogout() {
+		async handleLogout() {
 			uni.showModal({
 				title: this.i18n.t('common.confirm'),
 				content: this.i18n.t('mine.logoutConfirm'),
 				confirmText: this.i18n.t('common.confirm'),
 				cancelText: this.i18n.t('common.cancel'),
-				success: (res) => {
+				success: async (res) => {
 					if (res.confirm) {
+						// 先清后端的 push token 关联(避免注销后还收到推送)
+						try { await unregisterPush() } catch (e) {}
 						store.logout()
 						uni.reLaunch({ url: '/pages/login/index' })
 					}

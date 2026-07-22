@@ -7,16 +7,10 @@
 			<view class="divider-line"></view>
 		</view>
 
-		<!-- 社交登录按钮 -->
+		<!-- 社交登录按钮(海外版:Google;Facebook 暂未上线,先隐藏)-->
 		<view class="social-buttons">
-			<view class="social-btn" @click="handleSocialLogin('wechat')">
-				<image class="social-icon" src="/static/images/wechat.png" mode="aspectFit"></image>
-			</view>
-			<view class="social-btn" @click="handleSocialLogin('apple')">
-				<image class="social-icon" src="/static/images/apple.png" mode="aspectFit"></image>
-			</view>
 			<view class="social-btn" @click="handleSocialLogin('google')">
-				<image class="social-icon" src="/static/images/google.png" mode="aspectFit"></image>
+				<image class="social-icon" src="/static/icons/google.svg" mode="aspectFit"></image>
 			</view>
 		</view>
 	</view>

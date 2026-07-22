@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "docx": "^9.7.1",
     "uqrcodejs": "^4.0.7"
   }
 }

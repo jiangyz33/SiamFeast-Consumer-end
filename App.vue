@@ -2,6 +2,7 @@
 import store from './store/index.js'
 import { parseShareLink, clearShareParams, ShareType } from './utils/share.js'
 import { autoSetPageTitle } from './utils/setPageTitle.js'
+import { initPush } from '@/utils/push.js'
 
 export default {
 	globalData: {
@@ -45,6 +46,11 @@ export default {
 		// #endif
 		// 检测是否是分享链接
 		this.checkShareLink()
+
+		// 初始化 UniPush 2.0(APP 端启动时获取 cid + 监听推送)
+		// #ifdef APP-PLUS
+		initPush()
+		// #endif
 	},
 
 	onShow: function() {

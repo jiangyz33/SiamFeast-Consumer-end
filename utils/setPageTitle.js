@@ -52,7 +52,6 @@ export const PAGE_TITLE_MAP = {
 	'pages/referral/index': 'mine.myReferral',
 	'pages/store-select/index': 'storeSelect.title',
 	'pages/login/index': 'login.title',
-	'pages/login/verify': 'login.title',
 	'pages/agreement/index': 'agreement.terms',
 	'pages/group/index': 'groupBuy.title',
 	'pages/group-detail/index': 'groupBuy.title',

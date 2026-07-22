@@ -163,12 +163,20 @@
 			@change="handleLanguageChange"
 		></language-modal>
 
-		<!-- 横幅介绍图弹窗（支持多图滑动） -->
+		<!-- 横幅介绍图弹窗(支持多图滑动)-->
 		<banner-detail-modal
 			:visible="showBannerDetail"
 			:images="currentBannerDetailImages"
 			@close="handleBannerDetailClose"
 		></banner-detail-modal>
+
+		<!-- 活动详情弹窗(DISCOUNT/FULL_REDUCTION/COUPON_GRANT)-->
+		<campaign-detail-modal
+			:visible="showCampaignDetail"
+			:campaign="currentCampaign"
+			@close="handleCampaignDetailClose"
+			@claimed="handleCampaignClaimed"
+		></campaign-detail-modal>
 	</view>
 </template>
 
@@ -179,6 +187,7 @@ import CustomTabbar from '@/components/custom-tabbar.vue'
 import ShareModal from '@/components/share-modal.vue'
 import LanguageModal from '@/components/language-modal.vue'
 import BannerDetailModal from '@/components/banner-detail-modal.vue'
+import CampaignDetailModal from '@/components/campaign-detail-modal.vue'
 import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 import {
@@ -198,7 +207,8 @@ export default {
 		CustomTabbar,
 		ShareModal,
 		LanguageModal,
-		BannerDetailModal
+		BannerDetailModal,
+		CampaignDetailModal
 	},
 	data() {
 		return {
@@ -213,6 +223,8 @@ export default {
 			showLanguageModal: false,
 			showBannerDetail: false,
 			currentBannerDetailImages: [],
+			showCampaignDetail: false,
+			currentCampaign: {},
 			banners: [],
 				langVersion: 0,
 				memberInfo: {},
@@ -264,6 +276,9 @@ export default {
 		uni.hideTabBar({ animation: false, fail: () => {} })
 		// #endif
 		uni.$emit("tabbarUpdate")
+		// 未登录时不请求任何接口(避免登录页时首页 onShow 触发网络错误)
+		const token = uni.getStorageSync('siamfeast_token')
+		if (!token) return
 		// 每次显示时刷新会员数据和统计
 		this.loadMemberData()
 		this.loadUnreadCount()
@@ -290,11 +305,10 @@ export default {
 		 * 加载首页轮播图
 		 */
 		async loadBanners() {
+			// 未登录时不请求(避免登录页报错)
+			if (!uni.getStorageSync('siamfeast_token')) return
 			try {
 				const res = await getHomeBanners()
-				// === DEBUG: 看 banner 原始字段（排查弹窗不显示）===
-				console.log('[banner-debug] raw response:', JSON.stringify(res.data, null, 2))
-				// === END DEBUG ===
 				this.banners = (res.data.items || res.data || []).map(b => {
 					// 后端字段 detail_images 是 JSONB 数组（字符串 URL/file_key 数组）
 					let detailImages = []
@@ -327,19 +341,26 @@ export default {
 
 		/**
 		 * 轮播图点击
+		 * 优先级:
+		 *   1. campaign_id(关联活动)→ 弹活动详情弹窗
+		 *   2. detail_images(多图介绍)→ 弹图片弹窗
+		 *   3. link_type(PAGE/PRODUCT/STORE)→ 跳转
 		 */
 		handleBannerClick(banner) {
-			// === DEBUG: 确认点击触发 + 看数据 ===
-			console.log('[banner-click] banner clicked:', banner.id, 'detail_images:', banner.detail_images)
-			// === END DEBUG ===
-			// 优先：挂了竖屏介绍图（多图数组）→ 弹窗显示
+			console.log('[banner-click] banner clicked:', banner.id, 'campaign_id:', banner.campaign_id)
+			// 1. 关联了活动 → 弹活动详情
+			if (banner.campaign_id && banner.campaign) {
+				this.currentCampaign = banner.campaign
+				this.showCampaignDetail = true
+				return
+			}
+			// 2. 有详情图 → 弹图片弹窗
 			if (Array.isArray(banner.detail_images) && banner.detail_images.length > 0) {
 				this.currentBannerDetailImages = banner.detail_images
 				this.showBannerDetail = true
-				console.log('[banner-click] opening modal with images:', this.currentBannerDetailImages)
 				return
 			}
-			// 兜底：走原 link_type 跳转（兼容大小写）
+			// 3. 走原 link_type 跳转
 			const linkType = (banner.link_type || '').toUpperCase()
 			if (linkType === 'PAGE' && banner.link_value) {
 				uni.navigateTo({ url: banner.link_value })
@@ -359,10 +380,22 @@ export default {
 			this.currentBannerDetailImages = []
 		},
 
+		handleCampaignDetailClose() {
+			this.showCampaignDetail = false
+			this.currentCampaign = {}
+		},
+
+		// 抢券成功回调:可以刷新"我的优惠券"数量等
+		handleCampaignClaimed(coupon) {
+			console.log('[campaign] claimed:', coupon.template_id)
+			// 可选:刷新首页的优惠券数量等
+		},
+
 		/**
 		 * 加载会员数据（信息、积分、优惠券数量）
 		 */
 		async loadMemberData() {
+			if (!uni.getStorageSync('siamfeast_token')) return
 			try {
 
 					const [userRes, infoRes, couponsRes, progressRes] = await Promise.allSettled([
@@ -409,6 +442,7 @@ export default {
 		 * 加载首页数据（新品、热销）
 		 */
 		async loadHomeData() {
+			if (!uni.getStorageSync('siamfeast_token')) return
 			try {
 				const [newRes, hotRes] = await Promise.allSettled([
 					getNewProducts({ store_id: 1, limit: 4 }),
@@ -569,12 +603,19 @@ export default {
 		},
 
 		async loadUnreadCount() {
+			// 没 token 时不请求(避免登录前调用导致 401 噪音)
+			const token = uni.getStorageSync('siamfeast_token')
+			if (!token) return
 			try {
 				const res = await getUnreadCount()
 				if (res.code === 0 && res.data !== undefined) {
 					this.unreadCount = res.data.unread_count || res.data || 0
 				}
 			} catch (e) {
+				// 限流(429)是后端正常防护,不打印
+				if (e && (e.code === 429 || e.bizCode === 'RATE_LIMITED')) {
+					return
+				}
 				console.error('获取未读消息数失败:', e)
 			}
 		},

@@ -11,8 +11,19 @@ export const USE_MOCK = false
 // - 生产环境（部署到 h5.siamfeast.com、APP、小程序）：用完整 API 域名
 // - 临时强制本地：把 FORCE_DEV 设为 true 可绕过自动判断（自测用，提交前记得改回 false）
 const FORCE_DEV = false
+
+// APP 端(自定义基座 / 正式 APK / IPA)总是用生产域名
+// 因为 APP 没有 dev server 代理,相对路径 '/api/v1' 会发到 APP 自身
+const isApp = (() => {
+	// #ifdef APP-PLUS
+	return true
+	// #endif
+	return false
+})()
+
 const isDev = (() => {
 	if (FORCE_DEV) return true
+	if (isApp) return false  // APP 端强制生产环境
 	try {
 		// 优先用 vite 内置变量（vite dev server 是 true，构建产物是 false）
 		if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.DEV === true) {
