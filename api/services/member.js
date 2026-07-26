@@ -104,6 +104,7 @@ export function exchangeBenefit(data) {
 		exchange_type: data.exchange_type || 'points',
 		store_id: data.store_id
 	}
+	if (data.pickup_time) payload.pickup_time = data.pickup_time
 	if (data.coin_amount) payload.coin_amount = data.coin_amount
 	if (data.points_amount) payload.points_amount = data.points_amount
 	return post('/mall/redeem', payload)
@@ -192,6 +193,62 @@ export function cancelMallOrder(orderId) {
 	return post('/mall/my-orders/' + orderId + '/cancel')
 }
 
+/**
+ * 获取金币换积分配置
+ * GET /coins/exchange-config
+ * 返回:points_per_coin / min_coins_per_exchange / max_points_per_day / is_enabled
+ */
+export function getCoinExchangeConfig() {
+	return get('/coins/exchange-config')
+}
+
+/**
+ * 金币换积分
+ * POST /coins/convert-points
+ * @param {number} coinsToSpend 要消耗的金币数
+ * @returns {Promise<{coins_spent, points_received, coin_balance_after, point_balance_after}>}
+ *
+ * 错误码:
+ *   INVALID_AMOUNT          兑换数量太少(< min_coins_per_exchange)
+ *   INSUFFICIENT_COINS      金币余额不足
+ *   EXCHANGE_DISABLED       功能未启用
+ *   DAILY_LIMIT_EXCEEDED    今日已达上限
+ */
+export function convertCoinsToPoints(coinsToSpend) {
+	return post('/coins/convert-points', { coins_to_spend: coinsToSpend })
+}
+
+/**
+ * 查询生日奖励状态
+ * GET /birthday-status
+ * 返回 is_birthday_today / claimable / reward_type / reward_amount / already_claimed / reason
+ *
+ * reason 可能值:
+ *   disabled             生日奖励未启用
+ *   not_birthday_today   今天不是生日
+ *   claimed              当年已领取
+ *   no_birthday          未设置生日
+ */
+export function getBirthdayStatus() {
+	return get('/birthday-status')
+}
+
+/**
+ * 领取生日奖励
+ * POST /birthday/claim
+ * @returns {Promise<{reward_type, reward_amount, grant_id, coin_balance_after?, point_balance_after?}>}
+ *
+ * 错误码:
+ *   not_birthday_today            今天不是生日
+ *   already_claimed               当年已领过
+ *   disabled                      后台未启用
+ *   no_birthday                   未设置生日
+ *   BIRTHDAY_COUPON_UNAVAILABLE   生日券暂不可用
+ */
+export function claimBirthday() {
+	return post('/birthday/claim')
+}
+
 export const memberApi = {
 	getMemberInfo,
 	getMemberProgress,
@@ -206,7 +263,11 @@ export const memberApi = {
 	getMallOrders,
 	getMallOrderDetail,
 	getMallOrderStatus,
-	cancelMallOrder
+	cancelMallOrder,
+	getCoinExchangeConfig,
+	convertCoinsToPoints,
+	getBirthdayStatus,
+	claimBirthday
 }
 
 export default memberApi

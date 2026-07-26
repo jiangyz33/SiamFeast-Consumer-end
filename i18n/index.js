@@ -83,6 +83,22 @@ const messages = {
 				insufficientCoins: '金币不足',
 				exchangeSuccess: '兑换成功'
 			},
+		opening: {
+			active: '开业活动进行中',
+			daysLeft: '剩 {n} 天',
+			extraPoints: '额外 +{n} 积分',
+			extraCoins: '额外 +{n} 金币',
+			discount: '全场 {n}% off',
+			claimCoupon: '领取开业券',
+			claimed: '已领取',
+			claimSuccess: '领取成功',
+			errors: {
+				unavailable: '开业券已领完',
+				ended: '开业活动已结束',
+				alreadyClaimed: '您已领取过该店的开业券',
+				default: '领取失败,请稍后重试'
+			}
+		},
 		storeSelect: {
 			title: '选择门店',
 			currentLocation: '当前位置',
@@ -192,6 +208,9 @@ const messages = {
 			},
 		productDetail: {
 			specs: '规格',
+			specSize: '规格',
+			specFlavor: '口味',
+			specTopping: '加料',
 			quantity: '数量',
 			addToCart: '加入购物车',
 			buyNow: '立即购买',
@@ -276,6 +295,11 @@ const messages = {
 			coinMaxDeduct: '本单最多抵扣 ฿{amount}（用 {coins} 金币）',
 			coinMaxDeductAmount: '本单最多可抵扣 ฿{amount}',
 			coinThresholdNotMet: '订单金额未达到金币使用门槛',
+			coinPlanRecommended: '推荐方案',
+			coinPlanAlternative: '备选方案',
+			coinPlanSummary: '用 {coins} 金币抵 ฿{amount}',
+			coinPlanTierLine: '{coins} 金币档 × {packs}',
+			coinTierUnavailable: '订单金额未达到抵扣标准',
 			submitting: '提交中...',
 			orderInfo: '订单信息',
 			productCost: '商品费用',
@@ -286,6 +310,7 @@ const messages = {
 			couponNone: '暂无可用',
 			couponNoAvailable: '无可用券',
 			couponNotUse: '不使用优惠券',
+			couponNotApplicable: '(不适用于活动订单)',
 			pleaseSelect: '请选择',
 			remarkOptional: '选填，请输入备注信息',
 			pleaseSelectAddress: '请选择收货地址',
@@ -323,13 +348,15 @@ const messages = {
 			orderInfo: '订单信息',
 			paid: '已支付',
 			continueShopping: '继续购物',},
-		exchange: {
+		exchangeResult: {
 			title: '兑换结果',
 			waitingRedeem: '等待核销',
 			redeemed: '核销完成',
 			showQR: '请将二维码出示给收银员核销',
 			scanning: '收银员扫码后自动确认',
 			product: '兑换商品',
+			pickupStore: '提货门店',
+			pickupTime: '提货时间',
 			quantity: '兑换数量',
 			exchangeId: '兑换单号',
 			status: '状态',
@@ -419,6 +446,8 @@ const messages = {
 			orderNo: '订单编号',
 			orderTime: '下单时间',
 			orderSource: '订单类型',
+			pickupStore: '提货门店',
+			pickupTime: '提货时间',
 			remark: '备注',
 			payMethod: '支付方式',
 			payTime: '支付时间',
@@ -571,6 +600,7 @@ const messages = {
 			codePlaceholder: '请输入 6 位验证码',
 			getCode: '获取验证码',
 			register: '注册',
+			birthdayPlaceholder: '请选择生日',
 			codeInvalidOrExpired: '验证码错误或已过期'
 		},
 		settings: {
@@ -610,6 +640,9 @@ const messages = {
 		birthday: '出生日期',
 		editBirthday: '修改出生日期',
 		birthdayPlaceholder: '请选择出生日期',
+		year: '年',
+		month: '月',
+		day: '日',
 		birthdaySaveSuccess: '出生日期已更新',
 		notSet: '未设置'
 		},
@@ -746,6 +779,12 @@ const messages = {
 			myPoints: '我的积分',
 			exchangeSuccess: '兑换成功',
 			exchangeFailed: '兑换失败',
+			pickupTime: '预约提货时间',
+			pickupTimePlaceholder: '请选择提货时间',
+			pickupHint: '提货时间需提前 24 小时',
+			pickupTimeRequired: '请选择提货时间',
+			pickupTimeTooSoon: '预约时间必须至少提前 24 小时',
+			pickupTimeOk: '时间有效',
 			pointsNotEnough: '积分不足'
 		},
 		groupBuy: {
@@ -861,6 +900,8 @@ const messages = {
 			rules: '活动规则',
 			notStackable: '不与其他活动叠加',
 			autoApply: '下单时自动应用,无需操作',
+			extraPoints: '额外 +{n} 积分',
+			extraCoins: '额外 +{n} 金币',
 			claimableCoupons: '可领优惠券',
 			noCoupons: '暂无可领优惠券',
 			spendThreshold: '满 {amount} 元可用',
@@ -874,6 +915,96 @@ const messages = {
 			claimSuccess: '领取成功',
 			orderNow: '立即下单',
 			myCoupons: '我的优惠券'
+		},
+		exchange: {
+			title: '金币换积分',
+			coinBalance: '金币余额',
+			pointBalance: '积分余额',
+			rate: '兑换比例',
+			minExchange: '最少兑换',
+			dailyLimit: '每日上限',
+			coinsToSpend: '消耗金币',
+			coinsInputPlaceholder: '最少 {min} 个金币',
+			coins: '金币',
+			points: '积分',
+			pointsToReceive: '预计获得',
+			hint1: '兑换后立即到账',
+			hint2: '兑换比例由后台配置,可能有变化',
+			confirm: '确认兑换',
+			confirmTitle: '确认兑换',
+			confirmContent: '消耗 {coins} 金币,获得 {points} 积分?',
+			success: '兑换成功,获得 {points} 积分',
+			insufficientCoins: '金币余额不足',
+			errors: {
+				INVALID_AMOUNT: '兑换数量太少,最少 {min} 金币',
+				INSUFFICIENT_COINS: '金币余额不足',
+				EXCHANGE_DISABLED: '金币换积分功能未启用',
+				DAILY_LIMIT_EXCEEDED: '今日已达兑换上限',
+				DEFAULT: '兑换失败,请稍后重试'
+			}
+		},
+		changePhone: {
+			title: '更改绑定手机号',
+			currentPhone: '当前绑定',
+			step1Title: '验证旧手机号',
+			step2Title: '绑定新手机号',
+			next: '下一步',
+			verified: '已验证',
+			fillOldCodeFirst: '请先填写旧手机号和验证码',
+			oldPhonePlaceholder: '请输入当前绑定的手机号',
+			oldCodePlaceholder: '请输入旧手机号验证码',
+			newPhonePlaceholder: '请输入新手机号',
+			newCodePlaceholder: '请输入新手机号验证码',
+			getOldCode: '获取验证码',
+			getNewCode: '获取验证码',
+			codeSent: '验证码已发送',
+			confirm: '确认更改',
+			hint1: '每月只能更改 1 次手机号',
+			hint2: '新手机号不能与旧号相同,且不能已被其他账号使用',
+			success: '手机号更改成功',
+			errors: {
+				OLD_PHONE_MISMATCH: '旧手机号与当前账号绑定不符',
+				NEW_PHONE_SAME_AS_OLD: '新手机号不能与旧手机号相同',
+				OLD_CODE_INVALID: '旧手机号验证码错误或已失效',
+				NEW_CODE_INVALID: '新手机号验证码错误或已失效',
+				NO_PHONE_BOUND: '当前账号未绑定手机号',
+				PHONE_ALREADY_BOUND: '该手机号已被其他账号使用',
+				PHONE_CHANGE_LIMIT: '本月已更改过手机号,每月只能更改一次',
+				RATE_LIMITED: '请求过于频繁,请稍后再试',
+				INVALID_PHONE: '手机号格式不正确',
+				INVALID_TYPE: '参数错误',
+				DEFAULT: '更改失败,请稍后重试'
+			}
+		},
+		tasks: {
+			title: '任务中心',
+			headerTitle: '做任务,赚奖励',
+			headerSubtitle: '完成任务可获得积分、金币或优惠券',
+			sectionAll: '全部任务',
+			inProgress: '进行中',
+			claim: '领取',
+			claimed: '已领取',
+			claimSuccess: '领取成功',
+			empty: '暂无任务,敬请期待',
+			errors: {
+				TASK_NOT_CLAIMABLE: '任务未完成或已领取',
+				DEFAULT: '领取失败,请稍后重试'
+			}
+		},
+		birthday: {
+			happyBirthday: '生日快乐!',
+			claimable: '您有一份生日奖励可领取',
+			claim: '立即领取',
+			claimSuccess: '领取成功',
+			hint: '每年仅可领取 1 次',
+			errors: {
+				not_birthday_today: '今天不是您的生日',
+				already_claimed: '您已领取过今年的生日奖励',
+				disabled: '生日奖励暂未开启',
+				no_birthday: '请先设置生日',
+				BIRTHDAY_COUPON_UNAVAILABLE: '生日券暂不可用',
+				DEFAULT: '领取失败,请稍后重试'
+			}
 		}
 	},
 	// 英文
@@ -956,6 +1087,22 @@ const messages = {
 				insufficientCoins: 'Insufficient coins',
 				exchangeSuccess: 'Redeemed successfully'
 			},
+		opening: {
+			active: 'Opening Celebration',
+			daysLeft: '{n} days left',
+			extraPoints: '+{n} bonus points',
+			extraCoins: '+{n} bonus coins',
+			discount: '{n}% off everything',
+			claimCoupon: 'Claim Opening Coupon',
+			claimed: 'Claimed',
+			claimSuccess: 'Claimed successfully',
+			errors: {
+				unavailable: 'Opening coupons sold out',
+				ended: 'Opening activity has ended',
+				alreadyClaimed: 'Already claimed this store coupon',
+				default: 'Failed, please try again'
+			}
+		},
 		storeSelect: {
 			title: 'Select Store',
 			currentLocation: 'Current Location',
@@ -1046,6 +1193,9 @@ const messages = {
 		},
 		productDetail: {
 			specs: 'Options',
+			specSize: 'Size',
+			specFlavor: 'Flavor',
+			specTopping: 'Extra',
 			quantity: 'Qty',
 			addToCart: 'Add to Cart',
 			buyNow: 'Buy Now',
@@ -1129,6 +1279,11 @@ const messages = {
 			coinMaxDeduct: 'Max deduction ฿{amount} ({coins} coins)',
 			coinMaxDeductAmount: 'Max deductible for this order: ฿{amount}',
 			coinThresholdNotMet: 'Order amount below coin usage threshold',
+			coinPlanRecommended: 'Recommended',
+			coinPlanAlternative: 'Alternative',
+			coinPlanSummary: 'Use {coins} coins to deduct ฿{amount}',
+			coinPlanTierLine: '{coins}-coin tier × {packs}',
+			coinTierUnavailable: 'Order amount does not meet the coin usage threshold',
 			submitting: 'Submitting...',
 			orderInfo: 'Order Info',
 			productCost: 'Item Total',
@@ -1139,6 +1294,7 @@ const messages = {
 			couponNone: 'None available',
 			couponNoAvailable: 'No coupon available',
 			couponNotUse: 'Do not use coupon',
+			couponNotApplicable: '(not applicable with campaign)',
 			pleaseSelect: 'Select',
 			remarkOptional: 'Optional, add a note',
 			pleaseSelectAddress: 'Please select address',
@@ -1176,13 +1332,15 @@ const messages = {
 			orderInfo: 'Order Info',
 			paid: 'Paid',
 			continueShopping: 'Continue Shopping',},
-		exchange: {
+		exchangeResult: {
 			title: 'Exchange Result',
 			waitingRedeem: 'Waiting for Verification',
 			redeemed: 'Verification Complete',
 			showQR: 'Show QR code to cashier for verification',
 			scanning: 'Auto-confirmed after scan',
 			product: 'Product',
+			pickupStore: 'Pickup Store',
+			pickupTime: 'Pickup Time',
 			quantity: 'Quantity',
 			exchangeId: 'Exchange ID',
 			status: 'Status',
@@ -1271,6 +1429,8 @@ const messages = {
 			orderNo: 'Order No.',
 			orderTime: 'Order Time',
 			orderSource: 'Source',
+			pickupStore: 'Pickup Store',
+			pickupTime: 'Pickup Time',
 			remark: 'Remark',
 			payMethod: 'Payment Method',
 			payTime: 'Payment Time',
@@ -1423,6 +1583,7 @@ const messages = {
 			codePlaceholder: 'Enter 6-digit code',
 			getCode: 'Get Code',
 			register: 'Register',
+			birthdayPlaceholder: 'Select your birthday',
 			codeInvalidOrExpired: 'Verification code incorrect or expired'
 		},
 		settings: {
@@ -1462,6 +1623,9 @@ const messages = {
 		birthday: 'Birthday',
 		editBirthday: 'Edit Birthday',
 		birthdayPlaceholder: 'Select your birthday',
+		year: 'Year',
+		month: 'Month',
+		day: 'Day',
 		birthdaySaveSuccess: 'Birthday updated',
 		notSet: 'Not set'
 		},
@@ -1598,6 +1762,12 @@ const messages = {
 			myPoints: 'My Points',
 			exchangeSuccess: 'Redeemed successfully',
 			exchangeFailed: 'Redemption failed',
+			pickupTime: 'Pickup Time',
+			pickupTimePlaceholder: 'Select pickup time',
+			pickupHint: 'Must be at least 24 hours ahead',
+			pickupTimeRequired: 'Please select pickup time',
+			pickupTimeTooSoon: 'Pickup time must be at least 24 hours ahead',
+			pickupTimeOk: 'Time is valid',
 			pointsNotEnough: 'Not enough points'
 		},
 				groupBuy: {
@@ -1712,6 +1882,8 @@ const messages = {
 			rules: 'Campaign Rules',
 			notStackable: 'Cannot be combined with other campaigns',
 			autoApply: 'Auto-applied at checkout, no action needed',
+			extraPoints: '+{n} bonus points',
+			extraCoins: '+{n} bonus coins',
 			claimableCoupons: 'Claimable Coupons',
 			noCoupons: 'No claimable coupons',
 			spendThreshold: 'Min spend {amount}',
@@ -1725,6 +1897,96 @@ const messages = {
 			claimSuccess: 'Claimed successfully',
 			orderNow: 'Order Now',
 			myCoupons: 'My Coupons'
+		},
+		exchange: {
+			title: 'Coins to Points',
+			coinBalance: 'Coin Balance',
+			pointBalance: 'Point Balance',
+			rate: 'Exchange Rate',
+			minExchange: 'Minimum',
+			dailyLimit: 'Daily Limit',
+			coinsToSpend: 'Coins to Spend',
+			coinsInputPlaceholder: 'Minimum {min} coins',
+			coins: 'coins',
+			points: 'points',
+			pointsToReceive: 'You Will Get',
+			hint1: 'Points arrive instantly after exchange',
+			hint2: 'Rate is configured by admin and may change',
+			confirm: 'Confirm Exchange',
+			confirmTitle: 'Confirm',
+			confirmContent: 'Spend {coins} coins to get {points} points?',
+			success: 'Success! Got {points} points',
+			insufficientCoins: 'Insufficient coin balance',
+			errors: {
+				INVALID_AMOUNT: 'Amount too small, minimum {min} coins',
+				INSUFFICIENT_COINS: 'Insufficient coin balance',
+				EXCHANGE_DISABLED: 'Exchange feature is disabled',
+				DAILY_LIMIT_EXCEEDED: 'Daily limit reached',
+				DEFAULT: 'Exchange failed, please try again'
+			}
+		},
+		changePhone: {
+			title: 'Change Phone Number',
+			currentPhone: 'Current',
+			step1Title: 'Verify Old Number',
+			step2Title: 'Bind New Number',
+			next: 'Next',
+			verified: 'Verified',
+			fillOldCodeFirst: 'Please enter old phone and code first',
+			oldPhonePlaceholder: 'Enter current phone number',
+			oldCodePlaceholder: 'Enter old number code',
+			newPhonePlaceholder: 'Enter new phone number',
+			newCodePlaceholder: 'Enter new number code',
+			getOldCode: 'Get Code',
+			getNewCode: 'Get Code',
+			codeSent: 'Code sent',
+			confirm: 'Confirm Change',
+			hint1: 'You can change phone number once per month',
+			hint2: 'New number cannot be the same as old, nor used by another account',
+			success: 'Phone number changed successfully',
+			errors: {
+				OLD_PHONE_MISMATCH: 'Old phone does not match the bound number',
+				NEW_PHONE_SAME_AS_OLD: 'New number cannot be the same as old',
+				OLD_CODE_INVALID: 'Old number code is incorrect or expired',
+				NEW_CODE_INVALID: 'New number code is incorrect or expired',
+				NO_PHONE_BOUND: 'No phone bound to this account',
+				PHONE_ALREADY_BOUND: 'This phone is already used by another account',
+				PHONE_CHANGE_LIMIT: 'Already changed this month, only once per month',
+				RATE_LIMITED: 'Too many requests, please try later',
+				INVALID_PHONE: 'Invalid phone format',
+				INVALID_TYPE: 'Invalid parameter',
+				DEFAULT: 'Change failed, please try again'
+			}
+		},
+		tasks: {
+			title: 'Tasks',
+			headerTitle: 'Complete tasks, earn rewards',
+			headerSubtitle: 'Finish tasks to get points, coins or coupons',
+			sectionAll: 'All Tasks',
+			inProgress: 'In Progress',
+			claim: 'Claim',
+			claimed: 'Claimed',
+			claimSuccess: 'Claimed Successfully',
+			empty: 'No tasks yet, stay tuned',
+			errors: {
+				TASK_NOT_CLAIMABLE: 'Task not completed or already claimed',
+				DEFAULT: 'Claim failed, please try again'
+			}
+		},
+		birthday: {
+			happyBirthday: 'Happy Birthday!',
+			claimable: 'You have a birthday reward to claim',
+			claim: 'Claim Now',
+			claimSuccess: 'Claimed Successfully',
+			hint: 'Can be claimed once per year',
+			errors: {
+				not_birthday_today: 'Today is not your birthday',
+				already_claimed: 'You already claimed this year',
+				disabled: 'Birthday reward is not enabled',
+				no_birthday: 'Please set your birthday first',
+				BIRTHDAY_COUPON_UNAVAILABLE: 'Birthday coupon is unavailable',
+				DEFAULT: 'Claim failed, please try again'
+			}
 		}
 	},
 	// 泰语
@@ -1806,6 +2068,22 @@ const messages = {
 			confirm: 'ยืนยัน',
 			insufficientCoins: 'เหรียญไม่พอ',
 			exchangeSuccess: 'แลกสำเร็จ'
+		},
+		opening: {
+			active: 'ฉลองเปิดร้านใหม่',
+			daysLeft: 'เหลือ {n} วัน',
+			extraPoints: '+{n} แต้มพิเศษ',
+			extraCoins: '+{n} เหรียญพิเศษ',
+			discount: 'ลด {n}% ทุกรายการ',
+			claimCoupon: 'รับคูปองเปิดร้าน',
+			claimed: 'รับแล้ว',
+			claimSuccess: 'รับคูปองสำเร็จ',
+			errors: {
+				unavailable: 'คูปองเปิดร้านหมดแล้ว',
+				ended: 'กิจกรรมเปิดร้านสิ้นสุดแล้ว',
+				alreadyClaimed: 'คุณรับคูปองร้านนี้แล้ว',
+				default: 'รับไม่สำเร็จ กรุณาลองอีกครั้ง'
+			}
 		},
 		storeSelect: {
 			title: 'เลือกร้าน',
@@ -1925,6 +2203,9 @@ const messages = {
 		},
 		productDetail: {
 			specs: 'ตัวเลือก',
+			specSize: 'ขนาด',
+			specFlavor: 'รสชาติ',
+			specTopping: 'เพิ่มเติม',
 			quantity: 'จำนวน',
 			addToCart: 'เพิ่มลงตะกร้า',
 			buyNow: 'ซื้อเลย',
@@ -2009,6 +2290,11 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			coinMaxDeduct: 'หักสูงสุด ฿{amount} ({coins} เหรียญ)',
 			coinMaxDeductAmount: 'หักได้สูงสุดสำหรับคำสั่งนี้: ฿{amount}',
 			coinThresholdNotMet: 'ยอดคำสั่งซื้อไม่ถึงขั้นต่ำการใช้เหรียญ',
+			coinPlanRecommended: 'แผนแนะนำ',
+			coinPlanAlternative: 'แผนสำรอง',
+			coinPlanSummary: 'ใช้ {coins} เหรียญ หัก ฿{amount}',
+			coinPlanTierLine: 'เหรียญ {coins} × {packs}',
+			coinTierUnavailable: 'ยอดคำสั่งซื้อไม่ถึงเกณฑ์การใช้เหรียญ',
 			submitting: 'กำลังส่ง...',
 			orderInfo: 'ข้อมูลคำสั่งซื้อ',
 			productCost: 'ยอดสินค้า',
@@ -2019,6 +2305,7 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			couponNone: 'ไม่มีที่ใช้ได้',
 			couponNoAvailable: 'ไม่มีคูปอง',
 			couponNotUse: 'ไม่ใช้คูปอง',
+			couponNotApplicable: '(ใช้กับโปรโมชันไม่ได้)',
 			pleaseSelect: 'เลือก',
 			remarkOptional: 'ไม่บังคับ กรอกหมายเหตุ',
 			pleaseSelectAddress: 'กรุณาเลือกที่อยู่',
@@ -2056,13 +2343,15 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			orderInfo: 'ข้อมูลคำสั่ง',
 			paid: 'ชำระแล้ว',
 			continueShopping: 'เลือกซื้อต่อ',},
-		exchange: {
+		exchangeResult: {
 			title: 'ผลการแลก',
 			waitingRedeem: 'รอยืนยัน',
 			redeemed: 'ยืนยันสำเร็จ',
 			showQR: 'แสดง QR ให้พนักงานสแกนเพื่อยืนยัน',
 			scanning: 'ยืนยันอัตโนมัติหลังสแกน',
 			product: 'สินค้า',
+			pickupStore: 'สาขารับสินค้า',
+			pickupTime: 'เวลารับสินค้า',
 			quantity: 'จำนวน',
 			exchangeId: 'หมายเลขคำสั่ง',
 			status: 'สถานะ',
@@ -2152,6 +2441,8 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			orderNo: 'หมายเลขคำสั่งซื้อ',
 			orderTime: 'เวลาสั่ง',
 			orderSource: 'แหล่งที่มา',
+			pickupStore: 'สาขารับสินค้า',
+			pickupTime: 'เวลารับสินค้า',
 			remark: 'หมายเหตุ',
 			payMethod: 'วิธีชำระเงิน',
 			payTime: 'เวลาชำระเงิน',
@@ -2304,6 +2595,7 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			codePlaceholder: 'กรอกรหัส 6 หลัก',
 			getCode: 'ขอรหัสยืนยัน',
 			register: 'สมัครสมาชิก',
+			birthdayPlaceholder: 'เลือกวันเกิด',
 			codeInvalidOrExpired: 'รหัสยืนยันไม่ถูกต้องหรือหมดอายุ'
 		},
 		settings: {
@@ -2343,6 +2635,9 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 		birthday: 'วันเกิด',
 		editBirthday: 'แก้ไขวันเกิด',
 		birthdayPlaceholder: 'เลือกวันเกิด',
+		year: 'ปี',
+		month: 'เดือน',
+		day: 'วัน',
 		birthdaySaveSuccess: 'อัปเดตวันเกิดแล้ว',
 		notSet: 'ยังไม่ได้ตั้งค่า'
 		},
@@ -2479,6 +2774,12 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			myPoints: 'คะแนนของฉัน',
 			exchangeSuccess: 'แลกสำเร็จ',
 			exchangeFailed: 'แลกไม่สำเร็จ',
+			pickupTime: 'เวลารับสินค้า',
+			pickupTimePlaceholder: 'เลือกเวลารับสินค้า',
+			pickupHint: 'ต้องล่วงหน้าอย่างน้อย 24 ชั่วโมง',
+			pickupTimeRequired: 'กรุณาเลือกเวลารับสินค้า',
+			pickupTimeTooSoon: 'เวลารับสินค้าต้องล่วงหน้าอย่างน้อย 24 ชั่วโมง',
+			pickupTimeOk: 'เวลาที่เลือกใช้ได้',
 			pointsNotEnough: 'คะแนนไม่พอ'
 		},
 				groupBuy: {
@@ -2593,6 +2894,8 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			rules: 'กฎกติกาโปรโมชัน',
 			notStackable: 'ใช้ร่วมกับโปรโมชันอื่นไม่ได้',
 			autoApply: 'ใช้อัตโนมัติเมื่อสั่งซื้อ ไม่ต้องทำอะไร',
+			extraPoints: '+{n} แต้มพิเศษ',
+			extraCoins: '+{n} เหรียญพิเศษ',
 			claimableCoupons: 'คูปองที่รับได้',
 			noCoupons: 'ยังไม่มีคูปองที่รับได้',
 			spendThreshold: 'ใช้เมื่อสั่งครบ {amount} บาท',
@@ -2606,6 +2909,96 @@ coinDeductUnavailable: 'ไม่สามารถใช้เหรียญ�
 			claimSuccess: 'รับคูปองสำเร็จ',
 			orderNow: 'สั่งเลย',
 			myCoupons: 'คูปองของฉัน'
+		},
+		exchange: {
+			title: 'แลกเหรียญเป็นแต้ม',
+			coinBalance: 'เหรียญคงเหลือ',
+			pointBalance: 'แต้มคงเหลือ',
+			rate: 'อัตราแลก',
+			minExchange: 'ขั้นต่ำ',
+			dailyLimit: 'จำกัด/วัน',
+			coinsToSpend: 'เหรียญที่ใช้',
+			coinsInputPlaceholder: 'ขั้นต่ำ {min} เหรียญ',
+			coins: 'เหรียญ',
+			points: 'แต้ม',
+			pointsToReceive: 'จะได้รับ',
+			hint1: 'แต้มจะเข้าบัญชีทันทีหลังแลก',
+			hint2: 'อัตราแลกกำหนดโดยระบบ อาจเปลี่ยนแปลง',
+			confirm: 'ยืนยันแลก',
+			confirmTitle: 'ยืนยัน',
+			confirmContent: 'ใช้ {coins} เหรียญ แลก {points} แต้ม?',
+			success: 'สำเร็จ! ได้รับ {points} แต้ม',
+			insufficientCoins: 'เหรียญไม่เพียงพอ',
+			errors: {
+				INVALID_AMOUNT: 'จำนวนน้อยเกินไป ขั้นต่ำ {min} เหรียญ',
+				INSUFFICIENT_COINS: 'เหรียญไม่เพียงพอ',
+				EXCHANGE_DISABLED: 'ฟังก์ชันแลกเหรียญปิดอยู่',
+				DAILY_LIMIT_EXCEEDED: 'ถึงขีดจำกัดรายวันแล้ว',
+				DEFAULT: 'แลกไม่สำเร็จ กรุณาลองอีกครั้ง'
+			}
+		},
+		changePhone: {
+			title: 'เปลี่ยนเบอร์โทรศัพท์',
+			currentPhone: 'เบอร์ปัจจุบัน',
+			step1Title: 'ยืนยันเบอร์เดิม',
+			step2Title: 'ผูกเบอร์ใหม่',
+			next: 'ถัดไป',
+			verified: 'ยืนยันแล้ว',
+			fillOldCodeFirst: 'กรุณากรอกเบอร์เดิมและรหัสยืนยันก่อน',
+			oldPhonePlaceholder: 'กรอกเบอร์โทรปัจจุบัน',
+			oldCodePlaceholder: 'กรอกรหัสยืนยันเบอร์เดิม',
+			newPhonePlaceholder: 'กรอกเบอร์โทรใหม่',
+			newCodePlaceholder: 'กรอกรหัสยืนยันเบอร์ใหม่',
+			getOldCode: 'ขอรหัส',
+			getNewCode: 'ขอรหัส',
+			codeSent: 'ส่งรหัสแล้ว',
+			confirm: 'ยืนยันเปลี่ยน',
+			hint1: 'เปลี่ยนเบอร์ได้เดือนละ 1 ครั้ง',
+			hint2: 'เบอร์ใหม่ต้องไม่ซ้ำเบอร์เดิม และต้องไม่ถูกใช้โดยบัญชีอื่น',
+			success: 'เปลี่ยนเบอร์สำเร็จ',
+			errors: {
+				OLD_PHONE_MISMATCH: 'เบอร์เดิมไม่ตรงกับเบอร์ที่ผูกไว้',
+				NEW_PHONE_SAME_AS_OLD: 'เบอร์ใหม่ต้องไม่ซ้ำเบอร์เดิม',
+				OLD_CODE_INVALID: 'รหัสยืนยันเบอร์เดิมไม่ถูกต้องหรือหมดอายุ',
+				NEW_CODE_INVALID: 'รหัสยืนยันเบอร์ใหม่ไม่ถูกต้องหรือหมดอายุ',
+				NO_PHONE_BOUND: 'บัญชีนี้ยังไม่มีเบอร์โทรที่ผูกไว้',
+				PHONE_ALREADY_BOUND: 'เบอร์นี้ถูกใช้โดยบัญชีอื่นแล้ว',
+				PHONE_CHANGE_LIMIT: 'เปลี่ยนเบอร์เดือนนี้แล้ว เดือนละ 1 ครั้ง',
+				RATE_LIMITED: 'คำขอถี่เกินไป กรุณาลองภายหลัง',
+				INVALID_PHONE: 'รูปแบบเบอร์โทรไม่ถูกต้อง',
+				INVALID_TYPE: 'พารามิเตอร์ผิดพลาด',
+				DEFAULT: 'เปลี่ยนไม่สำเร็จ กรุณาลองอีกครั้ง'
+			}
+		},
+		tasks: {
+			title: 'ภารกิจ',
+			headerTitle: 'ทำภารกิจ รับรางวัล',
+			headerSubtitle: 'ทำภารกิจให้ครบเพื่อรับแต้ม เหรียญ หรือคูปอง',
+			sectionAll: 'ภารกิจทั้งหมด',
+			inProgress: 'กำลังดำเนินการ',
+			claim: 'รับ',
+			claimed: 'รับแล้ว',
+			claimSuccess: 'รับรางวัลสำเร็จ',
+			empty: 'ยังไม่มีภารกิจ โปรดติดตาม',
+			errors: {
+				TASK_NOT_CLAIMABLE: 'ภารกิจยัไม่สำเร็จ หรือรับแล้ว',
+				DEFAULT: 'รับไม่สำเร็จ กรุณาลองอีกครั้ง'
+			}
+		},
+		birthday: {
+			happyBirthday: 'สุขสันต์วันเกิด!',
+			claimable: 'คุณมีรางวัลวันเกิดรอรับ',
+			claim: 'รับเลย',
+			claimSuccess: 'รับรางวัลสำเร็จ',
+			hint: 'รับได้ปีละ 1 ครั้ง',
+			errors: {
+				not_birthday_today: 'วันนี้ไม่ใช่วันเกิดของคุณ',
+				already_claimed: 'คุณรับรางวัลปีนี้แล้ว',
+				disabled: 'รางวัลวันเกิดยังไม่เปิด',
+				no_birthday: 'กรุณาตั้งค่าวันเกิดก่อน',
+				BIRTHDAY_COUPON_UNAVAILABLE: 'คูปองวันเกิดไม่พร้อมใช้งาน',
+				DEFAULT: 'รับไม่สำเร็จ กรุณาลองอีกครั้ง'
+			}
 		}
 	}
 }

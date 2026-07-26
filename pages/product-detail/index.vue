@@ -151,6 +151,96 @@
 			@close="handleShareModalClose"
 			@confirm="handleShareConfirm"
 		></share-modal>
+
+		<!-- 规格选择弹窗 -->
+		<view v-if="showSpecsModal" class="specs-mask" @click="closeSpecsModal">
+			<view class="specs-sheet" @click.stop>
+				<!-- 商品概要 -->
+				<view class="specs-header">
+					<image class="specs-product-img" :src="fixMinioUrl(product.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+					<view class="specs-product-info">
+						<text class="specs-product-name">{{ product['name_' + i18n.getLanguage()] || product.name }}</text>
+						<view class="specs-product-price">
+							<text class="specs-price-symbol">฿</text>
+							<text class="specs-price-num">{{ getSpecPrice() * specsQuantity }}</text>
+						</view>
+					</view>
+					<view class="specs-close" @click="closeSpecsModal">
+						<text class="specs-close-text">×</text>
+					</view>
+				</view>
+
+				<scroll-view scroll-y class="specs-body">
+					<!-- 规格(单选) -->
+					<view class="spec-group" v-if="itemOptions && itemOptions.specs && itemOptions.specs.length > 0">
+						<text class="spec-group-title">{{ t('productDetail.specSize') }}</text>
+						<view class="spec-options">
+							<view
+								v-for="spec in itemOptions.specs"
+								:key="spec.id"
+								class="spec-option"
+								:class="{ 'spec-option-active': selectedSpec && selectedSpec.id === spec.id }"
+								@click="selectSpec(spec)"
+							>
+								<text class="spec-option-name">{{ _optionName(spec) }}</text>
+								<text class="spec-option-price" v-if="spec.price_diff > 0">+฿{{ spec.price_diff }}</text>
+							</view>
+						</view>
+					</view>
+
+					<!-- 口味(单选) -->
+					<view class="spec-group" v-if="itemOptions && itemOptions.flavors && itemOptions.flavors.length > 0">
+						<text class="spec-group-title">{{ t('productDetail.specFlavor') }}</text>
+						<view class="spec-options">
+							<view
+								v-for="flavor in itemOptions.flavors"
+								:key="flavor.id"
+								class="spec-option"
+								:class="{ 'spec-option-active': selectedFlavor && selectedFlavor.id === flavor.id }"
+								@click="selectFlavor(flavor)"
+							>
+								<text class="spec-option-name">{{ _optionName(flavor) }}</text>
+								<text class="spec-option-price" v-if="flavor.price_diff > 0">+฿{{ flavor.price_diff }}</text>
+							</view>
+						</view>
+					</view>
+
+					<!-- 加料(多选) -->
+					<view class="spec-group" v-if="itemOptions && itemOptions.toppings && itemOptions.toppings.length > 0">
+						<text class="spec-group-title">{{ t('productDetail.specTopping') }}</text>
+						<view class="spec-options">
+							<view
+								v-for="topping in itemOptions.toppings"
+								:key="topping.id"
+								class="spec-option"
+								:class="{ 'spec-option-active': selectedToppings.some(t => t.id === topping.id) }"
+								@click="toggleTopping(topping)"
+							>
+								<text class="spec-option-name">{{ _optionName(topping) }}</text>
+								<text class="spec-option-price" v-if="topping.price_diff > 0">+฿{{ topping.price_diff }}</text>
+							</view>
+						</view>
+					</view>
+				</scroll-view>
+
+				<!-- 数量 + 按钮 -->
+				<view class="specs-footer">
+					<view class="specs-qty">
+						<view class="qty-btn" @click="specsQtyDecrease"><text class="qty-text">−</text></view>
+						<text class="qty-num">{{ specsQuantity }}</text>
+						<view class="qty-btn" @click="specsQtyIncrease"><text class="qty-text">+</text></view>
+					</view>
+					<view class="specs-actions">
+						<view class="specs-btn specs-btn-cart" @click="specsConfirmAddToCart">
+							<text class="specs-btn-text">{{ t('productDetail.addToCart') }}</text>
+						</view>
+						<view class="specs-btn specs-btn-now" @click="specsConfirmBuyNow">
+							<text class="specs-btn-text">{{ t('productDetail.buyNow') }}</text>
+						</view>
+					</view>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
@@ -160,7 +250,7 @@ import { shareProduct, ShareType } from '@/utils/share.js'
 import ShareModal from '@/components/share-modal.vue'
 import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
-import { getMenuItem } from '@/api/services/menu.js'
+import { getMenuItem, getMenuItemOptions } from '@/api/services/menu.js'
 import footprintManager from '@/utils/footprint.js'
 import { getAvailableCoupons } from '@/api/services/coupon.js'
 import { getHotProducts } from '@/api/services/products.js'
@@ -190,6 +280,13 @@ export default {
 				name: '',
 				image: ''
 			},
+			// 规格选择
+			itemOptions: null,          // 后端返回的 options(flavors/specs/toppings)
+			showSpecsModal: false,      // 规格弹窗
+			selectedFlavor: null,       // 选中的口味
+			selectedSpec: null,         // 选中的规格
+			selectedToppings: [],       // 选中的加料(多选)
+			specsQuantity: 1,           // 规格弹窗里的数量
 			langVersion: 0
 		}
 	},
@@ -248,6 +345,14 @@ export default {
 				// 商品详情
 				if (detailRes.status === 'fulfilled' && detailRes.value.code === 0 && detailRes.value.data) {
 					this.product = detailRes.value.data
+
+					// 如果有规格，加载 options；shopId 缺失时用商品自身 store_id 兜底
+					if (this.product.has_options) {
+						if (!this.shopId && this.product.store_id) {
+							this.shopId = this.product.store_id
+						}
+						this.loadItemOptions()
+					}
 
 				// 记录商品浏览足迹
 				if (this.product && this.product.id) {
@@ -335,21 +440,129 @@ export default {
 			}
 		},
 
-			handleAddToCart() {
-				if (this.product.is_sold_out) {
-					showToast(this.i18n.t('dinein.soldOut'))
-					return
+		// ============ 菜品规格 ============
+		async loadItemOptions() {
+			try {
+				const res = await getMenuItemOptions(this.productId, this.shopId)
+				if (res && res.code === 0 && res.data) {
+					this.itemOptions = res.data
+					if (this.itemOptions.flavors && this.itemOptions.flavors.length > 0) {
+						this.selectedFlavor = this.itemOptions.flavors[0]
+					}
+					if (this.itemOptions.specs && this.itemOptions.specs.length > 0) {
+						this.selectedSpec = this.itemOptions.specs[0]
+					}
 				}
-				appStore.addToCart(this.shopId, {
-					id: this.product.id || this.productId,
-					name: this.product.name || '',
-					price: this.product.price || 0,
-					image: fixMinioUrl(this.product.image_url) || '',
-					quantity: 1,
-					specs: {},
-					store_id: this.shopId
-				})
-				showToast(this.i18n.t('dinein.addToCart'))
+			} catch (e) {
+				console.warn('[product-detail] load options failed:', e)
+			}
+		},
+		hasSpecs() {
+			return this.itemOptions && (
+				(this.itemOptions.flavors && this.itemOptions.flavors.length > 0) ||
+				(this.itemOptions.specs && this.itemOptions.specs.length > 0) ||
+				(this.itemOptions.toppings && this.itemOptions.toppings.length > 0)
+			)
+		},
+		getSpecPrice() {
+			let price = Number(this.product.price) || 0
+			if (this.selectedFlavor) price += Number(this.selectedFlavor.price_diff) || 0
+			if (this.selectedSpec) price += Number(this.selectedSpec.price_diff) || 0
+			if (this.selectedToppings) {
+				this.selectedToppings.forEach(t => { price += Number(t.price_diff) || 0 })
+			}
+			return price
+		},
+		_optionName(opt) {
+			const lang = i18n.getLanguage()
+			return opt['name_' + lang] || opt.name || ''
+		},
+		getSpecsText() {
+			const parts = []
+			if (this.selectedSpec) parts.push(this._optionName(this.selectedSpec))
+			if (this.selectedFlavor) parts.push(this._optionName(this.selectedFlavor))
+			if (this.selectedToppings) {
+				this.selectedToppings.forEach(t => parts.push(this._optionName(t)))
+			}
+			return parts.join(' / ')
+		},
+		buildSpecsObject() {
+			const specs = {}
+			if (this.selectedSpec) specs.spec = { id: this.selectedSpec.id, name: this._optionName(this.selectedSpec), price_diff: this.selectedSpec.price_diff }
+			if (this.selectedFlavor) specs.flavor = { id: this.selectedFlavor.id, name: this._optionName(this.selectedFlavor), price_diff: this.selectedFlavor.price_diff }
+			if (this.selectedToppings && this.selectedToppings.length > 0) {
+				specs.toppings = this.selectedToppings.map(t => ({ id: t.id, name: this._optionName(t), price_diff: t.price_diff }))
+			}
+			return specs
+		},
+		toggleTopping(topping) {
+			const idx = this.selectedToppings.findIndex(t => t.id === topping.id)
+			if (idx >= 0) { this.selectedToppings.splice(idx, 1) }
+			else { this.selectedToppings.push(topping) }
+		},
+		selectFlavor(flavor) { this.selectedFlavor = flavor },
+		selectSpec(spec) { this.selectedSpec = spec },
+		openSpecsModal() { this.specsQuantity = 1; this.showSpecsModal = true },
+		closeSpecsModal() { this.showSpecsModal = false },
+		specsQtyIncrease() { this.specsQuantity++ },
+		specsQtyDecrease() { if (this.specsQuantity > 1) this.specsQuantity-- },
+		specsConfirmAddToCart() {
+			appStore.addToCart(this.shopId, {
+				id: this.product.id || this.productId,
+				name: this.product.name || '',
+				name_en: this.product.name_en || '',
+				name_th: this.product.name_th || '',
+				price: this.getSpecPrice(),
+				image: fixMinioUrl(this.product.image_url) || '',
+				quantity: this.specsQuantity,
+				specs: this.buildSpecsObject(),
+				specs_text: this.getSpecsText(),
+				store_id: this.shopId
+			})
+			this.showSpecsModal = false
+			showToast(this.i18n.t('dinein.addToCart'))
+		},
+		specsConfirmBuyNow() {
+			const productData = {
+				id: this.product.id || this.productId,
+				name: this.product.name || '',
+				name_en: this.product.name_en || '',
+				name_th: this.product.name_th || '',
+				price: this.getSpecPrice(),
+				image: fixMinioUrl(this.product.image_url) || '',
+				quantity: this.specsQuantity,
+				specs: this.buildSpecsObject(),
+				specs_text: this.getSpecsText(),
+				store_id: this.shopId
+			}
+			const productsStr = encodeURIComponent(JSON.stringify([productData]))
+			this.showSpecsModal = false
+			uni.navigateTo({
+				url: `/pages/checkout/index?orderType=dinein&shopId=${this.shopId || ''}&shopName=${encodeURIComponent(this.product.store_name || '')}&products=${productsStr}`
+			})
+		},
+
+		handleAddToCart() {
+			if (this.product.is_sold_out) {
+				showToast(this.i18n.t('dinein.soldOut'))
+				return
+			}
+			if (this.hasSpecs()) {
+				this.openSpecsModal()
+				return
+			}
+			appStore.addToCart(this.shopId, {
+				id: this.product.id || this.productId,
+				name: this.product.name || '',
+				name_en: this.product.name_en || '',
+				name_th: this.product.name_th || '',
+				price: this.product.price || 0,
+				image: fixMinioUrl(this.product.image_url) || '',
+				quantity: 1,
+				specs: {},
+				store_id: this.shopId
+			})
+			showToast(this.i18n.t('dinein.addToCart'))
 		},
 
 		handleBuyNow() {
@@ -357,16 +570,20 @@ export default {
 				showToast('商品已售罄')
 				return
 			}
-			if (this.product.stock !== undefined && this.product.stock <= 0) {
-				showToast('库存不足')
+			// 如果有规格,弹规格选择
+			if (this.hasSpecs()) {
+				this.openSpecsModal()
 				return
 			}
 			const productData = {
 				id: this.product.id || this.productId,
 				name: this.product.name || '',
+				name_en: this.product.name_en || '',
+				name_th: this.product.name_th || '',
 				price: this.product.price || 0,
 				image: fixMinioUrl(this.product.image_url) || '',
 				quantity: 1,
+				specs: {},
 				store_id: this.shopId
 			}
 			uni.navigateTo({
@@ -813,5 +1030,213 @@ export default {
 	font-size: 14px;
 	font-weight: 600;
 	color: #FFFFFF;
+}
+
+/* ============ 规格选择弹窗 ============ */
+.specs-mask {
+	position: fixed;
+	top: 0; left: 0; right: 0; bottom: 0;
+	background-color: rgba(0,0,0,0.6);
+	z-index: 9999;
+	display: flex;
+	align-items: flex-end;
+}
+
+.specs-sheet {
+	width: 100%;
+	max-height: 80vh;
+	background-color: #FFFFFF;
+	border-radius: 24rpx 24rpx 0 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.specs-header {
+	display: flex;
+	flex-direction: row;
+	padding: 24rpx;
+	border-bottom: 1px solid #F0F0F0;
+}
+
+.specs-product-img {
+	width: 120rpx;
+	height: 120rpx;
+	border-radius: 12rpx;
+	margin-right: 20rpx;
+}
+
+.specs-product-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+}
+
+.specs-product-name {
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #1A1A1A;
+	margin-bottom: 8rpx;
+}
+
+.specs-product-price {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+}
+
+.specs-price-symbol {
+	font-size: 24rpx;
+	color: #F2B131;
+}
+
+.specs-price-num {
+	font-size: 40rpx;
+	font-weight: 700;
+	color: #F2B131;
+}
+
+.specs-close {
+	width: 56rpx;
+	height: 56rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.specs-close-text {
+	font-size: 40rpx;
+	color: #999;
+	line-height: 1;
+}
+
+.specs-body {
+	flex: 1;
+	padding: 0 24rpx;
+	max-height: 500rpx;
+}
+
+.spec-group {
+	padding: 24rpx 0;
+	border-bottom: 1px solid #F8F8F8;
+}
+
+.spec-group-title {
+	display: block;
+	font-size: 28rpx;
+	font-weight: 600;
+	color: #1A1A1A;
+	margin-bottom: 16rpx;
+}
+
+.spec-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 16rpx;
+}
+
+.spec-option {
+	padding: 12rpx 24rpx;
+	border: 2rpx solid #E0E0E0;
+	border-radius: 12rpx;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	background-color: #FAFAFA;
+}
+
+.spec-option-active {
+	border-color: #F2B131;
+	background-color: #FFF8E1;
+}
+
+.spec-option-name {
+	font-size: 26rpx;
+	color: #333;
+}
+
+.spec-option-active .spec-option-name {
+	color: #F2B131;
+	font-weight: 600;
+}
+
+.spec-option-price {
+	font-size: 22rpx;
+	color: #999;
+	margin-left: 8rpx;
+}
+
+.spec-option-active .spec-option-price {
+	color: #F2B131;
+}
+
+.specs-footer {
+	padding: 20rpx 24rpx;
+	padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+	border-top: 1px solid #F0F0F0;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 16rpx;
+}
+
+.specs-qty {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 8rpx;
+}
+
+.qty-btn {
+	width: 56rpx;
+	height: 56rpx;
+	border-radius: 50%;
+	background-color: #F5F5F5;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.qty-text {
+	font-size: 32rpx;
+	color: #333;
+}
+
+.qty-num {
+	font-size: 30rpx;
+	font-weight: 600;
+	color: #1A1A1A;
+	min-width: 48rpx;
+	text-align: center;
+}
+
+.specs-actions {
+	flex: 1;
+	display: flex;
+	flex-direction: row;
+	gap: 12rpx;
+}
+
+.specs-btn {
+	flex: 1;
+	height: 80rpx;
+	border-radius: 40rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.specs-btn-cart {
+	background-color: #F2B131;
+}
+
+.specs-btn-now {
+	background-color: #FF6B9D;
+}
+
+.specs-btn-text {
+	color: #FFFFFF;
+	font-size: 28rpx;
+	font-weight: 600;
 }
 </style>

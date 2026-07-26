@@ -81,7 +81,9 @@
 			</view>
 
 			<!-- 第三方 OAuth 登录入口(自定义基座才能用)-->
+			<!-- #ifdef APP-PLUS -->
 			<CSocialButtons v-if="true" @login="handleSocialLogin" />
+			<!-- #endif -->
 		</view>
 
 		<!-- 协议提示 -->

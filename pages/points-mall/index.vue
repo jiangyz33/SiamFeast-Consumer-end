@@ -61,7 +61,7 @@
 				</view>
 			</view>
 
-			<!-- 兑换Tab -->
+			<!-- 兑换Tab(3 个:积分兑换 / 金币兑换 / 金币换积分)-->
 			<view class="exchange-tabs">
 				<view
 					class="exchange-tab"
@@ -76,6 +76,77 @@
 					@click="switchTab(1)"
 				>
 					<text class="tab-text">{{ t('member.balanceExchange') }}</text>
+				</view>
+				<view
+					class="exchange-tab"
+					:class="{ 'tab-active': activeTab === 2 }"
+					@click="switchTab(2)"
+				>
+					<text class="tab-text">{{ t('exchange.title') }}</text>
+				</view>
+			</view>
+
+			<!-- Tab 2:金币换积分 -->
+			<view class="coin-exchange-wrapper" v-if="activeTab === 2">
+				<view class="coin-exchange-card" v-if="exchangeConfig.is_enabled">
+					<view class="coin-exchange-header">
+						<view class="coin-exchange-title-row">
+							<image class="coin-exchange-icon" src="/static/icons/coin.svg" mode="aspectFit"></image>
+							<text class="coin-exchange-title">{{ t('exchange.title') }}</text>
+						</view>
+						<text class="coin-exchange-rate">1 : {{ exchangeConfig.points_per_coin }}</text>
+					</view>
+
+					<view class="coin-exchange-body">
+						<view class="exchange-input-row">
+							<view class="exchange-input-box">
+								<input
+									class="exchange-input"
+									type="number"
+									v-model="coinsInput"
+									:placeholder="t('exchange.coinsInputPlaceholder', { min: exchangeConfig.min_coins_per_exchange })"
+									placeholder-style="color: #BDBDBD;"
+									@input="onCoinsInput"
+								/>
+								<text class="exchange-input-suffix">{{ t('exchange.coins') }}</text>
+							</view>
+							<view class="exchange-arrow">
+								<text class="arrow-icon">→</text>
+							</view>
+							<view class="exchange-result-box">
+								<text class="result-num">{{ pointsWillGet }}</text>
+								<text class="result-unit">{{ t('exchange.points') }}</text>
+							</view>
+						</view>
+
+						<view class="exchange-quick-row">
+							<view
+								v-for="amount in quickAmounts"
+								:key="amount"
+								class="quick-chip"
+								:class="{ 'quick-chip-active': coinsInput == amount }"
+								@click="selectQuick(amount)"
+							>
+								<text class="quick-chip-text">{{ amount }}</text>
+							</view>
+						</view>
+
+						<view
+							class="exchange-confirm-btn"
+							:class="{ 'btn-disabled': !canExchange || exchanging }"
+							@click="handleExchangeCoins"
+						>
+							<text class="exchange-confirm-text">
+								{{ exchanging ? t('common.loading') : t('exchange.confirm') }}
+							</text>
+						</view>
+					</view>
+				</view>
+
+				<!-- 功能未启用 -->
+				<view v-else class="exchange-disabled-state">
+					<text class="disabled-icon">💤</text>
+					<text class="disabled-text">{{ t('exchange.errors.EXCHANGE_DISABLED') }}</text>
 				</view>
 			</view>
 
@@ -178,6 +249,22 @@
 							</view>
 						</view>
 					</view>
+
+					<!-- 提货时间选择 -->
+					<view class="pickup-section">
+						<text class="pickup-label">{{ t('pointsMall.pickupTime') }}</text>
+						<view class="pickup-picker-row">
+							<picker mode="multiSelector" :range="dateSelectorArray" @change="onDateChange" @columnchange="onDateColumnChange">
+								<view class="pickup-picker-box">
+									<text class="pickup-picker-text" v-if="pickupTime">{{ pickupTime }}</text>
+									<text class="pickup-picker-placeholder" v-else>{{ t('pointsMall.pickupTimePlaceholder') }}</text>
+								</view>
+							</picker>
+						</view>
+						<text class="pickup-hint" v-if="false">⚠️ {{ t('pointsMall.pickupHint') }}</text>
+						<text class="pickup-status pickup-status-ok" v-if="pickupTime && validatePickupTime()">✓ {{ t('pointsMall.pickupTimeOk') }}</text>
+						<text class="pickup-status pickup-status-err" v-if="pickupTime && !validatePickupTime()">⚠️ {{ t('pointsMall.pickupTimeTooSoon') }}</text>
+					</view>
 				</view>
 				<view class="modal-footer">
 					<view class="modal-btn modal-btn-cancel" @click="showStoreModal = false">
@@ -202,9 +289,12 @@ import {
 	getMemberInfo,
 	getPointsBenefits,
 	getBalanceBenefits,
-	exchangeBenefit
+	exchangeBenefit,
+	getCoinExchangeConfig,
+	convertCoinsToPoints
 } from '@/api/services/member.js'
 import { getMyCoupons } from '@/api/services/coupon.js'
+import store from '@/store/index.js'
 
 export default {
 	components: {
@@ -229,7 +319,20 @@ export default {
 			showStoreModal: false,
 			storeList: [],
 			selectedStoreId: null,
-			pendingExchangeItem: null
+			pendingExchangeItem: null,
+			// 金币换积分
+			exchangeConfig: {
+				points_per_coin: 10,
+				min_coins_per_exchange: 1,
+				max_points_per_day: 0,
+				is_enabled: true
+			},
+			coinsInput: '',
+			exchanging: false,
+			quickAmounts: [50, 100, 200, 500],
+			pickupTime: '',          // 用户选的提货时间(YYYY-MM-DDTHH:mm)
+			minPickupDate: '',       // picker 最早可选日期(今天 + 1 天)
+			minPickupTime: ''        // picker 最早可选时间戳(ms)
 		}
 	},
 	computed: {
@@ -239,13 +342,45 @@ export default {
 		},
 		canUpgrade() {
 			return this.consumedAmount >= this.totalAmount
+		},
+		// 金币换积分:实时计算
+		pointsWillGet() {
+			const coins = Number(this.coinsInput)
+			if (!coins || isNaN(coins)) return 0
+			const rate = Number(this.exchangeConfig.points_per_coin) || 10
+			return Math.floor(coins * rate)
+		},
+		canExchange() {
+			const coins = Number(this.coinsInput)
+			if (!coins || isNaN(coins)) return false
+			if (coins < (this.exchangeConfig.min_coins_per_exchange || 1)) return false
+			if (coins > this.userBalance) return false
+			if (this.pointsWillGet <= 0) return false
+			return this.exchangeConfig.is_enabled !== false
+		},
+		// 时间选择器:第一列日期(未来 7 天),第二列时间(09:00 - 21:00)
+		dateSelectorArray() {
+			const days = []
+			const now = new Date()
+			for (let i = 1; i <= 7; i++) {
+				const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000)
+				const yyyy = d.getFullYear()
+				const mm = String(d.getMonth() + 1).padStart(2, '0')
+				const dd = String(d.getDate()).padStart(2, '0')
+				days.push(`${yyyy}-${mm}-${dd}`)
+			}
+			const hours = []
+			for (let h = 9; h <= 21; h++) {
+				hours.push(`${String(h).padStart(2, '0')}:00`)
+			}
+			return [days, hours]
 		}
 	},
 	onLoad(options) {
 		// 支持从外部带 tab 参数进入：0=积分兑换 1=金币兑换
 		if (options && options.tab !== undefined) {
 			const t = parseInt(options.tab, 10)
-			if (!isNaN(t) && (t === 0 || t === 1)) this.activeTab = t
+			if (!isNaN(t) && (t === 0 || t === 1 || t === 2)) this.activeTab = t
 		}
 		this.initPage()
 		this.loadData()
@@ -278,6 +413,100 @@ export default {
 			const navBarHeight = 44
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
 			this.contentHeight = systemInfo.windowHeight - navBarHeight - safeAreaBottom - this.statusBarHeight
+
+			// 加载金币换积分配置
+			this.loadExchangeConfig()
+		},
+
+		// ============ 金币换积分 ============
+		async loadExchangeConfig() {
+			try {
+				const res = await getCoinExchangeConfig()
+				if (res && res.code === 0 && res.data) {
+					this.exchangeConfig = {
+						points_per_coin: Number(res.data.points_per_coin) || 10,
+						min_coins_per_exchange: Number(res.data.min_coins_per_exchange) || 1,
+						max_points_per_day: Number(res.data.max_points_per_day) || 0,
+						is_enabled: res.data.is_enabled !== false
+					}
+				}
+			} catch (e) {
+				console.warn('[exchange] load config failed:', e)
+			}
+		},
+		onCoinsInput(e) {
+			let val = (e.detail && e.detail.value) || ''
+			val = String(val).replace(/[^\d]/g, '')
+			this.coinsInput = val
+		},
+		selectQuick(amount) {
+			if (amount > this.userBalance) {
+				showToast(this.t('exchange.insufficientCoins'))
+				return
+			}
+			this.coinsInput = String(amount)
+		},
+		handleExchangeCoins() {
+			if (!this.canExchange || this.exchanging) return
+			const coins = Number(this.coinsInput)
+			uni.showModal({
+				title: this.t('exchange.confirmTitle'),
+				content: this.t('exchange.confirmContent', { coins, points: this.pointsWillGet }),
+				confirmText: this.t('common.confirm'),
+				cancelText: this.t('common.cancel'),
+				success: async (res) => {
+					if (!res.confirm) return
+					await this.doExchange(coins)
+				}
+			})
+		},
+		async doExchange(coins) {
+			this.exchanging = true
+			try {
+				const res = await convertCoinsToPoints(coins)
+				if (res && res.code === 0 && res.data) {
+					// 更新余额
+					if (res.data.coin_balance_after !== undefined) {
+						this.userBalance = res.data.coin_balance_after
+					}
+					if (res.data.point_balance_after !== undefined) {
+						this.userPoints = res.data.point_balance_after
+					}
+					this.coinsInput = ''
+					uni.showToast({
+						title: this.t('exchange.success', { points: res.data.points_received }),
+						icon: 'success',
+						duration: 2000
+					})
+					// 同步到 store
+					try {
+						const userInfo = store.getUserInfo()
+						if (userInfo) {
+							userInfo.coin_balance = this.userBalance
+							userInfo.point_balance = this.userPoints
+							store.setUserInfo(userInfo)
+						}
+					} catch (e) {}
+				} else {
+					this.handleExchangeError(res)
+				}
+			} catch (e) {
+				console.error('[exchange] convert failed:', e)
+				this.handleExchangeError(e)
+			} finally {
+				this.exchanging = false
+			}
+		},
+		handleExchangeError(err) {
+			const code = err && (err.code || err.bizCode)
+			const errMap = {
+				INVALID_AMOUNT: this.t('exchange.errors.INVALID_AMOUNT', { min: this.exchangeConfig.min_coins_per_exchange }),
+				INSUFFICIENT_COINS: this.t('exchange.errors.INSUFFICIENT_COINS'),
+				EXCHANGE_DISABLED: this.t('exchange.errors.EXCHANGE_DISABLED'),
+				DAILY_LIMIT_EXCEEDED: this.t('exchange.errors.DAILY_LIMIT_EXCEEDED')
+			}
+			const msg = (code && errMap[code]) || (err && err.message) || this.t('exchange.errors.DEFAULT')
+			showToast(msg)
 		},
 
 		async loadData() {
@@ -408,6 +637,8 @@ export default {
 
 			this.pendingExchangeItem = item
 			this.selectedStoreId = null
+			// 防呆:自动设为 24 小时后(用户可选更晚的时间,但不能选更早的)
+			this.pickupTime = this.getDefaultPickupTime()
 
 			if (this.storeList.length === 0) {
 				await this.loadStores()
@@ -415,9 +646,60 @@ export default {
 			this.showStoreModal = true
 		},
 
+		// 默认提货时间:24 小时后,取最近的整点
+		getDefaultPickupTime() {
+			const future = new Date(Date.now() + 24 * 60 * 60 * 1000)
+			const yyyy = future.getFullYear()
+			const mm = String(future.getMonth() + 1).padStart(2, '0')
+			const dd = String(future.getDate()).padStart(2, '0')
+			// 取最近整点(9:00-21:00 营业时间内)
+			let hour = future.getHours()
+			if (hour < 9) hour = 9
+			if (hour > 21) hour = 21
+			return `${yyyy}-${mm}-${dd} ${String(hour).padStart(2, '0')}:00`
+		},
+
+		// 时间选择器值变化
+		onDateChange(e) {
+			const arr = e.detail.value
+			if (arr && arr.length === 2) {
+				this.pickupTime = `${this.dateSelectorArray[0][arr[0]]} ${this.dateSelectorArray[1][arr[1]]}`
+			}
+		},
+		// 时间选择器列变化(占位,目前不需要联动)
+		onDateColumnChange(e) {
+			// 预留:如果想根据日期联动时间段,可在此调整 dateSelectorArray[1]
+		},
+
+		// 校验提货时间是否大于当前时间 + 24 小时
+		validatePickupTime() {
+			if (!this.pickupTime) return false
+			// 拼成 ISO 格式带时区(泰国 +07:00)
+			const isoStr = `${this.pickupTime}:00+07:00`
+			const target = new Date(isoStr).getTime()
+			if (isNaN(target)) return false
+			const minTime = Date.now() + 24 * 60 * 60 * 1000
+			return target >= minTime
+		},
+
+		// 转换为后端期望的 ISO 8601 格式
+		formatPickupTimeForBackend() {
+			if (!this.pickupTime) return ''
+			// pickupTime 格式是 "YYYY-MM-DD HH:mm",转成 ISO 8601 "YYYY-MM-DDTHH:mm:00+07:00"
+			return `${this.pickupTime.replace(' ', 'T')}:00+07:00`
+		},
+
 		async confirmExchange() {
 			if (!this.selectedStoreId) {
 				showToast(this.i18n.t('dinein.selectStoreTitle'))
+				return
+			}
+			if (!this.pickupTime) {
+				showToast(this.t('pointsMall.pickupTimeRequired'))
+				return
+			}
+			if (!this.validatePickupTime()) {
+				showToast(this.t('pointsMall.pickupTimeTooSoon'))
 				return
 			}
 
@@ -430,7 +712,8 @@ export default {
 					product_id: item.id,
 					exchange_type: this.activeTab === 0 ? 'points' : 'balance',
 					quantity: 1,
-					store_id: this.selectedStoreId
+					store_id: this.selectedStoreId,
+					pickup_time: this.formatPickupTimeForBackend()
 				}
 				if (this.activeTab === 0 && item.point_price) {
 					exchangeParams.points_amount = item.point_price
@@ -438,7 +721,9 @@ export default {
 				if (this.activeTab === 1 && item.coin_price) {
 					exchangeParams.coin_amount = item.coin_price
 				}
+				console.log('[exchange] request:', JSON.stringify(exchangeParams))
 				const res = await exchangeBenefit(exchangeParams)
+				console.log('[exchange] response:', JSON.stringify(res))
 				if (res.code === 0 && res.data) {
 					const exchangeId = res.data.exchange_id || ''
 					const uniqueCode = res.data.unique_code || ''
@@ -449,8 +734,15 @@ export default {
 					const productImage = item.image || item.image_url || ''
 					const exchangeType = item.exchange_type || 'POINT'
 					const quantity = item.quantity || 1
+					// 提货门店名 + 提货时间(传三语门店名)
+					const selectedStore = this.storeList.find(s => s.id === this.selectedStoreId)
+					const storeNameZh = selectedStore ? (selectedStore.name || '') : ''
+					const storeNameEn = selectedStore ? (selectedStore.name_en || '') : ''
+					const storeNameTh = selectedStore ? (selectedStore.name_th || '') : ''
+					const pickupTimeDisplay = this.pickupTime || ''
+					console.log('[exchange] storeName:', storeNameZh, 'pickupTime:', pickupTimeDisplay)
 					uni.redirectTo({
-						url: `/pages/exchange-success/index?exchangeId=${exchangeId}&uniqueCode=${encodeURIComponent(uniqueCode)}&productName=${productNameZh}&productNameEn=${productNameEn}&productNameTh=${productNameTh}&productImage=${encodeURIComponent(productImage)}&quantity=${quantity}&exchangeType=${exchangeType}&coinCost=${item.coin_cost || item.points_cost || 0}`
+						url: `/pages/exchange-success/index?exchangeId=${exchangeId}&uniqueCode=${encodeURIComponent(uniqueCode)}&productName=${productNameZh}&productNameEn=${productNameEn}&productNameTh=${productNameTh}&productImage=${encodeURIComponent(productImage)}&quantity=${quantity}&exchangeType=${exchangeType}&coinCost=${item.coin_cost || item.points_cost || 0}&storeName=${encodeURIComponent(storeNameZh)}&storeNameEn=${encodeURIComponent(storeNameEn)}&storeNameTh=${encodeURIComponent(storeNameTh)}&pickupTime=${encodeURIComponent(pickupTimeDisplay)}`
 					})
 				} else {
 					showToast(res.message || this.t('pointsMall.exchangeFailed'))
@@ -661,6 +953,193 @@ export default {
 	color: #000000CC;
 }
 
+/* 金币换积分卡片 */
+.coin-exchange-wrapper {
+	padding: 16px;
+}
+
+.coin-exchange-card {
+	background: linear-gradient(135deg, #FFF8E1 0%, #FFFFFF 100%);
+	border-radius: 16px;
+	padding: 20px 16px;
+	border: 1px solid #FFE082;
+	box-shadow: 0 2px 8px rgba(242, 177, 49, 0.1);
+}
+
+.exchange-disabled-state {
+	padding: 80px 0;
+	text-align: center;
+}
+
+.disabled-icon {
+	display: block;
+	font-size: 64px;
+	margin-bottom: 16px;
+	opacity: 0.4;
+}
+
+.disabled-text {
+	font-size: 14px;
+	color: #999999;
+}
+
+.coin-exchange-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.coin-exchange-title-row {
+	display: flex;
+	align-items: center;
+}
+
+.coin-exchange-icon {
+	width: 24px;
+	height: 24px;
+	margin-right: 8px;
+}
+
+.coin-exchange-title {
+	font-size: 15px;
+	font-weight: 600;
+	color: #1A1A1A;
+}
+
+.coin-exchange-rate {
+	font-size: 12px;
+	color: #F2B131;
+	font-weight: 600;
+	padding: 4px 10px;
+	background-color: rgba(242, 177, 49, 0.15);
+	border-radius: 12px;
+}
+
+.coin-exchange-body {
+	/* body */
+}
+
+.exchange-input-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.exchange-input-box {
+	flex: 1;
+	height: 44px;
+	background-color: #FFFFFF;
+	border: 1px solid #E0E0E0;
+	border-radius: 10px;
+	padding: 0 12px;
+	display: flex;
+	align-items: center;
+}
+
+.exchange-input {
+	flex: 1;
+	font-size: 18px;
+	font-weight: 600;
+	color: #1A1A1A;
+	height: 44px;
+}
+
+.exchange-input-suffix {
+	font-size: 12px;
+	color: #828282;
+}
+
+.exchange-arrow {
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.arrow-icon {
+	font-size: 18px;
+	color: #F2B131;
+	font-weight: 700;
+}
+
+.exchange-result-box {
+	min-width: 80px;
+	height: 44px;
+	background-color: #FFF8E1;
+	border-radius: 10px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 12px;
+}
+
+.result-num {
+	font-size: 20px;
+	font-weight: 700;
+	color: #F2B131;
+}
+
+.result-unit {
+	font-size: 11px;
+	color: #828282;
+	margin-left: 4px;
+}
+
+.exchange-quick-row {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 14px;
+}
+
+.quick-chip {
+	flex: 1;
+	height: 30px;
+	border-radius: 15px;
+	background-color: #FFFFFF;
+	border: 1px solid #E0E0E0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.quick-chip-active {
+	background-color: #F2B131;
+	border-color: #F2B131;
+}
+
+.quick-chip-text {
+	font-size: 12px;
+	color: #666666;
+}
+
+.quick-chip-active .quick-chip-text {
+	color: #FFFFFF;
+	font-weight: 600;
+}
+
+.exchange-confirm-btn {
+	height: 44px;
+	background: linear-gradient(90deg, #F2B131 0%, #FF8F00 100%);
+	border-radius: 22px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 8px rgba(242, 177, 49, 0.3);
+}
+
+.exchange-confirm-btn.btn-disabled {
+	opacity: 0.5;
+}
+
+.exchange-confirm-text {
+	color: #FFFFFF;
+	font-size: 14px;
+	font-weight: 600;
+}
+
 /* 兑换Tab */
 .exchange-tabs {
 	display: flex;
@@ -683,7 +1162,7 @@ export default {
 	box-shadow: 0 3px 10px rgba(147, 108, 42, 0.3);
 }
 .tab-text {
-	font-size: 14px;
+	font-size: 13px;
 	color: #000000CC;
 }
 .tab-active .tab-text {
@@ -866,8 +1345,72 @@ export default {
 }
 .modal-body {
 	padding: 16px;
-	max-height: 320px;
+	max-height: 480px;
 	overflow-y: auto;
+}
+
+/* 提货时间选择 */
+.pickup-section {
+	margin-top: 20px;
+	padding-top: 16px;
+	border-top: 1px solid #F0F0F0;
+}
+
+.pickup-label {
+	display: block;
+	font-size: 14px;
+	font-weight: 600;
+	color: #1A1A1A;
+	margin-bottom: 10px;
+}
+
+.pickup-picker-row {
+	display: flex;
+}
+
+.pickup-picker-box {
+	flex: 1;
+	height: 44px;
+	border: 1px solid #E0E0E0;
+	border-radius: 8px;
+	padding: 0 12px;
+	display: flex;
+	align-items: center;
+	background-color: #FAFAFA;
+}
+
+.pickup-picker-text {
+	font-size: 14px;
+	color: #1A1A1A;
+	font-weight: 500;
+}
+
+.pickup-picker-placeholder {
+	font-size: 14px;
+	color: #BDBDBD;
+}
+
+.pickup-hint {
+	display: block;
+	margin-top: 8px;
+	font-size: 12px;
+	color: #F2B131;
+	line-height: 1.4;
+}
+
+.pickup-status {
+	display: block;
+	margin-top: 8px;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.pickup-status-ok {
+	color: #4CAF50;
+}
+
+.pickup-status-err {
+	color: #DA3300;
 }
 .modal-footer {
 	display: flex;

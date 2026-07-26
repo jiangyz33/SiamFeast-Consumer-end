@@ -17,7 +17,7 @@
 						<image class="user-avatar" :src="userInfo.avatar_url || '/static/images/04_default_avatar.png'" mode="aspectFill"></image>
 						<view class="user-info">
 							<text class="user-name">{{ userInfo.nickname || '' }}</text>
-							<text class="user-level">{{ userInfo.level_name || '' }}</text>
+							<text class="user-level">{{ levelNameText }}</text>
 						</view>
 					</view>
 				</view>
@@ -71,6 +71,23 @@ export default {
 
 	beforeDestroy() {
 		uni.$off('languageChanged', this.onLanguageChanged)
+	},
+
+	computed: {
+		levelNameText() {
+			void this.langVersion
+			const level = (this.userInfo.level_name || this.userInfo.membership_tier || '').toUpperCase()
+			const m = {
+				REGULAR: { zh: '普通会员', en: 'Regular', th: 'สมาชิกทั่วไป' },
+				SILVER: { zh: '银卡会员', en: 'Silver', th: 'สมาชิกซิลเวอร์' },
+				GOLD: { zh: '金卡会员', en: 'Gold', th: 'สมาชิกโกลด์' },
+				PLATINUM: { zh: '铂金会员', en: 'Platinum', th: 'สมาชิกแพลตินัม' },
+				DIAMOND: { zh: '钻石会员', en: 'Diamond', th: 'สมาชิกไดมอนด์' }
+			}
+			const lang = i18n.getLanguage()
+			if (level && m[level] && m[level][lang]) return m[level][lang]
+			return this.userInfo.level_name || ''
+		}
 	},
 
 	methods: {

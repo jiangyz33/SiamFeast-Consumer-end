@@ -203,6 +203,22 @@ export function getPublicStores(params = {}) {
 	return get('/public/stores', params)
 }
 
+/**
+ * 查门店开业信息
+ * GET /stores/:store_id/opening-info
+ */
+export function getOpeningInfo(storeId) {
+	return get(`/stores/${storeId}/opening-info`)
+}
+
+/**
+ * 领取开业券
+ * POST /stores/:store_id/claim-opening-coupon
+ */
+export function claimOpeningCoupon(storeId) {
+	return post(`/stores/${storeId}/claim-opening-coupon`)
+}
+
 // 导出模块对象
 export const storeApi = {
 	searchAll,
@@ -216,7 +232,9 @@ export const storeApi = {
 	deleteStore,
 	getNearbyStores,
 	getBusinessTypes,
-	getPublicStores
+	getPublicStores,
+	getOpeningInfo,
+	claimOpeningCoupon
 }
 
 export default storeApi

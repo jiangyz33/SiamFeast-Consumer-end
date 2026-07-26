@@ -35,7 +35,7 @@
 						<view class="shop-info">
 							<image class="shop-icon" :src="order.store_logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
 							<text class="shop-name">{{ shopNameOf(order) }}</text>
-							<text class="order-type-tag" v-if="order.order_type && order.order_type !== 'DINE_IN'">{{ formatOrderType(order.order_type) }}</text>
+							<text class="order-type-tag" v-if="orderTypeTextOf(order)">{{ orderTypeTextOf(order) }}</text>
 						</view>
 						<text class="order-status" :style="{ color: getStatusColor(order.status) }">{{ statusText(order.status) }}</text>
 					</view>
@@ -165,16 +165,8 @@ const STATUS_I18N_KEYS = {
 	'CANCELLED': 'order.cancelled'
 }
 
-const ORDER_TYPE_I18N = {
-	'SINEFOOD_NOODLE': 'order.seafoodNoodle',
-	'HOTPOT': 'order.hotpot',
-	'MALATANG': 'order.malatang',
-	'BBQ': 'order.hotpot',
-	'SEAFOOD_NOODLE': 'order.seafoodNoodle',
-	'DINE_IN': 'order.dineIn',
-	'TAKEAWAY': 'order.takeaway',
-	'DELIVERY': 'order.delivery'
-}
+// 订单类型由后端下发多语言字段：order_type_name(_en|_th)。
+// 前端按当前语言取；后端未补字段时不显示 tag。
 
 export default {
 	components: {
@@ -266,7 +258,7 @@ export default {
 				if (res.code === 0 && res.data) {
 					const rawItems = res.data.items || []
 					const detailPromises = rawItems.map(o =>
-						getOrderDetail(o.id).catch(() => null)
+						getOrderDetail(o.id, {}, { silent: true }).catch(() => null)
 					)
 					const details = await Promise.allSettled(detailPromises)
 					const storeIds = [...new Set(rawItems.map(o => o.store_id).filter(Boolean))]
@@ -317,8 +309,12 @@ export default {
 			return i18n.t(STATUS_I18N_KEYS[status] || '') || status
 		},
 
-		formatOrderType(type) {
-			return i18n.t(ORDER_TYPE_I18N[type] || '') || type || ''
+		// 订单类型文本：按当前语言取后端下发的 order_type_name_<lang>
+		orderTypeTextOf(order) {
+			void this.langVersion
+			if (!order) return ''
+			const lang = i18n.getLanguage()
+			return order['order_type_name_' + lang] || order.order_type_name || ''
 		},
 
 		shopNameOf(order) {

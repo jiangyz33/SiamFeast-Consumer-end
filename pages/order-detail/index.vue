@@ -121,11 +121,11 @@
 					</view>
 				</view>
 
-				<view class="order-type-section" v-if="orderData.order_type">
+				<view class="order-type-section" v-if="orderTypeText">
 					<view class="section-card">
 						<view class="order-type-row">
 						<text class="order-type-label">{{ t("orderDetail.orderTypeLabel") }}</text>
-						<text class="order-type-value">{{ formatOrderType(orderData.order_type) }}</text>
+						<text class="order-type-value">{{ orderTypeText }}</text>
 					</view>
 				</view>
 			</view>
@@ -218,6 +218,14 @@
 							<text class="info-label">{{ t("orderDetail.orderSource") }}</text>
 							<text class="info-value">{{ formatOrderSource(orderData.order_source) }}</text>
 						</view>
+						<view class="info-row" v-if="pickupStoreName">
+							<text class="info-label">{{ t("orderDetail.pickupStore") }}</text>
+							<text class="info-value">{{ pickupStoreName }}</text>
+						</view>
+						<view class="info-row" v-if="orderData.pickup_time">
+							<text class="info-label">{{ t("orderDetail.pickupTime") }}</text>
+							<text class="info-value">{{ formatPickupTime(orderData.pickup_time) }}</text>
+						</view>
 						<view class="info-row" v-if="orderData.remark">
 							<text class="info-label">{{ t("orderDetail.remark") }}</text>
 							<text class="info-value">{{ orderData.remark }}</text>
@@ -279,18 +287,6 @@ const PAYMENT_METHOD_I18N = {
 	'coupon': 'orderDetail.payCoupon'
 }
 
-const ORDER_TYPE_I18N = {
-	'SINEFOOD_NOODLE': 'order.seafoodNoodle',
-	'HOTPOT': 'order.hotpot',
-	'MALATANG': 'order.malatang',
-	'BBQ': 'order.hotpot',
-	'SEAFOOD_NOODLE': 'order.seafoodNoodle',
-	'DINE_IN': 'order.dineIn',
-	'TAKEAWAY': 'order.takeaway',
-	'DELIVERY': 'order.delivery',
-	'GROUP_BUY': 'order.groupBuy'
-}
-
 const ORDER_SOURCE_I18N = {
 	'DINE_IN_SCAN': 'orderDetail.sourceDineInScan',
 	'DINE_IN_CASHIER': 'orderDetail.sourceDineInCashier',
@@ -318,6 +314,26 @@ export default {
 	computed: {
 		statusText() {
 			return i18n.t(STATUS_I18N_KEYS[this.orderData.status] || '') || this.orderData.status || i18n.t('orderDetail.unknown')
+		},
+		// 订单类型：后端下发多语言字段 order_type_name(_en|_th)，按当前语言取；缺失则不显示
+		orderTypeText() {
+			void this.langVersion
+			const lang = i18n.getLanguage()
+			const o = this.orderData || {}
+			return o['order_type_name_' + lang] || o.order_type_name || ''
+		},
+		// 提货门店名(从 extra_data 或 storeInfo 取)
+		pickupStoreName() {
+			void this.langVersion
+			const lang = i18n.getLanguage()
+			const extra = this.orderData.extra_data || {}
+			// 优先从 extra_data 取
+			if (extra['store_name_' + lang]) return extra['store_name_' + lang]
+			if (extra.store_name) return extra.store_name
+			// 从 storeInfo 取
+			const s = this.storeInfo
+			if (s) return s['name_' + lang] || s.name || ''
+			return ''
 		},
 		memberSettlement() {
 			const extra = this.orderData.extra_data
@@ -461,6 +477,12 @@ export default {
 			return timeStr.replace('T', ' ').substring(0, 19)
 		},
 
+		formatPickupTime(timeStr) {
+			if (!timeStr) return ''
+			// 格式:2026-07-27T09:00:00+07:00 → 2026-07-27 09:00
+			return timeStr.replace('T', ' ').substring(0, 16)
+		},
+
 		formatSpecs(specs) {
 			if (!specs) return ''
 			const lang = i18n.state.language
@@ -468,13 +490,33 @@ export default {
 			const specLabels = (langMessages.productDetail && langMessages.productDetail.specLabels) || {}
 			const specOptions = (langMessages.productDetail && langMessages.productDetail.specOptions) || {}
 			const skipKeys = ['pricing', 'remark', 'topping_ids', 'quantity', 'group_price', 'original_price', 'group_buy_item_id', 'is_group_buy']
+			const normalizeVal = (v) => {
+				if (v === null || v === undefined || v === '') return ''
+				if (Array.isArray(v)) {
+					return v.map(normalizeVal).filter(Boolean).join(', ')
+				}
+				if (typeof v === 'object') {
+					// {id, name, price_diff} → name；兼容旧字段
+					return v.name || v.label || v.value || ''
+				}
+				return specOptions[v] || v
+			}
 			return Object.entries(specs)
-				.filter(([k, v]) => !skipKeys.includes(k) && v !== null && v !== undefined && v !== '' && typeof v !== 'object')
+				.filter(([k, v]) => {
+					if (skipKeys.includes(k)) return false
+					if (v === null || v === undefined || v === '') return false
+					if (Array.isArray(v)) return v.length > 0
+					if (typeof v === 'object') return !!(v.name || v.label || v.value)
+					return true
+				})
 				.map(([key, val]) => {
 					const label = specLabels[key] || key
-					const optionLabel = specOptions[val] || val
+					const optionLabel = normalizeVal(val)
+					if (!optionLabel) return ''
 					return `${label}：${optionLabel}`
-				}).join(' / ')
+				})
+				.filter(Boolean)
+				.join(' / ')
 		},
 
 		formatOrderSource(source) {
@@ -544,14 +586,14 @@ export default {
 		hasSpecs(item) {
 			const specs = item.specs || item.specs_config
 			if (!specs) return false
+			const skipKeys = ['pricing', 'remark', 'topping_ids', 'quantity', 'group_price', 'original_price', 'group_buy_item_id', 'is_group_buy']
 			return Object.entries(specs).some(([k, v]) => {
-				if (k === "pricing" || k === "remark" || k === "topping_ids" || k === "quantity" || k === "group_price" || k === "original_price" || k === "group_buy_item_id" || k === "is_group_buy") return false
-				return v !== null && v !== undefined && v !== "" && typeof v !== "object"
+				if (skipKeys.includes(k)) return false
+				if (v === null || v === undefined || v === '') return false
+				if (Array.isArray(v)) return v.length > 0
+				if (typeof v === 'object') return !!(v.name || v.label || v.value)
+				return true
 			})
-		},
-
-		formatOrderType(type) {
-			return i18n.t(ORDER_TYPE_I18N[type] || '') || type || ''
 		},
 
 		goBack() {
@@ -576,14 +618,20 @@ export default {
 
 		handleReorder() {
 			if (this.orderData.items && this.orderData.items.length > 0) {
-				const products = this.orderData.items.map(item => ({
-					id: item.item_id || item.id,
-					name: item.item_name,
-					price: item.unit_price,
-					image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
-					quantity: item.quantity,
-					store_id: this.orderData.store_id || this.orderData.shop_id || ''
-				}))
+				const products = this.orderData.items.map(item => {
+					const specs = item.specs || item.specs_config || null
+					const specsText = specs ? this.formatSpecs(specs) : ''
+					return {
+						id: item.item_id || item.id,
+						name: item.item_name,
+						price: item.unit_price,
+						image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
+						quantity: item.quantity,
+						store_id: this.orderData.store_id || this.orderData.shop_id || '',
+						specs: specs || {},
+						specs_text: specsText
+					}
+				})
 				const shopId = this.orderData.store_id || this.orderData.shop_id || ''
 				const shopIdParam = shopId ? `&shopId=${shopId}` : ''
 				uni.navigateTo({

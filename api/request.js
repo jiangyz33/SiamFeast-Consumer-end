@@ -76,6 +76,51 @@ function fixImageUrls(obj) {
 }
 
 /**
+ * 判断错误是否需要展示给用户
+ * - 返回 true:需要弹 toast 提示
+ * - 返回 false:静默(用户不需要看到的错误)
+ */
+function shouldShowError(statusCode, responseData, hasToken) {
+	const bizCode = responseData && (responseData.biz_code || responseData.code
+		|| (responseData.detail && responseData.detail.code))
+
+	// 1. 业务相关错误:总是显示(用户操作的结果反馈)
+	const businessErrors = [
+		'INVALID_CREDENTIALS', 'INVALID_VERIFY_CODE',
+		'PASSWORD_SAME_AS_OLD', 'PASSWORD_TOO_SHORT', 'INVALID_OLD_PASSWORD',
+		'USER_NOT_FOUND', 'RATE_LIMITED',
+		'COUPON_SOLD_OUT', 'DAILY_QUOTA_EXCEEDED', 'CLAIM_LIMIT_REACHED', 'DAILY_LIMIT_REACHED',
+		'COUPON_INACTIVE',
+		'INSUFFICIENT_BALANCE', 'INSUFFICIENT_COINS',
+		'ORDER_STATUS_INVALID', 'ORDER_NOT_FOUND',
+		'PHONE_FORMAT_INVALID', 'CODE_INVALID', 'CODE_EXPIRED', 'CODE_NOT_SENT', 'CODE_TOO_MANY_ATTEMPTS',
+		'INVALID_PHONE',
+		'TOKEN_KICKED', 'TOKEN_EXPIRED',
+		'INVITE_CODE_INVALID'
+	]
+	if (bizCode && businessErrors.includes(bizCode)) return true
+
+	// 2. 静默场景:
+	// 404:接口不存在(后端问题,用户不该知道)
+	if (statusCode === 404) return false
+
+	// 5xx:服务器错误(用户不该看详情)
+	if (statusCode >= 500 && statusCode < 600) return false
+
+	// 401/403 但用户没登录:首页/列表接口在未登录时正常调用,不该弹错
+	if ((statusCode === 401 || statusCode === 403) && !hasToken) return false
+
+	// 405 method not allowed(开发错误)
+	if (statusCode === 405) return false
+
+	// 0 (网络层错误,但可能是用户主动取消,如 chooseImage)
+	if (statusCode === 0) return false
+
+	// 其他默认显示
+	return true
+}
+
+/**
  * 通用请求方法
  * @param {Object} options 请求配置
  * @returns {Promise}
@@ -83,7 +128,6 @@ function fixImageUrls(obj) {
 export function request(options) {
 	return new Promise((resolve, reject) => {
 		const { url, method = 'GET', data = {}, header = {}, showLoading = false, loadingText = '加载中...', silent = false } = options
-
 		// 显示加载
 		if (showLoading) {
 			uni.showLoading({ title: loadingText, mask: true })
@@ -268,6 +312,17 @@ export function request(options) {
 					}
 					reject({ code: 401, message: (responseData && responseData.message) || '未授权', bizCode })
 				} else {
+					// 404 静默(订单/商品等不存在,不弹 toast)
+					if (statusCode === 404) {
+						reject({ code: 404, message: 'Not Found' })
+						return
+					}
+					// 5xx 静默(服务器错误,不弹 toast)
+					if (statusCode >= 500) {
+						console.warn('[request] server error:', statusCode, responseData)
+						reject({ code: statusCode, message: 'Server Error' })
+						return
+					}
 					// 4xx / 5xx HTTP 错误：优先用 bizCode + message 反查 i18n，没有才回退到后端原文
 					let errMsg = ''
 					// 1) 先用 bizCode + 后端 message 反查 i18n（避免后端没做 i18n 时仍显示中文）
@@ -293,11 +348,15 @@ export function request(options) {
 						}
 					}
 					if (!errMsg) errMsg = i18n.t?.('common.fail') || '请求失败'
-					if (!silent) {
+					const hasToken = !!uni.getStorageSync(TOKEN_KEY)
+					const shouldShow = !silent && shouldShowError(statusCode, responseData, hasToken)
+					if (shouldShow) {
 					uni.showToast({
 						title: errMsg,
 						icon: 'none'
 					})
+					} else {
+						console.warn('[request] silent error:', statusCode, responseData)
 					}
 					reject({ code: statusCode, message: errMsg })
 				}
@@ -306,11 +365,15 @@ export function request(options) {
 				if (showLoading) {
 					uni.hideLoading()
 				}
-				if (!silent) {
-				uni.showToast({
-					title: '网络连接失败',
-					icon: 'none'
-				})
+				// 网络层失败:如果是用户主动操作(如取消选图)不发 toast
+				// 否则提示网络问题
+				const errMsg = (err && err.errMsg) || ''
+				const isUserCancel = errMsg.includes('cancel') || errMsg.includes('fail cancel')
+				if (!silent && !isUserCancel) {
+					uni.showToast({
+						title: '网络连接失败',
+						icon: 'none'
+					})
 				}
 				reject({ code: -1, message: '网络连接失败', error: err })
 			}

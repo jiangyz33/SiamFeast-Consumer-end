@@ -177,6 +177,15 @@
 			@close="handleCampaignDetailClose"
 			@claimed="handleCampaignClaimed"
 		></campaign-detail-modal>
+
+		<!-- 生日奖励弹窗 -->
+		<birthday-modal
+			:visible="showBirthdayModal"
+			:rewardType="birthdayRewardType"
+			:rewardAmount="birthdayRewardAmount"
+			@close="closeBirthdayModal"
+			@claimed="handleBirthdayClaimed"
+		></birthday-modal>
 	</view>
 </template>
 
@@ -188,6 +197,7 @@ import ShareModal from '@/components/share-modal.vue'
 import LanguageModal from '@/components/language-modal.vue'
 import BannerDetailModal from '@/components/banner-detail-modal.vue'
 import CampaignDetailModal from '@/components/campaign-detail-modal.vue'
+import BirthdayModal from '@/components/birthday-modal.vue'
 import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 import {
@@ -208,7 +218,8 @@ export default {
 		ShareModal,
 		LanguageModal,
 		BannerDetailModal,
-		CampaignDetailModal
+		CampaignDetailModal,
+		BirthdayModal
 	},
 	data() {
 		return {
@@ -225,6 +236,9 @@ export default {
 			currentBannerDetailImages: [],
 			showCampaignDetail: false,
 			currentCampaign: {},
+			showBirthdayModal: false,
+			birthdayRewardType: 'COIN',
+			birthdayRewardAmount: 0,
 			banners: [],
 				langVersion: 0,
 				memberInfo: {},
@@ -263,6 +277,8 @@ export default {
 		// 监听门店选择事件
 		uni.$on('storeSelected', this.handleStoreSelected)
 			uni.$on("languageChanged", () => { this.langVersion++; this.initStoreInfo() })
+		// 监听 App.vue 的生日奖励事件
+		uni.$on('showBirthdayModal', this.onBirthdayShow)
 		// 初始化门店信息
 		this.initStoreInfo()
 	},
@@ -270,6 +286,7 @@ export default {
 		// 移除事件监听
 		uni.$off('storeSelected', this.handleStoreSelected)
 			uni.$off("languageChanged")
+		uni.$off('showBirthdayModal', this.onBirthdayShow)
 	},
 	onShow() {
 		// #ifdef APP-PLUS
@@ -282,6 +299,7 @@ export default {
 		// 每次显示时刷新会员数据和统计
 		this.loadMemberData()
 		this.loadUnreadCount()
+		// 生日检查由 App.vue 触发,这里只接收事件
 	},
 	computed: {
 		hasUnread() {
@@ -600,6 +618,34 @@ export default {
 			uni.navigateTo({
 				url: '/pages/message/index'
 			})
+		},
+
+		// ============ 生日奖励 ============
+		// App.vue 检查到可领奖时,通过 uni.$emit('showBirthdayModal') 通知
+		onBirthdayShow(payload) {
+			if (!payload) return
+			this.birthdayRewardType = payload.reward_type || 'COIN'
+			this.birthdayRewardAmount = payload.reward_amount || 0
+			this.showBirthdayModal = true
+		},
+		closeBirthdayModal() {
+			this.showBirthdayModal = false
+		},
+		handleBirthdayClaimed(data) {
+			console.log('[birthday] claimed:', data)
+			// 同步余额
+			try {
+				const userInfo = appStore.getUserInfo()
+				if (userInfo) {
+					if (data && data.coin_balance_after !== undefined) {
+						userInfo.coin_balance = data.coin_balance_after
+					}
+					if (data && data.point_balance_after !== undefined) {
+						userInfo.point_balance = data.point_balance_after
+					}
+					appStore.setUserInfo(userInfo)
+				}
+			} catch (e) {}
 		},
 
 		async loadUnreadCount() {

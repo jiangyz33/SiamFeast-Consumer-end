@@ -2,8 +2,8 @@
     "name" : "SiamFeast",
     "appid" : "__UNI__D871704",
     "description" : "",
-    "versionName" : "1.0.9",
-    "versionCode" : 109,
+    "versionName" : "1.0.11",
+    "versionCode" : 1011,
     "transformPx" : false,
     "app-plus" : {
         "usingComponents" : true,
@@ -116,6 +116,12 @@
                         "offline" : true,
                         "fcm" : {}
                     }
+                },
+                "maps" : {
+                    "google" : {
+                        "APIKey_ios" : "AIzaSyAyM66cLMc7pJ15UU2w5dvmeCco_vn0WkA",
+                        "APIKey_android" : "AIzaSyAyM66cLMc7pJ15UU2w5dvmeCco_vn0WkA"
+                    }
                 }
             }
         }
@@ -163,6 +169,9 @@
         "devServer" : {
             "https" : true,
             "port" : 80
+        },
+        "unipush" : {
+            "enable" : true
         }
     }
 }

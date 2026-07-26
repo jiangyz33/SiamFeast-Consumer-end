@@ -78,6 +78,9 @@
 							</view>
 						</view>
 					</view>
+					<view class="sc-hours" v-if="getBusinessHours(store)">
+						<text class="sc-hours-text">{{ t('dinein.businessHours') }}：{{ getBusinessHours(store) }}</text>
+					</view>
 
 					<!-- 菜品预览 -->
 					<view class="sc-products" v-if="store._items && store._items.length > 0">
@@ -232,7 +235,6 @@ export default {
 					const data = storesRes.value.data
 					const list = Array.isArray(data) ? data : (data.items || [])
 
-
 					let dineinStores = list.filter(s => !s.delivery_enabled)
 
 					// 计算距离并排序（失败用曼谷默认坐标，不抛错）
@@ -296,6 +298,39 @@ export default {
 			if (store.background_image_url) return fixMinioUrl(store.background_image_url)
 			if (store.logo_url || store.logo) return fixMinioUrl(store.logo_url || store.logo)
 			return '/static/images/banner-placeholder.svg'
+		},
+
+		// 兼容后端多种营业时间字段：config.opening_time/closing_time、business_hours 字符串、
+		// businessHours、opening_hours、顶层 opening_time/closing_time
+		getBusinessHours(store) {
+			if (!store) return ''
+			if (store._businessHours !== undefined) return store._businessHours
+			let hours = ''
+			const cfg = store.config || store.store_config
+			if (cfg && cfg.is_24_hours) {
+				hours = '24h'
+			} else if (cfg && cfg.opening_time && cfg.closing_time) {
+				const open = String(cfg.opening_time).slice(0, 5)
+				const close = String(cfg.closing_time).slice(0, 5)
+				if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+					hours = `${open}-${close}`
+				}
+			}
+			if (!hours) {
+				const str = store.business_hours || store.businessHours || store.opening_hours
+				if (str && typeof str === 'string' && !str.includes('undefined') && str !== '-' && str !== ' - ') {
+					hours = str
+				}
+			}
+			if (!hours && store.opening_time && store.closing_time) {
+				const open = String(store.opening_time).slice(0, 5)
+				const close = String(store.closing_time).slice(0, 5)
+				if (open && close && !open.includes('undefined') && !close.includes('undefined')) {
+					hours = `${open}-${close}`
+				}
+			}
+			store._businessHours = hours
+			return hours
 		},
 
 		selectCategory(index) {
@@ -408,6 +443,8 @@ export default {
 .sc-status-text { font-size: 11px; font-weight: 500; color: #FFFFFF; }
 .sc-banner-info { display: flex; gap: 12px; margin-top: 6px; }
 .sc-distance, .sc-bike { font-size: 12px; color: rgba(255,255,255,0.85); }
+.sc-hours { padding: 6px 12px 0; }
+.sc-hours-text { font-size: 12px; color: #888; line-height: 16px; }
 
 /* 菜品预览 */
 .sc-products { padding: 6px 12px 0; }

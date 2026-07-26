@@ -91,7 +91,7 @@
 							<image class="distance-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 							<text class="distance-text" v-if="store.distance_text">{{ store.distance_text }}</text>
 							<text class="eta-text" v-if="store.eta_min && store.eta_min > 0">~{{ store.eta_min }}min</text>
-								<text class="address-text" v-if="store['formatted_address_' + i18n.getLanguage()] || store['address_' + i18n.getLanguage()] || store.formatted_address">{{ store['formatted_address_' + i18n.getLanguage()] || store['address_' + i18n.getLanguage()] || store.formatted_address }}</text>
+								<text class="address-text">{{ getStoreAddress(store) }}</text>
 						</view>
 						<view class="store-meta">
 							<text class="delivery-fee" v-if="false">฿{{ store.delivery_fee }} delivery</text>
@@ -204,6 +204,20 @@ export default {
 		t(key, params) {
 			void this.langVersion
 			return i18n.t(key, params)
+		},
+		// 多语言地址:中文模式后端没存中文,fallback 到英文(避免泰文给中国用户看)
+		getStoreAddress(store) {
+			const lang = i18n.getLanguage()
+			const fa = store['formatted_address_' + lang] || store['address_' + lang]
+			if (fa) return fa
+			// fallback:中文→英文→泰文→原始
+			if (lang === 'zh') {
+				return store.formatted_address_en || store.address_en || store.formatted_address || store.address || ''
+			}
+			if (lang === 'en') {
+				return store.formatted_address_en || store.address_en || store.formatted_address || store.address || ''
+			}
+			return store.formatted_address || store.address || ''
 		},
 		fixMinioUrl,
 		initPage() {

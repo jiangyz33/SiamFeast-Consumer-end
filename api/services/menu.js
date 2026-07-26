@@ -287,7 +287,19 @@ export const menuApi = {
 	updateMenuItem,
 	deleteMenuItem,
 	getHotItems,
-	getNewItems
+	getNewItems,
+	getMenuItemOptions
+}
+
+/**
+ * 获取菜品规格选项(口味/规格/加料)
+ * GET /public/menu-items/:id/options?store_id=X
+ * @param {number} itemId 菜品ID
+ * @param {number} storeId 门店ID
+ * @returns {Promise<{flavors:[], specs:[], toppings:[], combos:[]}>}
+ */
+export function getMenuItemOptions(itemId, storeId) {
+	return get(`/public/menu-items/${itemId}/options`, { store_id: storeId }, { silent: true })
 }
 
 export default menuApi

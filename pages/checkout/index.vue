@@ -172,6 +172,40 @@
 					<view class="coin-hint-row threshold-not-met" v-if="!coinDeductAvailable">
 						<text class="coin-hint">{{ t('checkout.coinThresholdNotMet') }}</text>
 					</view>
+
+					<!-- 双方案选择（best + alternative，仅在都存在且不同时显示） -->
+					<view v-if="useCoins && hasAlternativePlan" class="coin-plan-group">
+						<view
+							class="coin-plan-card"
+							:class="{ 'coin-plan-active': selectedPlan === 'best' }"
+							@click="selectCoinPlan('best')"
+						>
+							<view class="coin-plan-header">
+								<text class="coin-plan-tag">{{ t('checkout.coinPlanRecommended') }}</text>
+								<text class="coin-plan-summary">{{ t('checkout.coinPlanSummary', { coins: coinPreview.best.used_coins, amount: Number(coinPreview.best.deduct_amount).toFixed(2) }) }}</text>
+							</view>
+							<view class="coin-plan-tiers" v-if="coinPreview.best.tiers_used && coinPreview.best.tiers_used.length > 0">
+								<text class="coin-plan-tier" v-for="(tier, ti) in coinPreview.best.tiers_used" :key="'b' + ti">
+									{{ formatTierLine(tier) }}
+								</text>
+							</view>
+						</view>
+						<view
+							class="coin-plan-card"
+							:class="{ 'coin-plan-active': selectedPlan === 'alternative' }"
+							@click="selectCoinPlan('alternative')"
+						>
+							<view class="coin-plan-header">
+								<text class="coin-plan-tag">{{ t('checkout.coinPlanAlternative') }}</text>
+								<text class="coin-plan-summary">{{ t('checkout.coinPlanSummary', { coins: coinPreview.alternative.used_coins, amount: Number(coinPreview.alternative.deduct_amount).toFixed(2) }) }}</text>
+							</view>
+							<view class="coin-plan-tiers" v-if="coinPreview.alternative.tiers_used && coinPreview.alternative.tiers_used.length > 0">
+								<text class="coin-plan-tier" v-for="(tier, ti) in coinPreview.alternative.tiers_used" :key="'a' + ti">
+									{{ formatTierLine(tier) }}
+								</text>
+							</view>
+						</view>
+					</view>
 				</view>
 			</view>
 
@@ -203,13 +237,21 @@
 						<text class="cost-label">{{ t('checkout.deliveryFee') }}</text>
 						<text class="cost-value">฿{{ deliveryFee.toFixed(2) }}</text>
 					</view>
+					<!-- 活动折扣(含 DISCOUNT / FULL_REDUCTION / SPECIAL_DATE)-->
+					<view class="cost-row" v-if="campaignDiscount > 0">
+						<text class="cost-label">🎉 {{ campaignName }}</text>
+						<text class="cost-value discount">-฿{{ campaignDiscount.toFixed(2) }}</text>
+					</view>
 					<view class="cost-row" v-if="selectedCoupon">
-						<text class="cost-label">{{ t('checkout.coupon') }}（{{ selectedCoupon.name }}）</text>
-						<text class="cost-value discount">-฿{{ selectedCoupon.amount.toFixed(2) }}</text>
+						<text class="cost-label">
+							{{ t('checkout.coupon') }}（{{ selectedCoupon.name }}）
+							<text v-if="previewCouponDiscount === 0" class="coupon-skip-hint">{{ t('checkout.couponNotApplicable') }}</text>
+						</text>
+						<text class="cost-value discount">-฿{{ (previewCouponDiscount !== null ? previewCouponDiscount : selectedCoupon.amount).toFixed(2) }}</text>
 					</view>
 					<view class="cost-row" v-if="useCoins && coinDeductAmount > 0">
 						<text class="cost-label">{{ t('orderDetail.coinDeduct') }}</text>
-						<text class="cost-value discount">-฿{{ coinDeductAmount.toFixed(2) }}</text>
+						<text class="cost-value discount">-฿{{ (previewCoinDeduct !== null ? previewCoinDeduct : coinDeductAmount).toFixed(2) }}</text>
 					</view>
 					<view class="total-row">
 						<text class="total-label">{{ t('checkout.totalAmount') }}</text>
@@ -327,7 +369,7 @@ import { getAvailableCoupons, getMyCoupons } from '@/api/services/coupon.js'
 import { getPaymentMethods } from '@/api/services/payment.js'
 import { createPayment } from '@/api/services/payment.js'
 import i18n from '@/i18n/index.js'
-import { createOrder, getCoinBalance, calculateCoinDeduct } from '@/api/services/order.js'
+import { createOrder, getCoinBalance, calculateCoinDeduct, previewOrder } from '@/api/services/order.js'
 import { createGroupBuyOrder } from '@/api/services/groupbuy.js'
 import { showToast } from '@/utils/index.js'
 import appStore from '@/store/index.js'
@@ -377,6 +419,7 @@ export default {
 		coinBalance: 0,
 		useCoins: false,
 		coinDeductAmount: 0,
+		previewData: null,  // 后端 preview 返回的价格明细(含活动折扣)
 			maxCoinUsage: 0,
 		// 金币抵扣配置（来自后端 /user-orders/calculate-coin-deduct 响应）
 		coinConfig: {
@@ -384,6 +427,9 @@ export default {
 			maxDeductAmount: 0,          // 本单最大可抵扣金额
 			usedCoins: 0                 // 实际使用的金币数
 		},
+		// 后端返回的双方案（best + alternative），用户可在 UI 中切换
+		coinPreview: { best: null, alternative: null, tierUnavailable: false },
+		selectedPlan: 'best',           // 'best' | 'alternative'
 		deliveryFee: 0,
 		langVersion: 0
 	}
@@ -403,6 +449,11 @@ export default {
 			return this.maxDeductAmount >= 1 && this.coinBalance > 0
 		},
 		totalPrice() {
+			// 优先用后端 preview 的 total_amount(含活动折扣)
+			if (this.previewData && this.previewData.total_amount) {
+				return Number(this.previewData.total_amount).toFixed(2)
+			}
+			// 兜底:前端本地计算(不含活动折扣)
 			let total = this.productTotal
 			if (this.deliveryType === 'delivery') {
 				total += this.deliveryFee
@@ -414,6 +465,48 @@ export default {
 				total -= this.coinDeductAmount
 			}
 			return Math.max(0, total).toFixed(2)
+		},
+		// 活动折扣(从 preview 拿)
+		campaignDiscount() {
+			if (this.previewData && this.previewData.campaign_discount > 0) {
+				return Number(this.previewData.campaign_discount)
+			}
+			return 0
+		},
+		campaignName() {
+			if (!this.previewData) return ''
+			const lang = i18n.getLanguage()
+			// 优先用多语言字段
+			if (lang === 'en' && this.previewData.campaign_name_en) return this.previewData.campaign_name_en
+			if (lang === 'th' && this.previewData.campaign_name_th) return this.previewData.campaign_name_th
+			return this.previewData.campaign_name || ''
+		},
+		// preview 返回的优惠券折扣(可能因防折上折变为 0)
+		previewCouponDiscount() {
+			if (this.previewData && this.previewData.coupon_discount !== undefined) {
+				return Number(this.previewData.coupon_discount)
+			}
+			return null
+		},
+		// preview 返回的金币抵扣
+		previewCoinDeduct() {
+			if (this.previewData && this.previewData.coin_deduct !== undefined) {
+				return Number(this.previewData.coin_deduct)
+			}
+			return null
+		},
+		// 当前选中的金币方案对象（best 或 alternative）
+		selectedCoinPlan() {
+			if (!this.coinPreview.best) return null
+			return this.selectedPlan === 'alternative' && this.coinPreview.alternative
+				? this.coinPreview.alternative
+				: this.coinPreview.best
+		},
+		// 是否可以展示双方案选择 UI
+		hasAlternativePlan() {
+			return !!(this.coinPreview.best && this.coinPreview.alternative
+				&& (this.coinPreview.best.used_coins !== this.coinPreview.alternative.used_coins
+					|| this.coinPreview.best.deduct_amount !== this.coinPreview.alternative.deduct_amount))
 		},
 		selectedTimeLabel() {
 			return this.timeOptions[this.selectedTimeIndex]?.label || i18n.t('checkout.deliveryBadge')
@@ -461,6 +554,9 @@ export default {
 			}
 
 		this.loadCheckoutData()
+
+		// 延迟调 preview(等 loadCheckoutData 拿到金币配置后)
+		setTimeout(() => { this.loadPreview() }, 500)
 
 		uni.$on('addressSelected', (address) => {
 			this.addressInfo = address
@@ -620,11 +716,29 @@ export default {
 			const langMessages = i18n.state.messages[lang] || {}
 			const specLabels = (langMessages.productDetail && langMessages.productDetail.specLabels) || {}
 			const specOptions = (langMessages.productDetail && langMessages.productDetail.specOptions) || {}
-			return Object.entries(specs).map(([key, val]) => {
-				const label = specLabels[key] || key
-				const optionLabel = specOptions[val] || val
-				return `${label}：${optionLabel}`
-			}).join(' / ')
+			const skipKeys = ['pricing', 'remark', 'topping_ids', 'quantity', 'group_price', 'original_price', 'group_buy_item_id', 'is_group_buy']
+			const normalizeVal = (v) => {
+				if (v === null || v === undefined || v === '') return ''
+				if (Array.isArray(v)) return v.map(normalizeVal).filter(Boolean).join(', ')
+				if (typeof v === 'object') return v.name || v.label || v.value || ''
+				return specOptions[v] || v
+			}
+			return Object.entries(specs)
+				.filter(([k, v]) => {
+					if (skipKeys.includes(k)) return false
+					if (v === null || v === undefined || v === '') return false
+					if (Array.isArray(v)) return v.length > 0
+					if (typeof v === 'object') return !!(v.name || v.label || v.value)
+					return true
+				})
+				.map(([key, val]) => {
+					const label = specLabels[key] || key
+					const optionLabel = normalizeVal(val)
+					if (!optionLabel) return ''
+					return `${label}：${optionLabel}`
+				})
+				.filter(Boolean)
+				.join(' / ')
 		},
 
 		goBack() {
@@ -662,15 +776,56 @@ export default {
 		selectCoupon(coupon) {
 			this.selectedCoupon = coupon
 			this.showCouponPicker = false
+			this.loadPreview()
 		},
 
 		clearCoupon() {
 			this.selectedCoupon = null
 			this.showCouponPicker = false
+			this.loadPreview()
+		},
+
+		// ============ 结算预览(含活动折扣) ============
+		async loadPreview() {
+			if (!this.cartItems || this.cartItems.length === 0) return
+			try {
+				const previewBody = {
+					store_id: this.shopId,
+					items: this.cartItems.map(item => ({
+						menu_item_id: item.id || item.menu_item_id,
+						quantity: item.quantity,
+						unit_price: item.price,
+						specs: item.specs || {}
+					})),
+					order_type: this.orderType === 'dinein' ? 'DINE_IN' : (this.deliveryType === 'delivery' ? 'DELIVERY' : 'PICKUP')
+				}
+				if (this.selectedCoupon) {
+					previewBody.coupon_id = this.selectedCoupon.id
+				}
+				// 关键:用户开启金币且有 usedCoins 时,传 coins_to_use + coin_plan
+				if (this.useCoins && this.coinConfig.usedCoins > 0) {
+					previewBody.coins_to_use = Math.min(this.coinConfig.usedCoins, this.coinBalance)
+					if (this.selectedPlan) previewBody.coin_plan = this.selectedPlan
+				}
+				console.log('[checkout] preview request:', JSON.stringify({ useCoins: this.useCoins, usedCoins: this.coinConfig.usedCoins, coins_to_use: previewBody.coins_to_use }))
+				const res = await previewOrder(previewBody)
+				if (res && res.code === 0 && res.data) {
+					this.previewData = res.data
+					console.log('[checkout] preview response:', JSON.stringify(res.data))
+				}
+			} catch (e) {
+				console.warn('[checkout] preview failed:', e)
+			}
 		},
 
 			async handleCoinToggle(e) {
 				this.useCoins = e.detail.value
+				// 如果开启金币,确保 calculateCoinDeduct 已返回 usedCoins,再调 preview
+				if (this.useCoins && this.coinConfig.usedCoins === 0 && this.coinBalance > 0) {
+					// calculateCoinDeduct 还没跑过,先跑一次
+					await this.recalculateCoins()
+				}
+				this.loadPreview()
 				if (this.useCoins && !this.coinDeductAvailable) {
 					this.useCoins = false
 					uni.showModal({
@@ -683,7 +838,7 @@ export default {
 				}
 				if (this.useCoins && this.coinBalance > 0) {
 				try {
-					// 后端 A 算法分段累进，会自动按 max_deduct_percent 上限、按余额上限、按订单金额上限算
+					// 后端按 rate DESC 算最优解，返回 best + alternative 两个方案
 					// 前端直接传用户全部余额，让后端算实际使用金币数（used_coins）和实际抵扣额（deduct_amount）
 					const coinsToSend = this.coinBalance
 					const res = await calculateCoinDeduct(this.productTotal, coinsToSend)
@@ -692,23 +847,40 @@ export default {
 						// 保存后端配置（来自 coin_deduction_configs 表）
 						if (res.data.max_deduct_percent) this.coinConfig.maxDeductPercent = res.data.max_deduct_percent
 						if (res.data.max_deduct_amount) this.coinConfig.maxDeductAmount = res.data.max_deduct_amount
-						if (res.data.used_coins !== undefined) this.coinConfig.usedCoins = res.data.used_coins
-						// 实际抵扣金额（A 算法分段累进计算后的值）
-						let deduct = res.data.deduct_amount || 0
-						// 双重保险：再按 maxDeductAmount 兜底一次
-						if (deduct > this.maxDeductAmount) {
-							deduct = this.maxDeductAmount
+
+						// 双方案预览
+						const best = res.data.best || null
+						const alternative = res.data.alternative || null
+						this.coinPreview = {
+							best,
+							alternative,
+							tierUnavailable: !best
 						}
-						if (deduct <= 0) {
+						// 默认选 best；best 不存在时回退 alternative（理论上 alternative 也会 null）
+						this.selectedPlan = best ? 'best' : 'alternative'
+						// coinConfig.usedCoins 用选中方案的 used_coins（用于下单时回显）
+						const plan = this.selectedCoinPlan || best
+						if (plan && plan.used_coins !== undefined) {
+							this.coinConfig.usedCoins = plan.used_coins
+						} else if (res.data.used_coins !== undefined) {
+							this.coinConfig.usedCoins = res.data.used_coins
+						}
+
+						if (!best) {
+							// 无可用档位：禁用金币 + 三语提示
 							this.useCoins = false
 							this.coinDeductAmount = 0
 							uni.showModal({
 								title: '',
-								content: this.i18n.t('checkout.coinDeductUnavailable'),
+								content: this.i18n.t('checkout.coinTierUnavailable'),
 								showCancel: false,
 								confirmText: this.i18n.t('common.confirm')
 							})
 						} else {
+							// 优先用选中方案的 deduct_amount；兜底用旧字段
+							let deduct = (this.selectedCoinPlan && this.selectedCoinPlan.deduct_amount)
+								|| res.data.deduct_amount || 0
+							if (deduct > this.maxDeductAmount) deduct = this.maxDeductAmount
 							this.coinDeductAmount = deduct
 						}
 					}
@@ -720,6 +892,39 @@ export default {
 				this.coinDeductAmount = 0
 			}
 			},
+
+		// 切换金币方案（best / alternative）
+		selectCoinPlan(plan) {
+			if (plan === this.selectedPlan) return
+			this.selectedPlan = plan
+			const p = this.selectedCoinPlan
+			if (p && p.used_coins !== undefined) {
+				this.coinConfig.usedCoins = p.used_coins
+			}
+			let deduct = (p && p.deduct_amount) || 0
+			if (deduct > this.maxDeductAmount) deduct = this.maxDeductAmount
+			this.coinDeductAmount = deduct
+			this.loadPreview()
+		},
+
+		// 格式化档位明细行（多档累加时逐行展示）
+		formatTierLine(tier) {
+			return this.i18n.t('checkout.coinPlanTierLine', { coins: tier.coin_amount, packs: tier.packs })
+		},
+
+		// 重新计算金币抵扣(给 preview 用)
+		async recalculateCoins() {
+			if (this.coinBalance <= 0 || this.productTotal <= 0) return
+			try {
+				const res = await calculateCoinDeduct(this.productTotal, this.coinBalance)
+				if (res.code === 0 && res.data) {
+					if (res.data.used_coins !== undefined) this.coinConfig.usedCoins = res.data.used_coins
+					if (res.data.deduct_amount) this.coinDeductAmount = res.data.deduct_amount
+				}
+			} catch (e) {
+				console.warn('[checkout] recalculateCoins failed:', e)
+			}
+		},
 
 		async handleSubmit() {
 			if (this.submitting) return
@@ -781,12 +986,16 @@ export default {
 					if (this.useCoins && this.coinDeductAmount > 0) {
 						orderData.use_coins = true
 						// 直接用后端 calculateCoinDeduct 接口返回的 used_coins
-						// （A 算法分段累进计算出的实际使用金币数，已包含余额/上限/比例约束）
+						// （rate DESC 算法算出的实际使用金币数，已包含余额/上限/比例约束）
 						// 兜底：如果接口没返回 used_coins，用 coinConfig 保存的值；再没有就用 coinDeductAmount（隐含 1:1）
 						const usedCoins = this.coinConfig.usedCoins
 							|| Math.ceil(this.coinDeductAmount)
 						// 双重保险：不超过用户余额
 						orderData.coins_to_use = Math.min(usedCoins, this.coinBalance)
+						// 新增：告诉后端用 best 还是 alternative 方案（缺省 best）
+						if (this.selectedPlan) {
+							orderData.coin_plan = this.selectedPlan
+						}
 					}
 
 					if (this.deliveryType === 'delivery' && this.addressInfo) {
@@ -1278,6 +1487,72 @@ export default {
 	color: #999999;
 }
 
+/* 双方案选择卡片 */
+.coin-plan-group {
+	margin-top: 12px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.coin-plan-card {
+	padding: 10px 12px;
+	border-radius: 10px;
+	background-color: #FAFAFA;
+	border: 1.5px solid #E5E5E5;
+	transition: border-color 0.15s, background-color 0.15s;
+}
+
+.coin-plan-card.coin-plan-active {
+	border-color: #F2B131;
+	background-color: #FFF8E1;
+}
+
+.coin-plan-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.coin-plan-tag {
+	font-size: 11px;
+	font-weight: 600;
+	color: #B5750C;
+	background-color: #FFE4A8;
+	padding: 2px 8px;
+	border-radius: 8px;
+	flex-shrink: 0;
+}
+
+.coin-plan-card.coin-plan-active .coin-plan-tag {
+	background-color: #F2B131;
+	color: #FFFFFF;
+}
+
+.coin-plan-summary {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1A1A1A;
+	flex: 1;
+	text-align: right;
+}
+
+.coin-plan-tiers {
+	margin-top: 6px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.coin-plan-tier {
+	font-size: 11px;
+	color: #6B6B6B;
+	background-color: rgba(0,0,0,0.04);
+	padding: 2px 6px;
+	border-radius: 4px;
+}
+
 .coin-left {
 	display: flex;
 	align-items: center;
@@ -1394,6 +1669,14 @@ export default {
 
 .cost-value.discount {
 	color: #DA3300;
+}
+
+.coupon-skip-hint {
+	display: inline-block;
+	margin-left: 6px;
+	font-size: 11px;
+	color: #999;
+	font-style: italic;
 }
 
 .total-row {

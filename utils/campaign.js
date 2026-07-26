@@ -82,7 +82,8 @@ export function getCampaignTypeIcon(type) {
 	const m = {
 		DISCOUNT: '🏷️',
 		FULL_REDUCTION: '🎁',
-		COUPON_GRANT: '🎫'
+		COUPON_GRANT: '🎫',
+		SPECIAL_DATE: '🎊'
 	}
 	return m[type] || '🎉'
 }
@@ -95,7 +96,8 @@ export function getCampaignTypeName(type) {
 	const m = {
 		DISCOUNT: { zh: '折扣活动', en: 'Discount', th: 'โปรโมชัน' },
 		FULL_REDUCTION: { zh: '满减活动', en: 'Spend & Save', th: 'ซื้อครบลด' },
-		COUPON_GRANT: { zh: '领券活动', en: 'Claim Coupons', th: 'รับคูปอง' }
+		COUPON_GRANT: { zh: '领券活动', en: 'Claim Coupons', th: 'รับคูปอง' },
+		SPECIAL_DATE: { zh: '双号日活动', en: 'Double Day', th: 'วันตัวเลขซ้ำ' }
 	}
 	return (m[type] && m[type][lang]) || type
 }

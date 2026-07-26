@@ -102,6 +102,10 @@
 							<image class="feature-icon" src="/static/icons/invite.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ t('mine.inviteCode') }}</text>
 						</view>
+						<view class="feature-tab" @click="handleFeature('tasks')">
+							<image class="feature-icon" src="/static/icons/task.svg" mode="aspectFit"></image>
+							<text class="feature-text">{{ t('tasks.title') }}</text>
+						</view>
 						<view class="feature-tab" @click="handleFeature('memberCode')">
 							<image class="feature-icon" src="/static/icons/vending.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ t('memberCode.title') }}</text>
@@ -358,6 +362,15 @@ export default {
 			} else if (type === 'claimCoupons') {
 				uni.navigateTo({
 					url: '/pages/claim-coupons/index'
+				})
+			} else if (type === 'exchange') {
+				// 金币换积分功能(积分商城第 3 个 Tab)
+				uni.navigateTo({
+					url: '/pages/points-mall/index?tab=2'
+				})
+			} else if (type === 'tasks') {
+				uni.navigateTo({
+					url: '/pages/tasks/index'
 				})
 			} else if (type === 'referral') {
 					uni.navigateTo({
@@ -871,7 +884,6 @@ export default {
 	align-items: center;
 	gap: 6px;
 	padding: 12px 0;
-	/* 多语言下让每个 tab 等宽，避免长文本（泰文/英文）把图标挤歪 */
 	flex: 1;
 	min-width: 0;
 	transition: transform 0.15s ease;
@@ -882,14 +894,17 @@ export default {
 }
 
 .feature-icon {
-	width: 28px;
-	height: 28px;
+	width: 24px;
+	height: 24px;
+	padding: 8px;
+	border-radius: 12px;
+	background-color: #FFF8E1;
+	box-sizing: content-box;
 }
 
 .feature-text {
 	font-size: 12px;
 	color: #00000099;
-	/* 限两行、固定行高，确保各 tab 上方图标垂直对齐 */
 	line-height: 1.3;
 	text-align: center;
 	width: 100%;

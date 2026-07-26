@@ -6,7 +6,7 @@
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ t('exchange.title') }}</text>
+			<text class="nav-title">{{ t('exchangeResult.title') }}</text>
 			<view class="nav-right"></view>
 		</view>
 
@@ -20,7 +20,7 @@
 						<text class="pending-dot">✓</text>
 					</view>
 				</view>
-				<text class="status-text">{{ isRedeemed ? t('exchange.redeemed') : t('exchange.waitingRedeem') }}</text>
+				<text class="status-text">{{ isRedeemed ? t('exchangeResult.redeemed') : t('exchangeResult.waitingRedeem') }}</text>
 			</view>
 
 			<!-- 商品图片 -->
@@ -36,8 +36,8 @@
 				<view class="qr-wrap qr-loading" v-else>
 					<text class="qr-loading-text">...</text>
 				</view>
-				<text class="qr-hint">{{ t('exchange.showQR') }}</text>
-				<text class="qr-sub-hint">{{ t('exchange.scanning') }}</text>
+				<text class="qr-hint">{{ t('exchangeResult.showQR') }}</text>
+				<text class="qr-sub-hint">{{ t('exchangeResult.scanning') }}</text>
 				<view class="code-text-row" v-if="uniqueCode">
 					<text class="code-text">{{ uniqueCode }}</text>
 				</view>
@@ -46,24 +46,32 @@
 			<!-- 兑换信息 -->
 			<view class="info-card">
 				<view class="info-row" v-if="displayName">
-					<text class="info-label">{{ t('exchange.product') }}</text>
+					<text class="info-label">{{ t('exchangeResult.product') }}</text>
 					<text class="info-value">{{ displayName }}</text>
 				</view>
 				<view class="info-row" v-if="quantity > 1">
-					<text class="info-label">{{ t('exchange.quantity') }}</text>
+					<text class="info-label">{{ t('exchangeResult.quantity') }}</text>
 					<text class="info-value">{{ quantity }}</text>
 				</view>
 				<view class="info-row">
-					<text class="info-label">{{ t('exchange.exchangeId') }}</text>
+					<text class="info-label">{{ t('exchangeResult.exchangeId') }}</text>
 					<text class="info-value">{{ exchangeId }}</text>
 				</view>
 				<view class="info-row" v-if="exchangeCost">
 					<text class="info-label">{{ t('order.exchangeCost') }}</text>
 					<text class="info-value">{{ exchangeCost }}</text>
 				</view>
+				<view class="info-row" v-if="displayStoreName">
+					<text class="info-label">{{ t('exchangeResult.pickupStore') }}</text>
+					<text class="info-value">{{ displayStoreName }}</text>
+				</view>
+				<view class="info-row" v-if="pickupTimeDisplay">
+					<text class="info-label">{{ t('exchangeResult.pickupTime') }}</text>
+					<text class="info-value">{{ pickupTimeDisplay }}</text>
+				</view>
 				<view class="info-row">
-					<text class="info-label">{{ t('exchange.status') }}</text>
-					<text class="info-value" :class="isRedeemed ? 'redeemed-badge' : 'pending-badge'">{{ isRedeemed ? t('exchange.redeemed') : t('exchange.waitingRedeem') }}</text>
+					<text class="info-label">{{ t('exchangeResult.status') }}</text>
+					<text class="info-value" :class="isRedeemed ? 'redeemed-badge' : 'pending-badge'">{{ isRedeemed ? t('exchangeResult.redeemed') : t('exchangeResult.waitingRedeem') }}</text>
 				</view>
 			</view>
 
@@ -72,7 +80,7 @@
 
 		<view class="bottom-bar">
 			<view class="action-btn view-order-btn" @click="handleViewOrders">
-				<text class="action-btn-text">{{ t('exchange.viewOrders') }}</text>
+				<text class="action-btn-text">{{ t('exchangeResult.viewOrders') }}</text>
 			</view>
 			<view class="action-btn continue-btn" @click="handleContinue">
 				<text class="action-btn-text">{{ t('payment.continueShopping') }}</text>
@@ -106,6 +114,10 @@ export default {
 			exchangeCost: '',
 			exchangeType: '',
 			coinCost: 0,
+			storeName: '',
+			storeNameEn: '',
+			storeNameTh: '',
+			pickupTimeDisplay: '',
 			isRedeemed: false,
 			pollTimer: null,
 			pollCount: 0,
@@ -130,6 +142,10 @@ export default {
 			const key = this.exchangeType === 'COIN' ? 'order.exchangeCoins' : 'order.exchangePoints'
 			this.exchangeCost = i18n.t(key, { n: this.coinCost })
 		}
+		if (options.storeName) this.storeName = decodeURIComponent(options.storeName)
+		if (options.storeNameEn) this.storeNameEn = decodeURIComponent(options.storeNameEn)
+		if (options.storeNameTh) this.storeNameTh = decodeURIComponent(options.storeNameTh)
+		if (options.pickupTime) this.pickupTimeDisplay = decodeURIComponent(options.pickupTime)
 		this.initPage()
 	},
 	onReady() {
@@ -171,6 +187,14 @@ export default {
 			if (lang === 'en' && this.productNameEn) return this.productNameEn
 			if (lang === 'th' && this.productNameTh) return this.productNameTh
 			return this.productNameZh || this.productName || ''
+		},
+		// 按当前语言取门店名
+		displayStoreName() {
+			void this.langVersion
+			const lang = i18n.getLanguage()
+			if (lang === 'en' && this.storeNameEn) return this.storeNameEn
+			if (lang === 'th' && this.storeNameTh) return this.storeNameTh
+			return this.storeName || ''
 		}
 	},
 

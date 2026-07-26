@@ -127,6 +127,24 @@
 			}
 		},
 		{
+			"path": "pages/settings/change-phone",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/tasks/index",
+			"style": {
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": false
+				}
+			}
+		},
+		{
 			"path": "pages/order/index",
 			"style": {
 				"navigationStyle": "custom",

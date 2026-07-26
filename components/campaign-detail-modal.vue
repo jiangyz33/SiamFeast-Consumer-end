@@ -32,13 +32,16 @@
 					</view>
 				</view>
 
-				<!-- DISCOUNT / FULL_REDUCTION:纯展示 -->
+				<!-- DISCOUNT / FULL_REDUCTION / SPECIAL_DATE:纯展示 -->
 				<view v-if="isDiscountType" class="rules-section">
 					<view class="section-header">
 						<text class="section-title">{{ t('campaign.rules') }}</text>
 						<view class="section-line"></view>
 					</view>
-					<text class="rules-desc">{{ rulesDescription }}</text>
+					<text v-if="rulesDescription" class="rules-desc">{{ rulesDescription }}</text>
+					<view v-if="extraBonusText" class="rules-hint rules-hint-highlight">
+						<text class="rules-hint-text">🎁 {{ extraBonusText }}</text>
+					</view>
 					<view v-if="campaign.rules && campaign.rules.stackable === false" class="rules-hint">
 						<text class="rules-hint-text">• {{ t('campaign.notStackable') }}</text>
 					</view>
@@ -145,7 +148,11 @@ export default {
 	},
 	computed: {
 		isDiscountType() {
-			return this.campaign && (this.campaign.type === 'DISCOUNT' || this.campaign.type === 'FULL_REDUCTION')
+			return this.campaign && (
+				this.campaign.type === 'DISCOUNT'
+				|| this.campaign.type === 'FULL_REDUCTION'
+				|| this.campaign.type === 'SPECIAL_DATE'
+			)
 		},
 		isCouponGrantType() {
 			return this.campaign && this.campaign.type === 'COUPON_GRANT'
@@ -167,6 +174,16 @@ export default {
 			const fromRules = this.campaign.rules ? getLocalizedText(this.campaign.rules, 'description') : ''
 			const fromCampaign = getLocalizedText(this.campaign, 'description')
 			return fromRules || fromCampaign || ''
+		},
+		// 双号日 (SPECIAL_DATE) 特有：活动额外奖励的积分/金币（后端下发才显示）
+		extraBonusText() {
+			if (!this.campaign || this.campaign.type !== 'SPECIAL_DATE') return ''
+			const parts = []
+			const pts = Number(this.campaign.extra_points)
+			const coins = Number(this.campaign.extra_coins)
+			if (pts > 0) parts.push(this.t('campaign.extraPoints', { n: pts }))
+			if (coins > 0) parts.push(this.t('campaign.extraCoins', { n: coins }))
+			return parts.join('　')
 		}
 	},
 	watch: {
@@ -392,6 +409,7 @@ export default {
 .type-tag-DISCOUNT { background-color: #E3F2FD; }
 .type-tag-FULL_REDUCTION { background-color: #FFF3E0; }
 .type-tag-COUPON_GRANT { background-color: #F3E5F5; }
+.type-tag-SPECIAL_DATE { background-color: #FFE4E1; }
 
 .type-tag-text {
 	font-size: 22rpx;
@@ -439,6 +457,19 @@ export default {
 	font-size: 24rpx;
 	color: #828282;
 	line-height: 1.6;
+}
+
+.rules-hint-highlight {
+	margin-top: 12rpx;
+	padding: 12rpx 16rpx;
+	background-color: #FFF8E1;
+	border-radius: 8rpx;
+}
+
+.rules-hint-highlight .rules-hint-text {
+	font-size: 26rpx;
+	color: #E5A02E;
+	font-weight: 500;
 }
 
 /* 领券区 */

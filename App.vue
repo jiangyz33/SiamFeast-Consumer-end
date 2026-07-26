@@ -3,10 +3,17 @@ import store from './store/index.js'
 import { parseShareLink, clearShareParams, ShareType } from './utils/share.js'
 import { autoSetPageTitle } from './utils/setPageTitle.js'
 import { initPush } from '@/utils/push.js'
+import { getBirthdayStatus } from '@/api/services/member.js'
 
 export default {
 	globalData: {
 		shareInfo: null  // 存储分享信息，供页面使用
+	},
+
+	data() {
+		return {
+			birthdayCheckedThisSession: false  // 本次会话是否已检查过生日(刷新/重新访问会重置)
+		}
 	},
 
 	onLaunch: function() {
@@ -59,6 +66,8 @@ export default {
 		// #ifdef H5
 		try { autoSetPageTitle() } catch (e) {}
 		// #endif
+		// 进入前台时检查生日状态(已登录才检查)
+		this.checkBirthday()
 	},
 
 	onHide: function() {
@@ -66,6 +75,30 @@ export default {
 	},
 
 	methods: {
+		// ============ 生日奖励弹窗 ============
+		// 每次进入网站(onShow)弹一次,同一次会话内不重复弹
+		// 用内存变量 birthdayCheckedThisSession 控制,刷新/重新访问会重置
+		async checkBirthday() {
+			const token = uni.getStorageSync('siamfeast_token')
+			if (!token) return
+			// 本次会话已检查过,不重复弹
+			if (this.birthdayCheckedThisSession) return
+			this.birthdayCheckedThisSession = true
+
+			try {
+				const res = await getBirthdayStatus()
+				if (res && res.code === 0 && res.data && res.data.claimable) {
+					// 通知首页弹出生日弹窗
+					uni.$emit('showBirthdayModal', {
+						reward_type: res.data.reward_type || 'COIN',
+						reward_amount: res.data.reward_amount || 0
+					})
+				}
+			} catch (e) {
+				console.warn('[birthday] check failed:', e)
+			}
+		},
+
 		/**
 		 * 检测并处理分享链接
 		 */

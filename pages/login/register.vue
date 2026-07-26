@@ -94,6 +94,20 @@
 					</view>
 				</view>
 
+				<!-- 生日(必填) -->
+				<view class="birthday-section">
+					<view class="input-field birthday-field" :style="{ borderColor: birthdayError ? '#DA3300' : '#E0E0E0' }">
+						<picker mode="date" :value="birthday" :end="maxBirthdayDate" :start="minBirthdayDate" @change="onBirthdayChange">
+							<view class="birthday-picker">
+								<text v-if="birthday" class="birthday-text">{{ birthday }}</text>
+								<text v-else class="birthday-placeholder">{{ t('login.birthdayPlaceholder') }}</text>
+								<text class="birthday-suffix">🎂</text>
+							</view>
+						</picker>
+					</view>
+					<text v-if="birthdayError" class="field-error">{{ birthdayError }}</text>
+				</view>
+
 				<!-- 短信验证码 -->
 				<view class="code-field">
 					<view class="input-field code-input-field" :style="{ borderColor: codeError ? '#DA3300' : (codeFocused ? '#F2B131' : '#E0E0E0') }">
@@ -148,7 +162,7 @@
 import { validatePhone, getPhoneMaxLength, showToast } from '@/utils/index.js'
 import { setCountryCode } from '@/api/services/auth.js'
 import { sendSMSCode, smsLogin, resolveSMSErrorMessage } from '@/utils/sms.js'
-import { post } from '@/api/request.js'
+import { post, patch } from '@/api/request.js'
 import store from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 
@@ -167,6 +181,7 @@ export default {
 			confirmPassword: '',
 			inviteCode: '',
 			code: '',
+			birthday: '',
 			phoneFocused: false,
 			pwdFocused: false,
 			pwd2Focused: false,
@@ -174,6 +189,7 @@ export default {
 			codeFocused: false,
 			phoneError: '',
 			confirmPasswordError: '',
+			birthdayError: '',
 			codeError: '',
 			showPwd: false,
 			showPwd2: false,
@@ -207,6 +223,17 @@ export default {
 		fullPhoneNumber() {
 			return this.selectedCountry.code + this.phone
 		},
+		// 生日 picker:最早 1900-01-01,最晚今天(不能选未来日期)
+		minBirthdayDate() {
+			return '1900-01-01'
+		},
+		maxBirthdayDate() {
+			const now = new Date()
+			const yyyy = now.getFullYear()
+			const mm = String(now.getMonth() + 1).padStart(2, '0')
+			const dd = String(now.getDate()).padStart(2, '0')
+			return `${yyyy}-${mm}-${dd}`
+		},
 		canSendCode() {
 			return this.phone && this.cooldown === 0
 		},
@@ -215,8 +242,9 @@ export default {
 				&& this.password && this.password.length >= 6
 				&& this.confirmPassword === this.password
 				&& this.code && /^\d{4,8}$/.test(this.code)
+				&& this.birthday && /^\d{4}-\d{2}-\d{2}$/.test(this.birthday)
 				&& this.agreed
-		}
+		},
 	},
 	methods: {
 		t(key, params) {
@@ -240,6 +268,11 @@ export default {
 			} else {
 				this.confirmPasswordError = ''
 			}
+		},
+		onBirthdayChange(e) {
+			const val = (e.detail && e.detail.value) || ''
+			this.birthday = val
+			this.birthdayError = ''
 		},
 		selectCountry(c) {
 			this.selectedCountry = c
@@ -312,11 +345,15 @@ export default {
 				// 通知 push.js 触发 cid 上报
 				uni.$emit('loginSuccess')
 
-				// 3. 并行补全:设置密码 + 绑定邀请码(可选)
+				// 3. 并行补全:设置密码 + 设置生日 + 绑定邀请码(可选)
 				const tasks = [
 					post('/password/change', {
 						old_password: '',
 						new_password: this.password
+					}),
+					// 更新生日(PATCH /users/me)
+					patch('/users/me', {
+						birthday: this.birthday
 					})
 				]
 				if (this.inviteCode && this.inviteCode.trim()) {
@@ -521,6 +558,40 @@ export default {
 }
 
 /* 验证码输入 + 发送按钮 */
+/* 生日字段 */
+.birthday-section {
+	margin-top: 16rpx;
+}
+
+.birthday-field {
+	display: flex;
+	align-items: center;
+	padding: 0 24rpx;
+}
+
+.birthday-picker {
+	flex: 1;
+	height: 96rpx;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.birthday-text {
+	font-size: 30rpx;
+	color: #1A1A1A;
+	font-weight: 500;
+}
+
+.birthday-placeholder {
+	font-size: 30rpx;
+	color: #828282;
+}
+
+.birthday-suffix {
+	font-size: 36rpx;
+}
+
 .code-field {
 	display: flex;
 	flex-direction: row;

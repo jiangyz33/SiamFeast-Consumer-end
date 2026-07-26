@@ -86,7 +86,7 @@
 
 			<!-- 加载状态 -->
 			<view class="loading-tip">
-				<text v-if="loading" class="tip-text">加载中...</text>
+				<text v-if="loading" class="tip-text">{{ t("common.loading") }}</text>
 				<text v-else-if="noMore && products.length > 0" class="tip-text">{{ t("order.noMore") }}</text>
 			</view>
 
@@ -112,7 +112,7 @@ import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import { getHotProducts } from '@/api/services/products.js'
-import { getConsumerCategories } from '@/api/services/menu.js'
+import { getConsumerCategories, getMenuItemOptions } from '@/api/services/menu.js'
 
 export default {
 	components: {
@@ -268,7 +268,7 @@ export default {
 			})
 		},
 
-		handleBuy(item) {
+		async handleBuy(item) {
 			if (item.is_sold_out) {
 				showToast(i18n.t('dinein.soldOut'))
 				return
@@ -277,6 +277,14 @@ export default {
 			const storeId = item.store_id || this.shopId
 			if (!storeId) {
 				showToast('该商品没有门店信息，无法下单')
+				return
+			}
+			// 先检查商品是否有规格，有规格则跳详情页让用户选，避免规格丢失
+			const hasSpecs = await this._checkHasSpecs(item.id, storeId)
+			if (hasSpecs) {
+				uni.navigateTo({
+					url: `/pages/product-detail/index?productId=${item.id}&shopId=${storeId}`
+				})
 				return
 			}
 			const productData = {
@@ -290,6 +298,22 @@ export default {
 			uni.navigateTo({
 				url: `/pages/checkout/index?orderType=dinein&shopId=${storeId}&products=${encodeURIComponent(JSON.stringify([productData]))}`
 			})
+		},
+
+		async _checkHasSpecs(itemId, storeId) {
+			if (!itemId || !storeId) return false
+			try {
+				const res = await getMenuItemOptions(itemId, storeId)
+				if (res && res.code === 0 && res.data) {
+					const d = res.data
+					return (d.flavors && d.flavors.length > 0)
+						|| (d.specs && d.specs.length > 0)
+						|| (d.toppings && d.toppings.length > 0)
+				}
+			} catch (e) {
+				console.warn('[hot-products] check specs failed:', e)
+			}
+			return false
 		}
 	}
 }

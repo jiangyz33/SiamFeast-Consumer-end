@@ -22,7 +22,7 @@
 			<!-- 店铺详细信息 -->
 			<view class="shop-info-card">
 				<view class="shop-info-left">
-					<text class="shop-full-name">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.fullName }}</text>
+					<text class="shop-full-name" @click="onShopNameClick">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.fullName }}</text>
 					<view class="shop-rating">
 						<text class="rating-text" v-if="shopInfo.phone">{{ shopInfo.phone }}</text>
 					</view>
@@ -35,7 +35,7 @@
 						<text class="distance-divider">|</text>
 						<text class="distance-item">{{ t('dinein.walkTime') }} {{ shopInfo.walkTime }}</text>
 					</view>
-					<view class="shop-address">
+					<view class="shop-address" @click="openShopMap">
 						<image class="address-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
 						<text class="address-text">{{ shopInfo['formatted_address_' + i18n.getLanguage()] || shopInfo['address_' + i18n.getLanguage()] || shopInfo.formatted_address || shopInfo.address }}</text>
 					</view>
@@ -45,8 +45,38 @@
 				</view>
 			</view>
 
-			<!-- 门店位置地图 -->
-			<view class="shop-map" v-if="shopInfo.latitude && shopInfo.longitude">
+			<!-- 新店开业横幅 -->
+			<view class="opening-banner" v-if="openingInfo.is_opening_active || testOpeningMode">
+				<view class="opening-banner-header">
+					<text class="opening-emoji">🎉</text>
+					<text class="opening-title">{{ t('opening.active') }}</text>
+					<text class="opening-days" v-if="openingInfo.days_left > 0">{{ t('opening.daysLeft', { n: openingInfo.days_left }) }}</text>
+				</view>
+				<view class="opening-benefits">
+					<view class="benefit-item" v-if="openingInfo.extra_points > 0">
+						<text class="benefit-icon">⭐</text>
+						<text class="benefit-text">{{ t('opening.extraPoints', { n: openingInfo.extra_points }) }}</text>
+					</view>
+					<view class="benefit-item" v-if="openingInfo.extra_coins > 0">
+						<text class="benefit-icon">💰</text>
+						<text class="benefit-text">{{ t('opening.extraCoins', { n: openingInfo.extra_coins }) }}</text>
+					</view>
+					<view class="benefit-item" v-if="openingInfo.discount_percent > 0">
+						<text class="benefit-icon">🏷️</text>
+						<text class="benefit-text">{{ t('opening.discount', { n: openingInfo.discount_percent }) }}</text>
+					</view>
+				</view>
+				<view class="opening-coupon-section" v-if="openingInfo.has_coupon">
+					<view class="opening-claim-btn" :class="{ 'btn-disabled': openingClaiming || openingClaimed }" @click="handleClaimOpeningCoupon">
+						<text class="opening-claim-text">
+							{{ openingClaiming ? t('common.loading') : (openingClaimed ? t('opening.claimed') : t('opening.claimCoupon')) }}
+						</text>
+					</view>
+				</view>
+			</view>
+
+			<!-- 门店位置地图(隐藏,点击地址跳转 Google Maps)-->
+			<view class="shop-map" v-if="false && shopInfo.latitude && shopInfo.longitude">
 				<iframe class="map-iframe" :src="mapEmbedUrl" frameborder="0" allowfullscreen></iframe>
 			</view>
 
@@ -174,7 +204,7 @@
 						<view class="spec-product-info">
 							<view class="spec-product-price">
 								<text class="spec-price-symbol">฿</text>
-								<text class="spec-price-num">{{ (specProduct.price * specQuantity).toFixed(2) }}</text>
+								<text class="spec-price-num">{{ useNewOptions ? (getOptionsSpecPrice() * specQuantity).toFixed(2) : (specProduct.price * specQuantity).toFixed(2) }}</text>
 							</view>
 							<text class="spec-product-name">{{ specProduct.name }}</text>
 						</view>
@@ -183,20 +213,76 @@
 						</view>
 					</view>
 					<scroll-view class="spec-body" scroll-y>
-						<view class="spec-group" v-for="(group, gIdx) in specGroups" :key="gIdx">
-							<text class="spec-group-label">{{ group.label }}</text>
-							<view class="spec-options">
-								<view
-									class="spec-option"
-									v-for="(opt, oIdx) in group.options"
-									:key="oIdx"
-									:class="{ 'spec-option-active': selectedSpecs[group.key] === opt.value }"
-									@click="selectSpec(group.key, opt.value)"
-								>
-									<text class="spec-option-text">{{ opt.label }}</text>
+						<!-- 老规格系统(specs_config) -->
+						<template v-if="!useNewOptions">
+							<view class="spec-group" v-for="(group, gIdx) in specGroups" :key="gIdx">
+								<text class="spec-group-label">{{ group.label }}</text>
+								<view class="spec-options">
+									<view
+										class="spec-option"
+										v-for="(opt, oIdx) in group.options"
+										:key="oIdx"
+										:class="{ 'spec-option-active': selectedSpecs[group.key] === opt.value }"
+										@click="selectSpec(group.key, opt.value)"
+									>
+										<text class="spec-option-text">{{ opt.label }}</text>
+									</view>
 								</view>
 							</view>
-						</view>
+						</template>
+
+						<!-- 新规格系统(options API) -->
+						<template v-if="useNewOptions && itemOptionsData">
+							<!-- 规格(单选) -->
+							<view class="spec-group" v-if="itemOptionsData.specs && itemOptionsData.specs.length > 0">
+								<text class="spec-group-label">{{ t('productDetail.specSize') }}</text>
+								<view class="spec-options">
+									<view
+										v-for="spec in itemOptionsData.specs"
+										:key="spec.id"
+										class="spec-option"
+										:class="{ 'spec-option-active': selectedSpecOpt && selectedSpecOpt.id === spec.id }"
+										@click="selectedSpecOpt = spec"
+									>
+										<text class="spec-option-text">{{ _optionDisplayName(spec) }}</text>
+										<text class="spec-option-price" v-if="spec.price_diff > 0">+฿{{ spec.price_diff }}</text>
+									</view>
+								</view>
+							</view>
+							<!-- 口味(单选) -->
+							<view class="spec-group" v-if="itemOptionsData.flavors && itemOptionsData.flavors.length > 0">
+								<text class="spec-group-label">{{ t('productDetail.specFlavor') }}</text>
+								<view class="spec-options">
+									<view
+										v-for="flavor in itemOptionsData.flavors"
+										:key="flavor.id"
+										class="spec-option"
+										:class="{ 'spec-option-active': selectedFlavor && selectedFlavor.id === flavor.id }"
+										@click="selectedFlavor = flavor"
+									>
+										<text class="spec-option-text">{{ _optionDisplayName(flavor) }}</text>
+										<text class="spec-option-price" v-if="flavor.price_diff > 0">+฿{{ flavor.price_diff }}</text>
+									</view>
+								</view>
+							</view>
+							<!-- 加料(多选) -->
+							<view class="spec-group" v-if="itemOptionsData.toppings && itemOptionsData.toppings.length > 0">
+								<text class="spec-group-label">{{ t('productDetail.specTopping') }}</text>
+								<view class="spec-options">
+									<view
+										v-for="topping in itemOptionsData.toppings"
+										:key="topping.id"
+										class="spec-option"
+										:class="{ 'spec-option-active': selectedToppings.some(t => t.id === topping.id) }"
+										@click="toggleOptionTopping(topping)"
+									>
+										<text class="spec-option-text">{{ _optionDisplayName(topping) }}</text>
+										<text class="spec-option-price" v-if="topping.price_diff > 0">+฿{{ topping.price_diff }}</text>
+									</view>
+								</view>
+							</view>
+						</template>
+
 						<view class="spec-qty-row">
 							<text class="spec-qty-label">{{ t('productDetail.quantity') }}</text>
 							<view class="spec-qty-control">
@@ -207,7 +293,10 @@
 						</view>
 					</scroll-view>
 					<view class="spec-footer">
-						<view class="spec-confirm-btn" @click="confirmSpec">
+						<view class="spec-confirm-btn" v-if="useNewOptions" @click="confirmOptionsAddToCart">
+							<text class="spec-confirm-text">{{ t('common.confirm') }} ฿{{ (getOptionsSpecPrice() * specQuantity).toFixed(2) }}</text>
+						</view>
+						<view class="spec-confirm-btn" v-else @click="confirmSpec">
 							<text class="spec-confirm-text">{{ t('common.confirm') }}</text>
 						</view>
 					</view>
@@ -223,9 +312,9 @@ import CustomTabbar from '@/components/custom-tabbar.vue'
 import ShareModal from '@/components/share-modal.vue'
 import appStore from '@/store/index.js'
 import i18n from '@/i18n/index.js'
-import { getStore } from '@/api/services/store.js'
+import { getStore, getOpeningInfo, claimOpeningCoupon } from '@/api/services/store.js'
 import footprintManager from '@/utils/footprint.js'
-import { getConsumerCategories, getConsumerMenuItems, getStoreMenu } from '@/api/services/menu.js'
+import { getConsumerCategories, getConsumerMenuItems, getStoreMenu, getMenuItemOptions } from '@/api/services/menu.js'
 
 export default {
 	components: {
@@ -252,6 +341,19 @@ export default {
 				name: '',
 				image: ''
 			},
+			openingInfo: {
+				is_opening_active: false,
+				days_left: 0,
+				extra_points: 0,
+				extra_coins: 0,
+				discount_percent: 0,
+				coupon_ids: [],
+				has_coupon: false
+			},
+			openingClaiming: false,
+			openingClaimed: false,
+			testOpeningMode: false,
+			_nameClickCount: 0,
 			shopInfo: {
 				id: null,
 				name: '',
@@ -272,6 +374,12 @@ export default {
 			specGroups: [],
 			selectedSpecs: {},
 			specQuantity: 1,
+			// 新的 options 系统(后端 /public/menu-items/:id/options)
+			itemOptionsData: null,      // { flavors, specs, toppings }
+			selectedFlavor: null,
+			selectedSpecOpt: null,
+			selectedToppings: [],
+			useNewOptions: false,
 		}
 	},
 	computed: {
@@ -320,6 +428,79 @@ export default {
 		onLanguageChanged() {
 			this.langVersion++
 		},
+
+		// 测试:连点店名 5 次激活开业横幅(上线前删)
+		onShopNameClick() {
+			this._nameClickCount = (this._nameClickCount || 0) + 1
+			if (this._nameClickCount >= 5) {
+				this.testOpeningMode = !this.testOpeningMode
+				if (this.testOpeningMode) {
+					this.openingInfo = {
+						is_opening_active: true,
+						days_left: 5,
+						extra_points: 50,
+						extra_coins: 10,
+						discount_percent: 10,
+						coupon_ids: [],
+						has_coupon: false
+					}
+					this.openingClaimed = false
+					uni.showToast({ title: '开业横幅测试模式 ON', icon: 'none' })
+				} else {
+					uni.showToast({ title: '开业横幅测试模式 OFF', icon: 'none' })
+				}
+				this._nameClickCount = 0
+			}
+		},
+
+		// ============ 新店开业 ============
+		async loadOpeningInfo() {
+			if (!this.shopInfo.id) return
+			try {
+				const res = await getOpeningInfo(this.shopInfo.id, {}, { silent: true })
+				if (res && res.code === 0 && res.data) {
+					this.openingInfo = {
+						is_opening_active: res.data.is_opening_active || false,
+						days_left: res.data.days_left || 0,
+						extra_points: res.data.extra_points || 0,
+						extra_coins: res.data.extra_coins || 0,
+						discount_percent: res.data.discount_percent || 0,
+						coupon_ids: res.data.coupon_ids || [],
+						has_coupon: (res.data.coupon_ids || []).length > 0
+					}
+				}
+			} catch (e) {
+				console.warn('[opening] load info failed:', e)
+			}
+		},
+
+		async handleClaimOpeningCoupon() {
+			if (this.openingClaiming || this.openingClaimed) return
+			this.openingClaiming = true
+			try {
+				const res = await claimOpeningCoupon(this.shopInfo.id)
+				if (res && res.code === 0) {
+					this.openingClaimed = true
+					uni.showToast({ title: this.t('opening.claimSuccess'), icon: 'success' })
+				}
+			} catch (e) {
+				console.error('[opening] claim failed:', e)
+				const code = e && (e.code || e.bizCode)
+				const errMap = {
+					OPENING_COUPON_UNAVAILABLE: this.t('opening.errors.unavailable'),
+					OPENING_ACTIVITY_ENDED: this.t('opening.errors.ended'),
+					OPENING_COUPON_ALREADY_CLAIMED: this.t('opening.errors.alreadyClaimed')
+				}
+				const msg = (code && errMap[code]) || (e && e.message) || this.t('opening.errors.default')
+				uni.showToast({ title: msg, icon: 'none' })
+				if (code === 'OPENING_COUPON_ALREADY_CLAIMED') {
+					this.openingClaimed = true
+				}
+			} finally {
+				this.openingClaiming = false
+			}
+		},
+
 		t(key, params) {
 			void this.langVersion
 			return i18n.t(key, params)
@@ -441,6 +622,9 @@ export default {
 					}
 					console.log('[dinein] formatted businessHours:', this.shopInfo.businessHours)
 					this.updateShopDistance()
+
+					// 加载开业信息
+					this.loadOpeningInfo()
 
 				}
 
@@ -650,12 +834,52 @@ export default {
 				tags: item.tags || [],
 				stock: item.stock,
 				is_sold_out: item.is_sold_out || false,
-				specs_config: item.specs_config || {}
+				specs_config: item.specs_config || {},
+				has_options: item.has_options || false,
+				options_checked: false,
+				options_loaded: false,
+				optionsSnapshot: null    // options 接口返回的规格快照(per-item 缓存)
 			}
 		},
 
 		goBack() {
 			uni.navigateBack()
+		},
+
+		// 点击地址 → 跳转 Google Maps
+		openShopMap() {
+			const lat = this.shopInfo.latitude
+			const lng = this.shopInfo.longitude
+			const name = encodeURIComponent(this.shopInfo.name || '')
+			if (lat && lng) {
+				// #ifdef H5
+				window.open(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`, '_blank')
+				// #endif
+				// #ifdef APP-PLUS
+				uni.openLocation({
+					latitude: parseFloat(lat),
+					longitude: parseFloat(lng),
+					name: this.shopInfo.name || '',
+					address: this.shopInfo.formatted_address || this.shopInfo.address || '',
+					scale: 16,
+					fail: () => {
+						// 兜底:用浏览器打开 Google Maps
+						plus.runtime.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`)
+					}
+				})
+				// #endif
+			} else {
+				// 没有坐标,用地址搜索
+				const addr = this.shopInfo.formatted_address || this.shopInfo.address || this.shopInfo.name || ''
+				if (addr) {
+					// #ifdef H5
+					window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`, '_blank')
+					// #endif
+					// #ifdef APP-PLUS
+					plus.runtime.openURL(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`)
+					// #endif
+				}
+			}
 		},
 
 		selectCategory(index) {
@@ -706,8 +930,8 @@ export default {
 			this._doAddToCartFlow(item)
 		},
 
-		_doAddToCartFlow(item) {
-			// 有规格则弹出选择弹窗
+		async _doAddToCartFlow(item) {
+			// 1. 兼容老的 specs_config 系统
 			const specs = item.specs_config
 			const hasValidSpecs = specs && Object.keys(specs).some(k => specs[k] && specs[k].length > 0)
 			if (hasValidSpecs) {
@@ -717,8 +941,106 @@ export default {
 				this.showSpecPopup = true
 				return
 			}
-			// 无规格直接加入购物车
+			// 2. 已缓存过该商品的 options 快照 → 直接复用弹出（每次加购都让用户选规格）
+			if (item.optionsSnapshot && this._hasAnyOption(item.optionsSnapshot)) {
+				this._showOptionsPopup(item, item.optionsSnapshot)
+				return
+			}
+			// 3. 没缓存过且有门店 → 请求 options 接口
+			if (this.shopInfo.id && !item.options_checked) {
+				await this._loadAndShowOptions(item)
+				return
+			}
+			// 4. 请求过且确实无规格 → 直接加入购物车
 			this.doAddToCart(item, 1, {})
+		},
+
+		_hasAnyOption(data) {
+			return !!data && (
+				(data.flavors && data.flavors.length > 0) ||
+				(data.specs && data.specs.length > 0) ||
+				(data.toppings && data.toppings.length > 0)
+			)
+		},
+
+		_showOptionsPopup(item, data) {
+			this.itemOptionsData = data
+			this.specProduct = item
+			this.specQuantity = 1
+			this.selectedFlavor = data.flavors && data.flavors.length > 0 ? data.flavors[0] : null
+			this.selectedSpecOpt = data.specs && data.specs.length > 0 ? data.specs[0] : null
+			this.selectedToppings = []
+			this.showSpecPopup = true
+			this.useNewOptions = true
+		},
+
+		// ============ 新的 options 系统 ============
+		async _loadAndShowOptions(item) {
+			try {
+				const res = await getMenuItemOptions(item.id, this.shopInfo.id)
+				item.options_checked = true
+				if (res && res.code === 0 && res.data) {
+					const data = res.data
+					// 缓存快照,后续点击复用,避免重复请求
+					item.optionsSnapshot = data
+					// 如果没有任何规格选项,直接加入
+					if (!this._hasAnyOption(data)) {
+						this.doAddToCart(item, 1, {})
+						return
+					}
+					// 有规格,弹新弹窗
+					this._showOptionsPopup(item, data)
+					return
+				}
+			} catch (e) {
+				console.warn('[dinein] load options failed:', e)
+			}
+			// 失败兜底:直接加入
+			this.doAddToCart(item, 1, {})
+		},
+
+		// 新弹窗:计算价格
+		getOptionsSpecPrice() {
+			if (!this.specProduct) return 0
+			let price = Number(this.specProduct.price) || 0
+			if (this.selectedFlavor) price += Number(this.selectedFlavor.price_diff) || 0
+			if (this.selectedSpecOpt) price += Number(this.selectedSpecOpt.price_diff) || 0
+			if (this.selectedToppings) {
+				this.selectedToppings.forEach(t => { price += Number(t.price_diff) || 0 })
+			}
+			return price
+		},
+
+		_optionDisplayName(opt) {
+			if (!opt) return ''
+			const lang = i18n.getLanguage()
+			return opt['name_' + lang] || opt.name || ''
+		},
+
+		// 新弹窗:切换加料
+		toggleOptionTopping(topping) {
+			const idx = this.selectedToppings.findIndex(t => t.id === topping.id)
+			if (idx >= 0) { this.selectedToppings.splice(idx, 1) }
+			else { this.selectedToppings.push(topping) }
+		},
+
+		// 新弹窗:确认加入购物车
+		confirmOptionsAddToCart() {
+			if (!this.specProduct) return
+			// 构建 specs 对象
+			const specs = {}
+			if (this.selectedSpecOpt) specs.spec = { id: this.selectedSpecOpt.id, name: this._optionDisplayName(this.selectedSpecOpt), price_diff: this.selectedSpecOpt.price_diff }
+			if (this.selectedFlavor) specs.flavor = { id: this.selectedFlavor.id, name: this._optionDisplayName(this.selectedFlavor), price_diff: this.selectedFlavor.price_diff }
+			if (this.selectedToppings && this.selectedToppings.length > 0) {
+				specs.toppings = this.selectedToppings.map(t => ({ id: t.id, name: this._optionDisplayName(t), price_diff: t.price_diff }))
+			}
+
+			// 修改 item 价格为含规格价
+			const itemCopy = { ...this.specProduct }
+			itemCopy.price = this.getOptionsSpecPrice()
+
+			this.doAddToCart(itemCopy, this.specQuantity, specs)
+			this.closeSpecPopup()
 		},
 
 	
@@ -768,6 +1090,8 @@ export default {
 		closeSpecPopup() {
 			this.showSpecPopup = false
 			this.specProduct = null
+			this.useNewOptions = false
+			this.itemOptionsData = null
 		},
 
 		confirmSpec() {
@@ -883,10 +1207,34 @@ export default {
 		},
 
 		formatSpecs(specs) {
+			if (!specs) return ''
 			const lang = i18n.state.language
 			const messages = i18n.state.messages[lang] || {}
+			const labels = (messages.productDetail && messages.productDetail.specLabels) || {}
 			const options = (messages.productDetail && messages.productDetail.specOptions) || {}
-			return Object.values(specs).map(v => options[v] || v).join('/')
+			const skipKeys = ['pricing', 'remark', 'topping_ids', 'quantity', 'group_price', 'original_price', 'group_buy_item_id', 'is_group_buy']
+			const norm = (v) => {
+				if (v === null || v === undefined || v === '') return ''
+				if (Array.isArray(v)) return v.map(norm).filter(Boolean).join(', ')
+				if (typeof v === 'object') return v.name || v.label || v.value || ''
+				return options[v] || v
+			}
+			return Object.entries(specs)
+				.filter(([k, v]) => {
+					if (skipKeys.includes(k)) return false
+					if (v === null || v === undefined || v === '') return false
+					if (Array.isArray(v)) return v.length > 0
+					if (typeof v === 'object') return !!(v.name || v.label || v.value)
+					return true
+				})
+				.map(([k, v]) => {
+					const label = labels[k] || k
+					const val = norm(v)
+					if (!val) return ''
+					return `${label}：${val}`
+				})
+				.filter(Boolean)
+				.join(' / ')
 		},
 		// 分享门店
 		async handleShareShop() {
@@ -1132,6 +1480,10 @@ export default {
 	margin-top: 2px;
 }
 
+.shop-address:active {
+	opacity: 0.6;
+}
+
 .address-icon {
 	width: 14px;
 	height: 14px;
@@ -1141,6 +1493,93 @@ export default {
 	font-size: 11px;
 	font-weight: 500;
 	color: #949494;
+}
+
+/* 新店开业横幅 */
+.opening-banner {
+	margin: 12px 16px;
+	padding: 20px 16px;
+	background: linear-gradient(135deg, #FFF8E1 0%, #FFFFFF 100%);
+	border-radius: 16px;
+	border: 1px solid #FFE082;
+	box-shadow: 0 2px 8px rgba(242, 177, 49, 0.1);
+}
+
+.opening-banner-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.opening-emoji {
+	font-size: 28px;
+	margin-right: 8px;
+}
+
+.opening-title {
+	font-size: 18px;
+	font-weight: 700;
+	color: #FF6B9D;
+	flex: 1;
+}
+
+.opening-days {
+	font-size: 13px;
+	color: #F2B131;
+	font-weight: 600;
+	padding: 4px 10px;
+	background-color: rgba(242, 177, 49, 0.15);
+	border-radius: 12px;
+}
+
+.opening-benefits {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 8px;
+}
+
+.benefit-item {
+	display: flex;
+	align-items: center;
+	padding: 4px 8px;
+	background-color: rgba(255, 255, 255, 0.8);
+	border-radius: 8px;
+}
+
+.benefit-icon {
+	font-size: 18px;
+	margin-right: 3px;
+}
+
+.benefit-text {
+	font-size: 15px;
+	color: #333;
+	font-weight: 500;
+}
+
+.opening-coupon-section {
+	margin-top: 8px;
+}
+
+.opening-claim-btn {
+	height: 44px;
+	background: linear-gradient(90deg, #FF6B9D 0%, #F2B131 100%);
+	border-radius: 22px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 2px 8px rgba(255, 107, 157, 0.2);
+}
+
+.opening-claim-btn.btn-disabled {
+	opacity: 0.5;
+}
+
+.opening-claim-text {
+	color: #FFFFFF;
+	font-size: 14px;
+	font-weight: 600;
 }
 
 .shop-map {
@@ -1784,6 +2223,16 @@ export default {
 .spec-option-active .spec-option-text {
 	color: #F2B131;
 	font-weight: 600;
+}
+
+.spec-option-price {
+	font-size: 11px;
+	color: #999;
+	margin-left: 4px;
+}
+
+.spec-option-active .spec-option-price {
+	color: #F2B131;
 }
 
 /* 数量行 */

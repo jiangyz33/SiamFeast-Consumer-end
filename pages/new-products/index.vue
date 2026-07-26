@@ -76,6 +76,7 @@ import CustomTabbar from '@/components/custom-tabbar.vue'
 import appStore from '@/store/index.js'
 import { getNewProducts } from '@/api/services/products.js'
 import { getStores } from '@/api/services/store.js'
+import { getMenuItemOptions } from '@/api/services/menu.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 
@@ -200,7 +201,15 @@ export default {
 			})
 		},
 
-		handleBuyNow(item) {
+		async handleBuyNow(item) {
+			// 先检查商品是否有规格，有规格则跳详情页让用户选，避免规格丢失
+			const hasSpecs = await this._checkHasSpecs(item)
+			if (hasSpecs) {
+				uni.navigateTo({
+					url: `/pages/product-detail/index?productId=${item.id}&shopId=${item.store_id || ''}`
+				})
+				return
+			}
 			const productData = {
 				id: item.id,
 				name: item['name_' + i18n.getLanguage()] || item.name,
@@ -212,6 +221,22 @@ export default {
 			uni.navigateTo({
 				url: `/pages/checkout/index?orderType=dinein&shopId=${item.store_id}&products=${encodeURIComponent(JSON.stringify([productData]))}`
 			})
+		},
+
+		async _checkHasSpecs(item) {
+			if (!item || !item.id || !item.store_id) return false
+			try {
+				const res = await getMenuItemOptions(item.id, item.store_id)
+				if (res && res.code === 0 && res.data) {
+					const d = res.data
+					return (d.flavors && d.flavors.length > 0)
+						|| (d.specs && d.specs.length > 0)
+						|| (d.toppings && d.toppings.length > 0)
+				}
+			} catch (e) {
+				console.warn('[new-products] check specs failed:', e)
+			}
+			return false
 		}
 	}
 }

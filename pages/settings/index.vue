@@ -41,13 +41,16 @@
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
-					<view class="setting-item" @click="openBirthdayModal">
-						<text class="setting-label">{{ t('settings.birthday') }}</text>
-						<view class="setting-right">
-							<text class="setting-value">{{ userBirthday || i18n.t('settings.notSet') }}</text>
-							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
+					<!-- 生日(系统日期选择器)-->
+					<picker mode="date" :value="birthdayPickerValue" :end="maxBirthdayDate" :start="minBirthdayDate" @change="onBirthdayPickerChange">
+						<view class="setting-item">
+							<text class="setting-label">{{ t('settings.birthday') }}</text>
+							<view class="setting-right">
+								<text class="setting-value">{{ userBirthday || i18n.t('settings.notSet') }}</text>
+								<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
+							</view>
 						</view>
-					</view>
+					</picker>
 					<view class="setting-item" @click="openPasswordModal">
 						<text class="setting-label">{{ t('settings.changePassword') }}</text>
 						<view class="setting-right">
@@ -116,6 +119,12 @@
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
+					<view class="setting-item" @click="testBirthdayModal" v-if="showTestEntry">
+						<text class="setting-label">🎂 测试生日弹窗</text>
+						<view class="setting-right">
+							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
+						</view>
+					</view>
 					<view class="setting-item">
 						<text class="setting-label">{{ t('settings.version') }}</text>
 						<view class="setting-right">
@@ -155,41 +164,6 @@
 			</view>
 		</view>
 
-		<!-- 出生日期弹窗 -->
-		<view class="modal-mask" v-if="showBirthdayModal" @click.self="showBirthdayModal = false">
-			<view class="modal-box birthday-modal">
-				<text class="modal-box-title">{{ t('settings.birthday') }}</text>
-				<view class="modal-box-body">
-					<view class="date-picker-wrap">
-						<picker-view class="date-picker" :value="datePickerValue" @change="onDatePickerChange">
-							<picker-view-column>
-								<view v-for="(y, i) in years" :key="i" class="picker-item">{{ y }}</view>
-							</picker-view-column>
-							<picker-view-column>
-								<view v-for="(m, i) in months" :key="i" class="picker-item">{{ m }}</view>
-							</picker-view-column>
-							<picker-view-column>
-								<view v-for="(d, i) in days" :key="i" class="picker-item">{{ d }}</view>
-							</picker-view-column>
-						</picker-view>
-						<view class="picker-label-row">
-							<text class="picker-label">年</text>
-							<text class="picker-label">月</text>
-							<text class="picker-label">日</text>
-						</view>
-					</view>
-				</view>
-				<view class="modal-box-footer">
-					<view class="modal-box-btn" @click="showBirthdayModal = false">
-						<text class="modal-box-btn-text cancel-text">{{ t('common.cancel') }}</text>
-					</view>
-					<view class="modal-box-btn" @click="confirmBirthday">
-						<text class="modal-box-btn-text confirm-text">{{ t('common.confirm') }}</text>
-					</view>
-				</view>
-			</view>
-		</view>
-
 		<!-- 修改密码弹窗 -->
 		<view class="modal-mask" v-if="showPasswordModal" @click.self="showPasswordModal = false">
 			<view class="modal-box">
@@ -218,6 +192,15 @@
 			:visible="showLanguageModal"
 			@close="showLanguageModal = false"
 		></language-modal>
+
+		<!-- 测试生日弹窗 -->
+		<birthday-modal
+			:visible="showTestBirthdayModal"
+			:rewardType="testBirthdayType"
+			:rewardAmount="testBirthdayAmount"
+			@close="closeTestBirthdayModal"
+			@claimed="handleTestBirthdayClaimed"
+		></birthday-modal>
 	</view>
 </template>
 
@@ -227,6 +210,7 @@ import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 import { getUserInfo, updateUserInfo, uploadAvatar } from '@/api/services/auth.js'
 import { unregisterPush } from '@/utils/push.js'
+import BirthdayModal from '@/components/birthday-modal.vue'
 // #ifdef APP-PLUS
 import { chooseSystemMedia } from '@/uni_modules/uni-chooseSystemImage'
 // #endif
@@ -236,7 +220,8 @@ import LanguageModal from '@/components/language-modal.vue'
 
 export default {
 	components: {
-		LanguageModal
+		LanguageModal,
+		BirthdayModal
 	},
 	data() {
 		return {
@@ -251,8 +236,12 @@ export default {
 			showNicknameModal: false,
 			nicknameInput: '',
 			showBirthdayModal: false,
-			datePickerValue: [0, 0, 0],
+			birthdayPickerValue: '',
 			showPasswordModal: false,
+			showTestEntry: false,  // 测试入口(上线前改 false)
+			showTestBirthdayModal: false,
+			testBirthdayType: 'COIN',
+			testBirthdayAmount: 100,
 			passwordForm: {
 				oldPassword: '',
 				newPassword: '',
@@ -263,6 +252,16 @@ export default {
 	computed: {
 		userNickname() {
 			return this.userInfo?.nickname || i18n.t('mine.title')
+		},
+		minBirthdayDate() {
+			return '1920-01-01'
+		},
+		maxBirthdayDate() {
+			const now = new Date()
+			const y = now.getFullYear()
+			const m = String(now.getMonth() + 1).padStart(2, '0')
+			const d = String(now.getDate()).padStart(2, '0')
+			return `${y}-${m}-${d}`
 		},
 		years() {
 			const now = new Date().getFullYear()
@@ -460,7 +459,8 @@ export default {
 			} else if (type === 'agreement') {
 				uni.navigateTo({ url: '/pages/agreement/index?type=terms' })
 			} else if (type === 'phone') {
-				showToast(this.i18n.t('settings.phone'))
+				// 跳转到更改手机号页面
+				uni.navigateTo({ url: '/pages/settings/change-phone' })
 			} else if (type === 'language') {
 				this.showLanguageModal = true
 			}
@@ -492,59 +492,29 @@ export default {
 			}
 		},
 
-		// 生日
-		openBirthdayModal() {
-			if (this.userBirthday) {
-				const parts = this.userBirthday.split('-')
-				const y = parseInt(parts[0])
-				const m = parseInt(parts[1])
-				const d = parseInt(parts[2])
-				const yi = this.years.indexOf(y)
-				this.datePickerValue = [
-					yi >= 0 ? yi : 0,
-					m - 1,
-					d - 1
-				]
-			} else {
-				const now = new Date()
-				const yi = this.years.indexOf(now.getFullYear())
-				this.datePickerValue = [yi >= 0 ? yi : 0, now.getMonth(), now.getDate() - 1]
-			}
-			this.showBirthdayModal = true
-		},
-		onDatePickerChange(e) {
-			this.datePickerValue = e.detail.value
-		},
-		async confirmBirthday() {
-			const yi = this.datePickerValue[0] || 0
-			const mi = this.datePickerValue[1] || 0
-			const di = this.datePickerValue[2] || 0
-			const year = this.years[yi]
-			const month = this.months[mi]
-			const day = this.days[di]
-			if (!year || !month || !day) return
-			const birthday = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+		// 生日 - 系统日期选择器
+		async onBirthdayPickerChange(e) {
+			const date = e.detail.value
+			if (!date) return
 			try {
-				const res = await updateUserInfo({ birthday })
+				const res = await updateUserInfo({ birthday: date })
 				if (res.code === 0) {
-					this.userBirthday = birthday
+					this.userBirthday = date
 					if (this.userInfo) {
-						this.userInfo.birthday = birthday
+						this.userInfo.birthday = date
 						store.setUserInfo(this.userInfo)
 					}
-					this.showBirthdayModal = false
 					showToast(this.i18n.t('settings.birthdaySaveSuccess'))
 				} else {
 					showToast(res.message || this.i18n.t('common.fail'))
 				}
 			} catch (e) {
 				console.error('updateBirthday error:', e)
-				this.userBirthday = birthday
+				this.userBirthday = date
 				if (this.userInfo) {
-					this.userInfo.birthday = birthday
+					this.userInfo.birthday = date
 					store.setUserInfo(this.userInfo)
 				}
-				this.showBirthdayModal = false
 				showToast(this.i18n.t('settings.birthdaySaveSuccess'))
 			}
 		},
@@ -603,6 +573,20 @@ export default {
 				console.error('handleNotificationChange error:', e)
 				this.notificationEnabled = !enabled
 			}
+		},
+
+		// ============ 测试生日弹窗 ============
+		testBirthdayModal() {
+			this.showTestBirthdayModal = true
+		},
+		closeTestBirthdayModal() {
+			this.showTestBirthdayModal = false
+		},
+		// 测试用:模拟领取成功
+		handleTestBirthdayClaimed(data) {
+			console.log('[test-birthday] claimed:', data)
+			// 因为是测试,后端没真发,这里手动模拟一个成功响应
+			// 实际场景这个 data 是后端返回的
 		},
 
 		async handleLogout() {
@@ -878,22 +862,32 @@ export default {
 	width: 100%;
 }
 
+/* 强制每列等宽 */
+.date-picker /deep/ uni-picker-view-column {
+	flex: 1;
+}
+
 .picker-item {
 	height: 36px;
 	line-height: 36px;
 	text-align: center;
 	font-size: 16px;
 	color: #000000CC;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .picker-label-row {
 	display: flex;
-	justify-content: space-around;
-	padding: 6px 30px 0;
+	flex-direction: row;
+	padding: 6px 0 0;
 }
 
 .picker-label {
-	font-size: 12px;
-	color: #00000066;
+	flex: 1;
+	text-align: center;
+	font-size: 13px;
+	color: #999;
 }
 </style>

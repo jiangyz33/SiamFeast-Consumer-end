@@ -239,6 +239,36 @@ export function refreshToken(refreshToken) {
 	return post('/auth/refresh', { refresh_token: refreshToken })
 }
 
+/**
+ * 发送换绑手机号验证码
+ * POST /change-phone/send-sms
+ * @param {'old'|'new'} type 给旧号还是新号发
+ * @param {string} phoneNumber E.164 格式
+ */
+export function sendChangePhoneSMS(type, phoneNumber) {
+	return post('/change-phone/send-sms', {
+		type,
+		phone_number: phoneNumber
+	})
+}
+
+/**
+ * 提交换绑手机号
+ * POST /change-phone
+ * @param {string} oldPhone 旧号
+ * @param {string} oldCode 旧号验证码
+ * @param {string} newPhone 新号
+ * @param {string} newCode 新号验证码
+ */
+export function changePhone(oldPhone, oldCode, newPhone, newCode) {
+	return post('/change-phone', {
+		old_phone: oldPhone,
+		old_code: oldCode,
+		new_phone: newPhone,
+		new_code: newCode
+	})
+}
+
 // 导出模块对象
 export const authApi = {
 	sendCode,
@@ -253,7 +283,9 @@ export const authApi = {
 	checkUserExist,
 	getCoinBalance,
 	logout,
-	refreshToken
+	refreshToken,
+	sendChangePhoneSMS,
+	changePhone
 }
 
 // 别名：tempLogin = loginByPassword（兼容）

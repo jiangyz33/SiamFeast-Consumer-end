@@ -74,6 +74,29 @@ export function createOrder(data) {
 }
 
 /**
+ * 结算预览(不真正下单)
+ * POST /orders/preview
+ * @param {Object} data 和 createOrder 一样的参数
+ * @returns {Promise<{subtotal, campaign_discount, campaign_name, campaign_type, coupon_discount, coin_deduct, coins_used, total_amount}>}
+ */
+export function previewOrder(data) {
+	const orderData = { ...data }
+	if (orderData.items && Array.isArray(orderData.items)) {
+		orderData.items = orderData.items.map(item => ({
+			menu_item_id: item.menu_item_id || item.id,
+			item_name: item.item_name || item.name,
+			item_name_en: item.item_name_en || item.name_en || null,
+			item_name_th: item.item_name_th || item.name_th || null,
+			quantity: item.quantity,
+			unit_price: item.unit_price || item.price,
+			specs: item.specs || null,
+			remark: item.remark || null
+		}))
+	}
+	return post('/orders/preview', orderData)
+}
+
+/**
  * 取消订单
  * @param {number} orderId 订单ID
  * @param {string} reason 取消原因
