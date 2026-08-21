@@ -147,6 +147,18 @@ export default {
 			}
 		},
 
+		/**
+		 * 解析消息的 payload/data 字段（后端可能存 JSON 字符串或对象）
+		 * 金币使用确认请求的 payload 带 action=COIN_CONFIRM，点击跳转判定用
+		 */
+		parseMessagePayload(m) {
+			let p = m && (m.payload || m.data)
+			if (typeof p === 'string') {
+				try { p = JSON.parse(p) } catch (e) { p = null }
+			}
+			return p && typeof p === 'object' ? p : null
+		},
+
 		normalizeMessage(m) {
 				const type = m.notification_type || m.type || 'SYSTEM'
 				const lang = i18n.getLanguage()
@@ -174,7 +186,8 @@ export default {
 				const typeKey = typeToI18n[type.toLowerCase()] || 'message.system'
 				// 标题优先级：后端多语言字段 → i18n 类型映射 → 后端默认 title
 				const fallbackTitle = m['title_' + lang] || m.title || m.title_en || ''
-				const title = (typeKey && i18n.t(typeKey)) || fallbackTitle
+				// 标题优先用后端三语文案（金币确认等具体业务标题），缺失才按类型兜底
+				const title = fallbackTitle || (typeKey && i18n.t(typeKey)) || ''
 				// 描述：优先取多语言字段，回退到 body/description
 				const description = m['body_' + lang] || m['description_' + lang]
 					|| m.body || m.description || ''
@@ -199,7 +212,9 @@ export default {
 					iconData: iconMap[type] || iconMap.SYSTEM,
 					description: description,
 					time: time,
-					isRead: m.is_read
+					isRead: m.is_read,
+					// 保留后端 payload（金币确认请求带 action=COIN_CONFIRM），点击跳转判定用
+					payload: this.parseMessagePayload(m)
 				}
 		},
 
@@ -226,10 +241,19 @@ export default {
 				}
 			}
 
-			// 根据消息类型跳转
-			if (item.type === 'order') {
-				uni.navigateTo({ url: '/pages/orders/index' })
-			} else if (item.type === 'promotion') {
+			// 金币使用确认请求（payload 带 action=COIN_CONFIRM，或金币类消息）→ 跳确认页可同意/拒绝
+			// 确认页进入时查 pending：120 秒内有效可操作，过期/已处理显示空态
+			const t = String(item.type || '').toUpperCase()
+			if ((item.payload && item.payload.action === 'COIN_CONFIRM') || t === 'COIN' || t === 'COIN_CONFIRM') {
+				uni.navigateTo({ url: '/pages/coin-confirm/index' })
+				return
+			}
+
+			// 根据消息类型跳转（notification_type 为大写，统一转小写匹配）
+			const navType = String(item.type || '').toLowerCase()
+			if (navType === 'order' || navType === 'order_status') {
+				uni.navigateTo({ url: '/pages/order/index' })
+			} else if (navType === 'promotion' || navType === 'coupon') {
 				uni.navigateTo({ url: '/pages/coupons/index' })
 			}
 		},
@@ -386,9 +410,13 @@ export default {
 .message-desc {
 	font-size: 13px;
 	color: #00000099;
+	line-height: 1.5;
+	/* 最多 2 行：金币确认请求等长文案可完整读到操作提示 */
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
 	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	word-break: break-all;
 }
 
 /* 加载状态 */

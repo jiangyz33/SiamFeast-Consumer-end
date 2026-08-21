@@ -121,7 +121,8 @@
 					</view>
 				</view>
 
-				<view class="order-type-section" v-if="orderTypeText">
+				<!-- 订单类型区暂不显示（后端字段就绪，文案待定），保留 orderTypeText computed，恢复显示时改 v-if 即可 -->
+				<view class="order-type-section" v-if="false && orderTypeText">
 					<view class="section-card">
 						<view class="order-type-row">
 						<text class="order-type-label">{{ t("orderDetail.orderTypeLabel") }}</text>
@@ -172,6 +173,10 @@
 							<text class="info-label">{{ t("orderDetail.subtotal") }}</text>
 							<text class="info-value">฿{{ orderData.subtotal || 0 }}</text>
 						</view>
+						<view class="info-row" v-if="orderData.campaign_discount_amount > 0">
+							<text class="info-label">{{ t("orderDetail.campaignDiscount") }}</text>
+							<text class="info-value discount">-฿{{ orderData.campaign_discount_amount }}</text>
+						</view>
 						<view class="info-row" v-if="orderData.discount_amount > 0">
 							<text class="info-label">{{ t("orderDetail.discount") }}</text>
 							<text class="info-value discount">-฿{{ orderData.discount_amount }}</text>
@@ -179,6 +184,10 @@
 							<view class="info-row" v-if="orderData.coin_deduct_amount > 0">
 								<text class="info-label">{{ t("orderDetail.coinDeduct") }}</text>
 								<text class="info-value discount">-฿{{ orderData.coin_deduct_amount }}<text v-if="orderData.coins_used"> ({{ t("orderDetail.coinsCount", { n: orderData.coins_used }) }})</text></text>
+							</view>
+							<view class="info-row" v-if="orderData.rounding_adjustment > 0">
+								<text class="info-label">{{ t("orderDetail.rounding") }}</text>
+								<text class="info-value discount">-฿{{ orderData.rounding_adjustment }}</text>
 							</view>
 							<view class="info-row" v-if="memberSettlement && memberSettlement.coins_earned > 0">
 								<text class="info-label">{{ t("orderDetail.coinsEarned") }}</text>
@@ -191,6 +200,17 @@
 						<view class="info-row total-row">
 							<text class="info-label">{{ t("orderDetail.actualPay") }}</text>
 							<text class="info-value total">฿{{ orderData.total_amount || 0 }}</text>
+						</view>
+						<!-- 实际获得的金币/积分 -->
+						<view class="info-row reward-earned-row" v-if="orderData.coins_earned > 0 || orderData.points_earned > 0">
+							<view class="reward-earned-item" v-if="orderData.coins_earned > 0">
+								<text class="reward-earned-icon">🪙</text>
+								<text class="reward-earned-text">+{{ orderData.coins_earned }}</text>
+							</view>
+							<view class="reward-earned-item" v-if="orderData.points_earned > 0">
+								<text class="reward-earned-icon">⭐</text>
+								<text class="reward-earned-text">+{{ orderData.points_earned }}</text>
+							</view>
 						</view>
 					</view>
 				</view>
@@ -218,6 +238,10 @@
 							<text class="info-label">{{ t("orderDetail.orderSource") }}</text>
 							<text class="info-value">{{ formatOrderSource(orderData.order_source) }}</text>
 						</view>
+						<view class="info-row" v-if="orderData.cashier_name">
+							<text class="info-label">{{ t("orderDetail.cashier") }}</text>
+							<text class="info-value">{{ orderData.cashier_name }}</text>
+						</view>
 						<view class="info-row" v-if="pickupStoreName">
 							<text class="info-label">{{ t("orderDetail.pickupStore") }}</text>
 							<text class="info-value">{{ pickupStoreName }}</text>
@@ -230,7 +254,8 @@
 							<text class="info-label">{{ t("orderDetail.remark") }}</text>
 							<text class="info-value">{{ orderData.remark }}</text>
 						</view>
-						<view class="info-row" v-if="orderData.payment_method">
+						<!-- 支付方式暂不显示，保留 orderData.payment_method 字段和 formatPaymentMethod 方法，恢复时改 v-if 即可 -->
+						<view class="info-row" v-if="false && orderData.payment_method">
 							<text class="info-label">{{ t("orderDetail.payMethod") }}</text>
 							<text class="info-value">{{ formatPaymentMethod(orderData.payment_method) }}</text>
 						</view>
@@ -246,12 +271,12 @@
 			<view class="bottom-placeholder"></view>
 		</scroll-view>
 
-		<!-- 底部操作栏 -->
+		<!-- 底部操作栏（再来一单随点餐入口临时下线隐藏，保留联系商家） -->
 		<view class="bottom-bar">
 			<view class="action-btn contact-btn" @click="handleContact">
 				<text class="action-btn-text">{{ t("orderDetail.contactStore") }}</text>
 			</view>
-			<view class="action-btn reorder-btn" @click="handleReorder">
+			<view class="action-btn reorder-btn" v-if="ORDERING_ENABLED" @click="handleReorder">
 				<text class="action-btn-text">{{ t("orderDetail.reorder") }}</text>
 			</view>
 		</view>
@@ -260,12 +285,13 @@
 </template>
 
 <script>
-import { getOrderDetail } from '@/api/services/order.js'
+import { getOrderDetail, reorder } from '@/api/services/order.js'
 import { getStore } from '@/api/services/store.js'
 import { getBooking } from '@/api/services/hostel.js'
 import { getConsumerMenuItems } from '@/api/services/menu.js'
 
 import { showToast, fixMinioUrl } from '@/utils/index.js'
+import { ORDERING_ENABLED } from '@/utils/featureFlags.js'
 import i18n from '@/i18n/index.js'
 import { generateQRImage } from '@/utils/qrcode.js'
 
@@ -298,6 +324,7 @@ export default {
 	data() {
 		return {
 			i18n: i18n,
+			ORDERING_ENABLED: ORDERING_ENABLED,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			orderId: '',
@@ -406,7 +433,7 @@ export default {
 					const dd = orderRes.value.data; if (dd.order && dd.items) { this.orderData = { ...dd.order, items: dd.items } } else { this.orderData = dd }
 					// 诊断：打印首个 item 的所有字段，方便确认后端返回的图片字段名
 					if (this.orderData.items && this.orderData.items[0]) {
-						console.log('[order-detail] first item keys:', Object.keys(this.orderData.items[0]).join(','), 'sample:', JSON.stringify(this.orderData.items[0]).substring(0, 400))
+						// debug cleared
 					}
 
 					// Read pickup code from localStorage
@@ -431,20 +458,6 @@ export default {
 							if (sRes.code === 0 && sRes.data) {
 								this.storeInfo = sRes.data
 								this.storePhone = sRes.data.phone || ''
-								console.log('[order-detail] storeInfo address fields:', JSON.stringify({
-									name: sRes.data.name,
-									name_zh: sRes.data.name_zh,
-									name_en: sRes.data.name_en,
-									name_th: sRes.data.name_th,
-									address: sRes.data.address,
-									address_zh: sRes.data.address_zh,
-									address_en: sRes.data.address_en,
-									address_th: sRes.data.address_th,
-									formatted_address: sRes.data.formatted_address,
-									formatted_address_zh: sRes.data.formatted_address_zh,
-									formatted_address_en: sRes.data.formatted_address_en,
-									formatted_address_th: sRes.data.formatted_address_th
-								}))
 							}
 						} catch(e) {}
 						// 后端 order_items 不存图片，从门店菜单反查 item_id → image_url
@@ -572,7 +585,7 @@ export default {
 					}
 					return it
 				})
-				console.log('[order-detail] enriched images from menu, count=' + needImage.length)
+				// enriched images from menu
 			} catch (e) {
 				console.error('[order-detail] enrich menu images failed:', e)
 			}
@@ -616,7 +629,58 @@ export default {
 			}
 		},
 
-		handleReorder() {
+		async handleReorder() {
+			const orderId = this.orderData.id || this.orderData.order_id
+			const shopId = this.orderData.store_id || this.orderData.shop_id || ''
+			// 优先调后端 reorder 接口：返回 items 内含 selection(可直接下单) + specs(多语言快照,供展示)
+			if (orderId) {
+				try {
+					const res = await reorder(orderId)
+					if (res && res.code === 0 && res.data && Array.isArray(res.data.items) && res.data.items.length > 0) {
+						// reorder 接口不返回 image_url，从菜单接口反查
+						const shopId = this.orderData.store_id || this.orderData.shop_id || ''
+						if (shopId) {
+							await this.enrichItemsWithMenuImages(shopId)
+							// 把 enrich 后的图片合并到 reorder 返回的 items
+							const imgMap = {}
+							for (const it of (this.orderData.items || [])) {
+								if (it.item_id && it.image_url) imgMap[it.item_id] = it.image_url
+							}
+							res.data.items.forEach(item => {
+								const itemId = item.item_id || item.id
+								if (!item.image_url && imgMap[itemId]) {
+									item.image_url = imgMap[itemId]
+								}
+							})
+						}
+						const products = res.data.items.map(item => {
+							const specs = item.specs || null
+							const specsText = specs ? this.formatSpecs(specs) : ''
+							return {
+								id: item.item_id || item.id,
+								name: item.item_name,
+								name_en: item.item_name_en || '',
+								name_th: item.item_name_th || '',
+								price: item.unit_price,
+								image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
+								quantity: item.quantity,
+								store_id: shopId,
+								specs: specs || {},
+								specs_text: specsText,
+								selection: item.selection || null
+							}
+						})
+						const shopIdParam = shopId ? `&shopId=${shopId}` : ''
+						uni.navigateTo({
+							url: `/pages/checkout/index?orderType=dinein&products=${encodeURIComponent(JSON.stringify(products))}${shopIdParam}`
+						})
+						return
+					}
+				} catch (e) {
+					console.warn('[order-detail] reorder API failed, fallback to local build:', e)
+				}
+			}
+			// 兜底：用订单详情的 items 本地拼装（旧逻辑）
 			if (this.orderData.items && this.orderData.items.length > 0) {
 				const products = this.orderData.items.map(item => {
 					const specs = item.specs || item.specs_config || null
@@ -624,15 +688,16 @@ export default {
 					return {
 						id: item.item_id || item.id,
 						name: item.item_name,
+						name_en: item.item_name_en || '',
+						name_th: item.item_name_th || '',
 						price: item.unit_price,
 						image: fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg',
 						quantity: item.quantity,
-						store_id: this.orderData.store_id || this.orderData.shop_id || '',
+						store_id: shopId,
 						specs: specs || {},
 						specs_text: specsText
 					}
 				})
-				const shopId = this.orderData.store_id || this.orderData.shop_id || ''
 				const shopIdParam = shopId ? `&shopId=${shopId}` : ''
 				uni.navigateTo({
 					url: `/pages/checkout/index?orderType=dinein&products=${encodeURIComponent(JSON.stringify(products))}${shopIdParam}`
@@ -981,6 +1046,26 @@ export default {
 .total-row {
 	padding-top: 10px;
 	border-top: 1px solid #F3F3F3;
+}
+
+/* 获得金币/积分 */
+.reward-earned-row {
+	display: flex;
+	gap: 16px;
+	padding-top: 8px;
+}
+.reward-earned-item {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+.reward-earned-icon {
+	font-size: 16px;
+}
+.reward-earned-text {
+	font-size: 14px;
+	font-weight: 700;
+	color: #F2B131;
 }
 
 .bottom-placeholder {

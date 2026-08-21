@@ -50,6 +50,7 @@
 						v-model="password"
 						@focus="pwdFocused = true"
 						@blur="pwdFocused = false"
+						@input="onPasswordInput"
 					/>
 					<view class="pwd-toggle" @click="showPwd = !showPwd">
 						<text class="pwd-toggle-text">{{ showPwd ? t('login.hide') : t('login.show') }}</text>
@@ -96,17 +97,47 @@
 
 				<!-- 生日(必填) -->
 				<view class="birthday-section">
-					<view class="input-field birthday-field" :style="{ borderColor: birthdayError ? '#DA3300' : '#E0E0E0' }">
-						<picker mode="date" :value="birthday" :end="maxBirthdayDate" :start="minBirthdayDate" @change="onBirthdayChange">
-							<view class="birthday-picker">
-								<text v-if="birthday" class="birthday-text">{{ birthday }}</text>
-								<text v-else class="birthday-placeholder">{{ t('login.birthdayPlaceholder') }}</text>
-								<text class="birthday-suffix">🎂</text>
-							</view>
-						</picker>
+					<view
+						class="input-field birthday-field"
+						:style="{ borderColor: birthdayError ? '#DA3300' : '#E0E0E0' }"
+						@click="showBirthdayPicker = true"
+					>
+						<view class="birthday-picker">
+							<text v-if="birthday" class="birthday-text">{{ birthday }}</text>
+							<text v-else class="birthday-placeholder">{{ t('login.birthdayPlaceholder') }}</text>
+							<text class="birthday-suffix">🎂</text>
+						</view>
 					</view>
 					<text v-if="birthdayError" class="field-error">{{ birthdayError }}</text>
 				</view>
+
+				<!-- 邮箱(可选) -->
+				<view class="email-section">
+					<view class="input-field" :style="{ borderColor: emailError ? '#DA3300' : (emailFocused ? '#F2B131' : '#E0E0E0') }">
+						<input
+							class="input"
+							type="text"
+							:placeholder="t('login.emailPlaceholder')"
+							placeholder-style="color: #828282;"
+							v-model="email"
+							@focus="emailFocused = true; emailError = ''"
+							@blur="emailFocused = false; validateEmail()"
+						/>
+						<text class="email-suffix">✉️</text>
+					</view>
+					<text v-if="emailError" class="field-error">{{ emailError }}</text>
+					<text v-else class="field-hint">{{ t('login.emailHint') }}</text>
+				</view>
+
+				<!-- 自定义日期选择弹窗（跟随 App 语言） -->
+				<date-picker-modal
+					:visible="showBirthdayPicker"
+					:value="birthday"
+					:min-date="minBirthdayDate"
+					:max-date="maxBirthdayDate"
+					@change="onBirthdayChange"
+					@close="showBirthdayPicker = false"
+				/>
 
 				<!-- 短信验证码 -->
 				<view class="code-field">
@@ -160,17 +191,19 @@
 
 <script>
 import { validatePhone, getPhoneMaxLength, showToast } from '@/utils/index.js'
-import { setCountryCode } from '@/api/services/auth.js'
-import { sendSMSCode, smsLogin, resolveSMSErrorMessage } from '@/utils/sms.js'
+import { setCountryCode, checkPhone } from '@/api/services/auth.js'
+import { sendSMSCode, smsLogin, resolveSMSErrorMessage, toE164 } from '@/utils/sms.js'
 import { post, patch } from '@/api/request.js'
 import store from '@/store/index.js'
 import i18n from '@/i18n/index.js'
+import DatePickerModal from '@/components/date-picker-modal.vue'
 
 const COUNTRY_LIST = [
 	{ code: '+66',  flag: '\u{1F1F9}\u{1F1ED}', name: 'Thailand',  name_zh: '泰国',  name_th: 'ประเทศไทย', min: 9, max: 10 }
 ]
 
 export default {
+	components: { DatePickerModal },
 	data() {
 		return {
 			i18n,
@@ -182,15 +215,19 @@ export default {
 			inviteCode: '',
 			code: '',
 			birthday: '',
+			email: '',
+			showBirthdayPicker: false,
 			phoneFocused: false,
 			pwdFocused: false,
 			pwd2Focused: false,
 			inviteFocused: false,
 			codeFocused: false,
+			emailFocused: false,
 			phoneError: '',
 			confirmPasswordError: '',
 			birthdayError: '',
 			codeError: '',
+			emailError: '',
 			showPwd: false,
 			showPwd2: false,
 			showCountryPicker: false,
@@ -211,6 +248,16 @@ export default {
 			const found = COUNTRY_LIST.find(c => c.code === cc)
 			if (found) this.selectedCountry = found
 		}
+		// 接收邀请码（支持 query 参数 invite_code / inviteCode，来自分享链接）
+		if (options.invite_code || options.inviteCode) {
+			this.inviteCode = decodeURIComponent(options.invite_code || options.inviteCode)
+		} else {
+			// LINE 邀请链接场景：好友从 ?code=XXX 进入 H5，App.vue 入口已捕获存 storage（hash 路由下 query 拿不到）
+			const storedCode = uni.getStorageSync('invite_code') || ''
+			if (storedCode && /^[A-Z0-9]{4,12}$/.test(storedCode)) {
+				this.inviteCode = storedCode
+			}
+		}
 		setCountryCode(this.selectedCountry.code)
 	},
 	onUnload() {
@@ -221,7 +268,7 @@ export default {
 			return getPhoneMaxLength(this.selectedCountry)
 		},
 		fullPhoneNumber() {
-			return this.selectedCountry.code + this.phone
+			return toE164(this.selectedCountry.code, this.phone)
 		},
 		// 生日 picker:最早 1900-01-01,最晚今天(不能选未来日期)
 		minBirthdayDate() {
@@ -262,6 +309,14 @@ export default {
 			const cleaned = val.replace(/\D/g, '').slice(0, this.phoneMaxLength)
 			this.phone = cleaned
 		},
+		// 密码框变化时联动重判确认密码错误（避免改了上面不改下面）
+		onPasswordInput() {
+			if (this.confirmPassword && this.confirmPassword === this.password) {
+				this.confirmPasswordError = ''
+			} else if (this.confirmPassword && this.confirmPassword !== this.password) {
+				this.confirmPasswordError = this.t('login.passwordMismatch')
+			}
+		},
 		onConfirmPasswordInput() {
 			if (this.confirmPassword && this.confirmPassword !== this.password) {
 				this.confirmPasswordError = this.t('login.passwordMismatch')
@@ -269,10 +324,24 @@ export default {
 				this.confirmPasswordError = ''
 			}
 		},
-		onBirthdayChange(e) {
-			const val = (e.detail && e.detail.value) || ''
-			this.birthday = val
+		onBirthdayChange(val) {
+			this.birthday = val || ''
 			this.birthdayError = ''
+		},
+		validateEmail() {
+			const v = (this.email || '').trim()
+			if (!v) {
+				this.emailError = ''
+				return true
+			}
+			// 基础邮箱格式：local@domain，域名至少一个点
+			const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+			if (!re.test(v)) {
+				this.emailError = this.t('login.emailInvalid')
+				return false
+			}
+			this.emailError = ''
+			return true
 		},
 		selectCountry(c) {
 			this.selectedCountry = c
@@ -296,7 +365,29 @@ export default {
 			}
 			this.sendingCode = true
 			try {
-				await sendSMSCode(this.fullPhoneNumber, 'register')
+				// 先调 check-phone 校验：注册场景下已注册就提示跳登录（不消耗短信额度）
+				try {
+					const checkRes = await checkPhone(this.fullPhoneNumber)
+					const checkData = (checkRes && checkRes.data) || {}
+					if (checkData.registered) {
+						// 已注册 → 提示跳登录页，不浪费短信额度
+						uni.showModal({
+							title: '',
+							content: this.t('error.phoneAlreadyRegistered'),
+							confirmText: this.t('common.confirm'),
+							showCancel: false,
+							success: () => {
+								uni.redirectTo({ url: '/pages/login/sms?scene=login' })
+							}
+						})
+						return
+					}
+				} catch (e) {
+					console.warn('[register] check-phone failed, fallback to send:', e)
+					// check-phone 失败不阻塞，继续走发码流程
+				}
+				// 未注册 → 发送验证码（统一接口：SMS 优先，额度用完自动降级邮箱）
+				const data = await sendSMSCode(this.fullPhoneNumber, 'register')
 				this.cooldown = 60
 				this.cooldownTimer = setInterval(() => {
 					this.cooldown--
@@ -305,10 +396,47 @@ export default {
 						this.cooldownTimer = null
 					}
 				}, 1000)
-				showToast(this.t('login.codeSent'))
+				// 根据实际渠道展示不同 UI
+				if (data && data.channel === 'email' && data.email) {
+					// SMS 额度用完，已降级到邮箱
+					uni.showModal({
+						title: '',
+						content: this.t('login.codeSentToEmail', { email: data.email }),
+						showCancel: false,
+						confirmText: this.t('common.confirm')
+					})
+				} else {
+					// SMS 发送成功
+					showToast(this.t('login.codeSent'))
+				}
+				// 剩 ≤1 条 SMS 配额 → 显著提示（用户需知下一条会改邮箱）
+				if (data && data.warning) {
+					setTimeout(() => {
+						uni.showModal({
+							title: '',
+							content: this.t('login.quotaWarning', { warning: data.warning }),
+							showCancel: false,
+							confirmText: this.t('common.confirm')
+						})
+					}, 800)
+				}
 			} catch (e) {
 				console.error('[register] sendCode failed:', e)
-				showToast(resolveSMSErrorMessage(e))
+				const code = e && (e.code || e.bizCode)
+				// SMS 额度用完 + 未绑邮箱：引导用户先注册（注册时不扣配额，可继续）
+				if (code === 'SMS_QUOTA_NO_EMAIL') {
+					uni.showModal({
+						title: '',
+						content: this.t('login.quotaExhausted'),
+						showCancel: false,
+						confirmText: this.t('common.confirm')
+					})
+					return
+				}
+				// 前端校验失败（INVALID_PHONE）才主动 toast；后端错误已由 request.js 统一 toast
+				if (code === 'INVALID_PHONE' || code === 'PHONE_FORMAT_INVALID') {
+					showToast(this.t('error.phoneInvalid'))
+				}
 			} finally {
 				this.sendingCode = false
 			}
@@ -325,10 +453,20 @@ export default {
 				this.confirmPasswordError = this.t('login.passwordMismatch')
 				return
 			}
+			// 邮箱可选：填了就校验格式
+			if (!this.validateEmail()) {
+				return
+			}
 			this.submitting = true
 			try {
-				// 1. 短信验证码登录(登录即注册,scene=register)
-				const data = await smsLogin(this.fullPhoneNumber, this.code, 'register')
+				// 1. 短信验证码登录 + 注册（scene=register，password/inviteCode/email 一起传）
+				// email 在主接口直接绑定，省一次 PATCH，且享受后端唯一性校验
+				const emailTrimmed = (this.email || '').trim()
+				const data = await smsLogin(this.fullPhoneNumber, this.code, 'register', {
+					password: this.password,
+					inviteCode: this.inviteCode && this.inviteCode.trim() ? this.inviteCode.trim() : undefined,
+					email: emailTrimmed || undefined
+				})
 				if (!data || !data.access_token) {
 					showToast(this.t('login.registerFailed'))
 					return
@@ -345,26 +483,12 @@ export default {
 				// 通知 push.js 触发 cid 上报
 				uni.$emit('loginSuccess')
 
-				// 3. 并行补全:设置密码 + 设置生日 + 绑定邀请码(可选)
-				const tasks = [
-					post('/password/change', {
-						old_password: '',
-						new_password: this.password
-					}),
-					// 更新生日(PATCH /users/me)
-					patch('/users/me', {
-						birthday: this.birthday
-					})
-				]
-				if (this.inviteCode && this.inviteCode.trim()) {
-					tasks.push(post('/referrals/bind', {
-						invite_code: this.inviteCode.trim()
-					}))
-				}
-				const results = await Promise.allSettled(tasks)
-				const failed = results.filter(r => r.status === 'rejected')
-				if (failed.length > 0) {
-					console.warn('[register] 部分信息补全失败', failed)
+				// 3. 补全生日（密码/邀请码/邮箱已通过 smsLogin 一起设置）
+				// 用 silent 避免生日 PATCH 失败时打扰用户（账号已建好，生日可后续补）
+				try {
+					await patch('/users/me', { birthday: this.birthday }, { silent: true })
+				} catch (e) {
+					console.warn('[register] birthday patch failed (non-blocking):', e)
 				}
 
 				showToast(this.t('login.registerSuccess'))
@@ -373,11 +497,17 @@ export default {
 				}, 1000)
 			} catch (e) {
 				console.error('[register] failed:', e)
-				if (e && e.code === 'CODE_INVALID') {
-					this.codeError = this.t('login.codeInvalid') || '验证码错误'
-				} else {
-					showToast(resolveSMSErrorMessage(e) || this.t('login.registerFailed'))
+				const code = e && (e.code || e.bizCode)
+				// 邮箱已被占用 → 标红邮箱输入框
+				if (code === 'ErrEmailAlreadyBound' || /already.*bound|already.*used/i.test(e.message || '')) {
+					this.emailError = this.t('login.emailAlreadyBound')
+					return
 				}
+				if (code === 'CODE_INVALID' || code === 'INVALID_VERIFY_CODE') {
+					// 验证码错：显示输入框下方红字（不 toast，request.js 已 toast 过）
+					this.codeError = this.t('login.codeInvalid')
+				}
+				// 其他错误：request.js 已经按当前语言 toast，这里不重复弹
 			} finally {
 				this.submitting = false
 			}
@@ -567,6 +697,16 @@ export default {
 	display: flex;
 	align-items: center;
 	padding: 0 24rpx;
+}
+
+/* 邮箱字段（可选） */
+.email-section {
+	margin-top: 16rpx;
+}
+
+.email-suffix {
+	font-size: 32rpx;
+	margin-left: 8rpx;
 }
 
 .birthday-picker {

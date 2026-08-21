@@ -147,12 +147,14 @@
 import footprintManager from '@/utils/footprint.js'
 import { showToast } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
+import { ORDERING_ENABLED } from '@/utils/featureFlags.js'
 
 export default {
 	data() {
 		return {
 			langVersion: 0,
 			i18n: i18n,
+			ORDERING_ENABLED: ORDERING_ENABLED,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			activeTab: 0,
@@ -175,6 +177,8 @@ export default {
 		uni.$on('languageChanged', this.onLanguageChanged)
 	},
 	onShow() {
+		// 同步当前登录用户维度（多账号隔离）
+		footprintManager.setUser()
 		this.loadData()
 	},
 	onUnload() {
@@ -203,12 +207,10 @@ export default {
 		loadData() {
 			// 重新从 localStorage 加载数据
 			footprintManager.footprints = footprintManager.loadFootprints()
-			console.log('[footprint-page] loadData, stores:', footprintManager.footprints.stores?.length, 'products:', footprintManager.footprints.products?.length)
 
 			// 获取带格式化时间的数据
 			this.productFootprints = footprintManager.getProductFootprintsFormatted()
 			this.storeFootprints = footprintManager.getStoreFootprintsFormatted()
-			console.log('[footprint-page] storeFootprints rendered:', this.storeFootprints.length, 'activeTab:', this.activeTab)
 
 			// 获取统计
 			const stats = footprintManager.getFootprintStats()
@@ -233,6 +235,11 @@ export default {
 
 		// 门店点击
 		handleStoreClick(item) {
+			// 点餐入口临时下线：不跳店，轻提示
+			if (!ORDERING_ENABLED) {
+				showToast(this.i18n.t('error.orderingDisabled'))
+				return
+			}
 			// 跳转到堂食页面
 			uni.navigateTo({
 				url: `/pages/dinein/index?storeId=${item.id}`
@@ -586,9 +593,11 @@ export default {
 .store-address {
 	font-size: 12px;
 	color: #00000099;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	/* 允许换行：长地址（泰文/英文长串）自动折行，避免被 ellipsis 截断 */
+	white-space: normal;
+	word-break: break-word;
+	overflow-wrap: break-word;
+	line-height: 1.4;
 }
 
 .store-footer {

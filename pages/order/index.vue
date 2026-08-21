@@ -35,7 +35,8 @@
 						<view class="shop-info">
 							<image class="shop-icon" :src="order.store_logo || '/static/images/store-placeholder.svg'" mode="aspectFill"></image>
 							<text class="shop-name">{{ shopNameOf(order) }}</text>
-							<text class="order-type-tag" v-if="orderTypeTextOf(order)">{{ orderTypeTextOf(order) }}</text>
+							<!-- 订单类型 tag 暂不显示（后端字段就绪，文案待定），保留 orderTypeTextOf 方法，恢复显示时改 v-if 即可 -->
+							<text class="order-type-tag" v-if="false && orderTypeTextOf(order)">{{ orderTypeTextOf(order) }}</text>
 						</view>
 						<text class="order-status" :style="{ color: getStatusColor(order.status) }">{{ statusText(order.status) }}</text>
 					</view>
@@ -57,7 +58,7 @@
 							<view class="action-btn" v-if="order.status === 'PENDING_PAYMENT'" @click.stop="handlePay(order)">
 								<text class="action-text primary">{{ t("order.goPay") }}</text>
 							</view>
-							<view class="action-btn" v-if="['PAID', 'PREPARING', 'READY', 'COMPLETED'].includes(order.status)" @click.stop="handleReorder(order)">
+							<view class="action-btn" v-if="ORDERING_ENABLED && ['PAID', 'PREPARING', 'READY', 'COMPLETED'].includes(order.status)" @click.stop="handleReorder(order)">
 								<text class="action-text">{{ t("order.reorder") }}</text>
 							</view>
 							<view class="action-btn" @click.stop="handleOrderClick(order)">
@@ -141,6 +142,7 @@ import { showToast, fixMinioUrl } from '@/utils/index.js'
 import { getUserOrders, getOrderDetail } from '@/api/services/order.js'
 import { getMallOrders } from '@/api/services/member.js'
 import { getStore } from '@/api/services/store.js'
+import { ORDERING_ENABLED } from '@/utils/featureFlags.js'
 import { createPayment } from '@/api/services/payment.js'
 
 import i18n from '@/i18n/index.js'
@@ -175,6 +177,7 @@ export default {
 	data() {
 		return {
 			i18n: i18n,
+			ORDERING_ENABLED: ORDERING_ENABLED,
 			tabs: [],
 			statusBarHeight: 20,
 			contentHeight: 500,
@@ -402,8 +405,17 @@ export default {
 
 		fixMinioUrl,
 
+		// 格式化 pickup_time 给 exchange-success 页显示用（ISO 8601 → YYYY-MM-DD HH:mm）
+		formatPickupTimeForDisplay(t) {
+			if (!t) return ''
+			try {
+				const s = String(t).replace('T', ' ')
+				return s.substring(0, 16)
+			} catch (e) { return '' }
+		},
+
 		showExchangeQR(order) {
-			// 同 handleExchangeDetail：传所有语言的 product_name
+			// 同 handleExchangeDetail：传所有语言的 product_name + 提货门店/时间
 			const params = [
 				`exchangeId=${order.id}`,
 				`uniqueCode=${encodeURIComponent(order.unique_code || '')}`,
@@ -413,7 +425,11 @@ export default {
 				`productImage=${encodeURIComponent(order.product_image || '')}`,
 				`quantity=${order.quantity || 1}`,
 				`exchangeType=${order.exchange_type || ''}`,
-				`coinCost=${order.coin_cost || 0}`
+				`coinCost=${order.coin_cost || 0}`,
+				`storeName=${encodeURIComponent(order.store_name || '')}`,
+				`storeNameEn=${encodeURIComponent(order.store_name_en || '')}`,
+				`storeNameTh=${encodeURIComponent(order.store_name_th || '')}`,
+				`pickupTime=${encodeURIComponent(this.formatPickupTimeForDisplay(order.pickup_time))}`
 			].join('&')
 			uni.navigateTo({
 				url: `/pages/exchange-success/index?${params}`
@@ -431,7 +447,11 @@ export default {
 				`productImage=${encodeURIComponent(order.product_image || '')}`,
 				`quantity=${order.quantity || 1}`,
 				`exchangeType=${order.exchange_type || ''}`,
-				`coinCost=${order.coin_cost || 0}`
+				`coinCost=${order.coin_cost || 0}`,
+				`storeName=${encodeURIComponent(order.store_name || '')}`,
+				`storeNameEn=${encodeURIComponent(order.store_name_en || '')}`,
+				`storeNameTh=${encodeURIComponent(order.store_name_th || '')}`,
+				`pickupTime=${encodeURIComponent(this.formatPickupTimeForDisplay(order.pickup_time))}`
 			].join('&')
 			uni.navigateTo({
 				url: `/pages/exchange-success/index?${params}`

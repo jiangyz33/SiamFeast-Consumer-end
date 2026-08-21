@@ -46,8 +46,8 @@
 				</view>
 			</view>
 
-			<!-- 好店推荐 -->
-			<view class="recommend-section">
+			<!-- 好店推荐（点餐入口临时下线，整块隐藏） -->
+			<view class="recommend-section" v-if="ORDERING_ENABLED">
 				<view class="recommend-card">
 					<view class="recommend-header">
 						<text class="recommend-title">{{ t('mine.recommendedStores') }}</text>
@@ -97,7 +97,8 @@
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import { showToast } from '@/utils/index.js'
 import { getStores } from '@/api/services/store.js'
-import { getOrderStatus } from '@/api/services/order.js'
+import { getOrderStatus, getOrderDetail } from '@/api/services/order.js'
+import { ORDERING_ENABLED } from '@/utils/featureFlags.js'
 import i18n from '@/i18n/index.js'
 import { generateQRImage } from '@/utils/qrcode.js'
 
@@ -107,6 +108,7 @@ export default {
 		return {
 			langVersion: 0,
 			i18n: i18n,
+			ORDERING_ENABLED: ORDERING_ENABLED,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			orderId: '',
@@ -128,6 +130,8 @@ export default {
 		if (options.uniqueCode) this.uniqueCode = decodeURIComponent(options.uniqueCode)
 		this.initPage()
 		this.loadRecommendations()
+		// 后端创建订单响应可能未及时返回 order_no，主动调详情接口补全
+		this.fillOrderInfo()
 		this.startPolling()
 	},
 	onReady() {
@@ -192,6 +196,10 @@ export default {
 				const res = await getOrderStatus(this.orderId)
 				if (res.code === 0 && res.data) {
 					const status = res.data.status
+					// 兜底：如果 orderNo 还空，从状态接口拿
+					if (!this.orderNo && res.data.order_no) {
+						this.orderNo = res.data.order_no
+					}
 					if (status === 'PAID' || status === 'COMPLETED' || status === 'PREPARING') {
 						this.isPaid = true
 						this.stopPolling()
@@ -203,11 +211,61 @@ export default {
 			}
 		},
 
+		// 后端创建订单响应可能没立即返回 order_no（异步生成），主动调详情接口补全
+		async fillOrderInfo() {
+			if (!this.orderId) return
+			// 已经有 orderNo 就不用再拉
+			if (this.orderNo) return
+			try {
+				const res = await getOrderDetail(this.orderId)
+				if (res.code === 0 && res.data) {
+					// 兼容两种响应结构：
+					// 1. 平铺：res.data.order_no / res.data.unique_code（mock 旧结构）
+					// 2. 嵌套：res.data.order.order_no（生产结构，order-detail 页面已验证）
+					const order = (res.data.order && (res.data.order.id || res.data.order.order_no))
+						? res.data.order
+						: res.data
+					if (order.order_no) this.orderNo = order.order_no
+					if (!this.totalAmount || this.totalAmount === '0') {
+						this.totalAmount = order.total_amount || this.totalAmount
+					}
+					if (!this.uniqueCode && order.unique_code) {
+						this.uniqueCode = order.unique_code
+						this.$nextTick(() => { this.generateQR() })
+					}
+				}
+			} catch (e) {
+				console.warn('[payment-success] fillOrderInfo failed:', e)
+			}
+		},
+
 		playSuccessSound() {
 			if (typeof navigator !== 'undefined' && navigator.vibrate) {
 				navigator.vibrate(200)
 			}
 			try { uni.vibrateShort({ success: () => {} }) } catch (e) {}
+		},
+
+		// 经营品类枚举 → 多语言文案（与 store-select/mall 页面映射保持一致）
+		normalizeBusinessTypes(types, fallback) {
+			if (!types || !Array.isArray(types) || types.length === 0) {
+				return fallback ? [fallback] : []
+			}
+			const typeKeyMap = {
+				'HOTPOT': 'hotpot', 'HOTPOT_BUFFET': 'hotpot', 'HOTPOT_PER_ITEM': 'hotpot',
+				'BBQ': 'barbecue', 'BARBECUE': 'barbecue',
+				'MALA_TANG': 'malaTang', 'MALATANG': 'malaTang',
+				'BEVERAGE': 'beverage',
+				'SEAFOOD_NOODLES': 'seafoodNoodle', 'SEAFOOD_NOODLE': 'seafoodNoodle',
+				'SINEFOOD_NOODLE': 'seafoodNoodle', 'SINEFOOD_NOODLES': 'seafoodNoodle',
+				'HOSTEL_ROOM': 'hostel', 'HOSTEL_HOTPOT': 'hostelHotpot', 'HOSTEL_COFFEE': 'hostelCoffee'
+			}
+			const result = types.map(t => {
+				const key = typeKeyMap[t]
+				return key ? i18n.t(`storeSelect.businessTypes.${key}`) : ''
+			}).filter(Boolean)
+			if (result.length === 0 && fallback) return [fallback]
+			return result
 		},
 
 		async loadRecommendations() {
@@ -221,7 +279,7 @@ export default {
 						logo: s.logo || '/static/images/store-placeholder.svg',
 						status: s.status || 'OPEN',
 						businessHours: s.business_hours || '',
-						tags: s.business_types || [s.name]
+						tags: this.normalizeBusinessTypes(s.business_types, s["name_" + i18n.getLanguage()] || s.name)
 					}))
 				}
 			} catch (e) {

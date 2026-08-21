@@ -30,6 +30,9 @@
 			<!-- 商品图片 -->
 			<view class="product-image-section">
 				<image class="product-image" :src="fixMinioUrl(product.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+				<view class="new-badge" v-if="product.is_new_product">
+					<text class="new-badge-text">{{ i18n.t('productDetail.new') }}</text>
+				</view>
 			</view>
 
 			<!-- 商品信息卡片 -->
@@ -42,6 +45,13 @@
 					<text class="price-original" v-if="product.original_price && Number(product.original_price) > Number(product.price)">฿{{ product.original_price }}</text>
 				</view>
 				<text class="product-name">{{ product['name_' + i18n.getLanguage()] || product.name || product.name_en }}</text>
+
+				<!-- 所属门店（点餐入口下线期间不显示跳店行） -->
+				<view class="shop-row" v-if="ORDERING_ENABLED && shopInfo.name" @click="goToShop">
+					<image class="shop-row-logo" :src="shopInfo.logo" mode="aspectFill"></image>
+					<text class="shop-row-name">{{ shopInfo.name }}</text>
+					<text class="shop-row-arrow">›</text>
+				</view>
 
 				<!-- 标签 -->
 				<view class="product-tags" v-if="product.tags && product.tags.length > 0">
@@ -64,11 +74,6 @@
 						<text class="stat-num">{{ product.weekly_sales }}</text>
 						<text class="stat-label">周售</text>
 					</view>
-				</view>
-
-				<!-- 领券减价 -->
-				<view class="coupon-tag" v-if="maxCoupon">
-					<text class="coupon-tag-text">领券减฿{{ maxCoupon.amount }}</text>
 				</view>
 			</view>
 
@@ -126,7 +131,7 @@
 			<view class="bottom-placeholder"></view>
 		</scroll-view>
 
-		<!-- 底部购买栏 -->
+		<!-- 底部购买栏（点餐入口临时下线：隐藏加购/立即购买，保留分享） -->
 		<view class="buy-bar" v-if="!loading">
 			<view class="buy-bar-left">
 				<view class="bar-action" @click="handleShareProduct">
@@ -134,7 +139,7 @@
 					<text class="bar-action-text">{{ t('productDetail.share') }}</text>
 				</view>
 			</view>
-			<view class="buy-bar-right">
+			<view class="buy-bar-right" v-if="ORDERING_ENABLED">
 				<view class="buy-btn buy-btn-cart" @click="handleAddToCart">
 					<text class="buy-btn-text">{{ t('productDetail.addToCart') }}</text>
 				</view>
@@ -250,11 +255,13 @@ import { shareProduct, ShareType } from '@/utils/share.js'
 import ShareModal from '@/components/share-modal.vue'
 import i18n from '@/i18n/index.js'
 import appStore from '@/store/index.js'
+import { ORDERING_ENABLED } from '@/utils/featureFlags.js'
 import { getMenuItem, getMenuItemOptions } from '@/api/services/menu.js'
 import footprintManager from '@/utils/footprint.js'
 import { getAvailableCoupons } from '@/api/services/coupon.js'
 import { getHotProducts } from '@/api/services/products.js'
 import { checkFavorite, addFavorite, removeFavorite } from '@/api/services/favorite.js'
+import { getStore } from '@/api/services/store.js'
 
 export default {
 	components: {
@@ -264,12 +271,14 @@ export default {
 		return {
 			langVersion: 0,
 			i18n: i18n,
+			ORDERING_ENABLED: ORDERING_ENABLED,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			loading: false,
 			productId: null,
 			shopId: null,
 			product: {},
+			shopInfo: {},
 			maxCoupon: null,
 			recommendations: [],
 			isFavorited: false,
@@ -346,12 +355,18 @@ export default {
 				if (detailRes.status === 'fulfilled' && detailRes.value.code === 0 && detailRes.value.data) {
 					this.product = detailRes.value.data
 
-					// 如果有规格，加载 options；shopId 缺失时用商品自身 store_id 兜底
+					// 始终用商品自身的 store_id（商品永远只属于一个门店，URL 的 shopId 可能传错）
+					if (this.product.store_id) {
+						this.shopId = this.product.store_id
+					}
+					// 如果有规格，加载 options
 					if (this.product.has_options) {
-						if (!this.shopId && this.product.store_id) {
-							this.shopId = this.product.store_id
-						}
 						this.loadItemOptions()
+					}
+
+					// 拉取门店信息（用于展示店铺名）
+					if (this.shopId) {
+						this.loadShopInfo()
 					}
 
 				// 记录商品浏览足迹
@@ -398,6 +413,27 @@ export default {
 			}
 		},
 
+		async loadShopInfo() {
+			if (!this.shopId) return
+			try {
+				const res = await getStore(this.shopId)
+				if (res && res.code === 0 && res.data) {
+					const s = res.data
+					const lang = i18n.getLanguage()
+					this.shopInfo = {
+						id: s.id,
+						name: s['name_' + lang] || s.name || '',
+						name_zh: s.name_zh || s.name || '',
+						name_en: s.name_en || '',
+						name_th: s.name_th || '',
+						logo: fixMinioUrl(s.logo_url || s.logo) || '/static/images/store-placeholder.svg'
+					}
+				}
+			} catch (e) {
+				console.warn('[product-detail] loadShopInfo failed:', e)
+			}
+		},
+
 		async loadRecommendations() {
 			try {
 				const res = await getHotProducts({ limit: 5, ...(this.shopId ? { store_id: this.shopId } : {}) })
@@ -412,6 +448,11 @@ export default {
 
 		goBack() {
 			uni.navigateBack()
+		},
+		goToShop() {
+			if (this.shopId) {
+				uni.navigateTo({ url: `/pages/dinein/index?shopId=${this.shopId}` })
+			}
 		},
 
 		async handleToggleFavorite() {
@@ -734,6 +775,25 @@ export default {
 	width: 100%;
 	height: 280px;
 	background-color: #FFFFFF;
+	position: relative;
+}
+
+/* 新品角标 */
+.new-badge {
+	position: absolute;
+	top: 12px;
+	left: 12px;
+	background: linear-gradient(135deg, #FF6B6B 0%, #DA3300 100%);
+	padding: 4px 12px;
+	border-radius: 6px;
+	z-index: 2;
+	box-shadow: 0 2px 6px rgba(218, 51, 0, 0.3);
+}
+.new-badge-text {
+	font-size: 12px;
+	color: #FFFFFF;
+	font-weight: 700;
+	line-height: 1.2;
 }
 
 .product-image {
@@ -783,6 +843,37 @@ export default {
 	font-weight: 700;
 	color: rgba(0, 0, 0, 0.9);
 	margin-bottom: 6px;
+}
+
+/* 所属门店行 */
+.shop-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 12px;
+	margin-bottom: 6px;
+	background-color: #FFF8E1;
+	border-radius: 8px;
+}
+.shop-row-logo {
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	flex-shrink: 0;
+}
+.shop-row-name {
+	flex: 1;
+	font-size: 15px;
+	font-weight: 600;
+	color: #5D4037;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+.shop-row-arrow {
+	font-size: 20px;
+	color: #F2B131;
+	line-height: 1;
 }
 
 .product-desc {

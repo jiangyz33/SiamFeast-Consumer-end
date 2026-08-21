@@ -19,8 +19,13 @@
 					<view class="code-display">
 						<text class="code-text">{{ referralCode || '---' }}</text>
 					</view>
-					<view class="copy-btn" @click="copyCode">
-						<text class="copy-text">{{ t('mine.copyCode') }}</text>
+					<view class="code-actions">
+						<view class="action-btn-half copy-btn" @click="copyCode">
+							<text class="copy-text">{{ t('mine.copyCode') }}</text>
+						</view>
+						<view class="action-btn-half share-btn" @click="shareLink">
+							<text class="copy-text">{{ t('mine.shareToLine') }}</text>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -43,6 +48,16 @@
 				</view>
 			</view>
 
+			<!-- 待激活积分提示（仅当 pending_points > 0 时显示） -->
+			<view class="pending-row" v-if="pendingPoints > 0">
+				<view class="pending-info">
+					<text class="pending-points-label">{{ t('mine.pendingPoints') }}</text>
+					<text class="pending-points-num">{{ pendingPoints }}</text>
+					<text class="pending-count" v-if="pendingCount > 0">（{{ pendingCount }} {{ t('mine.pendingCountUnit') }}）</text>
+				</view>
+				<text class="pending-rules" v-if="pendingRules">{{ pendingRules }}</text>
+			</view>
+
 			<!-- Tab 切换 -->
 			<view class="tab-bar">
 				<view class="tab-item" :class="{ 'tab-active': activeTab === 0 }" @click="switchTab(0)">
@@ -50,6 +65,11 @@
 				</view>
 				<view class="tab-item" :class="{ 'tab-active': activeTab === 1 }" @click="switchTab(1)">
 					<text class="tab-text">{{ t('mine.rewardRecords') }}</text>
+				</view>
+				<!-- 任务记录 tab：点击直接跳转到任务页 -->
+				<view class="tab-item tab-link" @click="goToTasks">
+					<text class="tab-text">{{ t('mine.taskRecords') }}</text>
+					<text class="tab-arrow">›</text>
 				</view>
 			</view>
 
@@ -63,7 +83,13 @@
 							<text v-else class="avatar-letter">{{ (getRefereeName(item) || '?').charAt(0) }}</text>
 						</view>
 						<view class="item-info">
-							<text class="item-name">{{ getRefereeName(item) || t('mine.anonymousUser') }}</text>
+							<view class="item-name-row">
+								<text class="item-name">{{ getRefereeName(item) || t('mine.anonymousUser') }}</text>
+								<!-- 激活状态徽章：首单已消费 = 已激活，否则待激活 -->
+								<text class="activation-badge" :class="isRefereeActivated(item) ? 'badge-activated' : 'badge-pending'">
+									{{ isRefereeActivated(item) ? t('mine.activated') : t('mine.pendingActivation') }}
+								</text>
+							</view>
 							<text class="item-date">{{ formatDate(item.created_at) }}</text>
 							<!-- 显示从该被邀请人获得的金币数 -->
 							<text class="item-earned" v-if="item.total_coins_earned > 0">+{{ item.total_coins_earned }} {{ t('mine.coinUnit') }}</text>
@@ -105,12 +131,33 @@
 
 			<view class="bottom-space"></view>
 		</scroll-view>
+
+		<!-- 分享指引弹窗 -->
+		<view class="share-guide-mask" v-if="showShareGuide" @click="showShareGuide = false">
+			<view class="share-guide-modal" @click.stop>
+				<view class="share-guide-close" @click="showShareGuide = false">
+					<text class="share-guide-close-icon">×</text>
+				</view>
+				<view class="share-guide-header">
+					<text class="share-guide-icon">🔗</text>
+					<text class="share-guide-title">{{ t('mine.shareGuideTitle') }}</text>
+				</view>
+				<text class="share-guide-content">{{ t('mine.shareGuideContent') }}</text>
+				<view class="share-guide-btn" @click="showShareGuide = false">
+					<text class="share-guide-btn-text">{{ t('mine.shareGuideConfirm') }}</text>
+				</view>
+				<view class="share-guide-tip">
+					<text class="share-guide-tip-text">{{ t('mine.linkCopied') }}</text>
+				</view>
+			</view>
+		</view>
 	</view>
 </template>
 
 <script>
 	import i18n from '@/i18n/index.js'
 	import { fixMinioUrl } from '@/utils/index.js'
+	import { shareInviteToLine, buildInviteUrl } from '@/utils/lineShare.js'
 	import { getMyReferralInfo, getMyReferees, getMyReferralRewards } from '@/api/services/referral.js'
 
 	export default {
@@ -120,6 +167,12 @@
 				statusBarHeight: 0,
 				contentHeight: 0,
 				referralCode: '',
+				// LINE 分享链接（my-info 返回 invite_url，空时用 buildInviteUrl 兜底）
+				inviteUrl: '',
+				// 待激活积分（来自 /referrals/my-info，仅展示）
+				pendingPoints: 0,
+				pendingCount: 0,
+				pendingRules: '',
 				stats: {
 					totalReferrals: 0,
 					coinsEarned: 0,
@@ -128,7 +181,8 @@
 				activeTab: 0,
 				referees: [],
 				rewards: [],
-				loading: false
+				loading: false,
+				showShareGuide: false
 			}
 		},
 		computed: {
@@ -165,15 +219,20 @@
 				this.loading = true
 				try {
 					const res = await getMyReferralInfo()
-					console.log('[referral] my-info response:', JSON.stringify(res).substring(0, 500))
+					// my-info response
 					if (res.code === 0 && res.data) {
 						const data = res.data
 						this.referralCode = data.referral_code || ''
+						this.inviteUrl = data.invite_url || ''
+						// pending points (display only)
+						this.pendingPoints = data.pending_points ?? 0
+						this.pendingCount = data.pending_count ?? 0
+						this.pendingRules = data.pending_rules || ''
 						const totalReferrals = data.total_referees ?? data.total_referrals ?? 0
 						const coinsEarned = data.total_coins_earned ?? data.coins_earned ?? data.total_coins ?? data.pending_rewards ?? 0
 						const pointsEarned = data.total_points_earned ?? data.points_earned ?? data.total_points ?? 0
 						this.stats = { totalReferrals, coinsEarned, pointsEarned }
-						console.log('[referral] stats assigned (initial):', JSON.stringify(this.stats))
+						// stats assigned
 					}
 					// my-info 可能不返回 points_earned，单独拉一次 rewards 列表做兜底累加
 					if (!this.stats.pointsEarned) {
@@ -205,7 +264,7 @@
 						if (parsed.type === 'coin') totalCoins += parsed.value
 						else if (parsed.type === 'point') totalPoints += parsed.value
 					})
-					console.log('[referral] aggregated from rewards:', { totalCoins, totalPoints })
+					// aggregated from rewards
 					// 整体赋值确保响应式
 					this.stats = {
 						totalReferrals: this.stats.totalReferrals,
@@ -219,20 +278,22 @@
 			async loadList() {
 				if (this.activeTab === 0) {
 					const res = await getMyReferees({ page: 1, page_size: 50 })
-					console.log('[referral] my-referees response:', JSON.stringify(res).substring(0, 500))
+					// my-referees response
 					if (res.code === 0 && res.data) {
 						// 兼容多种返回形态：items / list / referees / 裸数组
 						const d = res.data
 						const items = Array.isArray(d) ? d : (d.items || d.list || d.referees || d.users || [])
 						this.referees = items
+						// 调试已清除
 					}
 				} else {
 					const res = await getMyReferralRewards({ page: 1, page_size: 50 })
-					console.log('[referral] my-rewards response:', JSON.stringify(res).substring(0, 500))
+					// my-rewards response
 					if (res.code === 0 && res.data) {
 						const d = res.data
 						const items = Array.isArray(d) ? d : (d.items || d.list || d.rewards || [])
 						this.rewards = items
+						// 调试已清除
 					}
 				}
 			},
@@ -240,6 +301,11 @@
 				if (this.activeTab === index) return
 				this.activeTab = index
 				this.loadList()
+			},
+
+			// 跳转到任务记录页（邀请任务档位制）
+			goToTasks() {
+				uni.navigateTo({ url: '/pages/tasks/index' })
 			},
 			copyCode() {
 				if (!this.referralCode) return
@@ -249,6 +315,16 @@
 						uni.showToast({ title: i18n.t('mine.copied'), icon: 'success' })
 					}
 				})
+			},
+			/**
+			 * 分享邀请到 LINE（第一期：链接统一落 H5 邀请页 ?code=XXX）
+			 * 链接优先用 my-info 返回的 invite_url（后端 SF_INVITE_BASE_URL 拼好），空时本地兜底拼
+			 * H5 → line.me/R/share；APP 已装 LINE → line:// scheme 秒开；未装 → 弹窗复制/网页版
+			 */
+			shareLink() {
+				if (!this.referralCode) return
+				const url = this.inviteUrl || buildInviteUrl(this.referralCode)
+				shareInviteToLine(url)
 			},
 			getRewardTypeName(type) {
 				void this.langVersion
@@ -281,6 +357,45 @@
 				if (!item) return ''
 				const url = item.referee_avatar || item.avatar || ''
 				return url ? fixMinioUrl(url) : ''
+			},
+
+			/**
+			 * 判断被邀请人是否已激活（首单消费）
+			 * 优先级：
+			 * 1. item 自身的激活字段（多种命名兼容）
+			 * 2. rewards 列表里是否有该 referee 的 FIRST_ORDER 类型记录
+			 * 3. 兜底：order_count / has_ordered / first_order_amount 等订单相关字段
+			 */
+			isRefereeActivated(item) {
+				if (!item) return false
+				// 1. 显式字段（多种命名兼容）
+				if (item.first_order_at) return true
+				if (typeof item.is_activated === 'boolean') return item.is_activated
+				if (typeof item.has_first_order === 'boolean') return item.has_first_order
+				if (typeof item.has_ordered === 'boolean') return item.has_ordered
+				if (typeof item.is_first_order_done === 'boolean') return item.is_first_order_done
+				// order_count / first_order_amount 是数值，> 0 视为已激活
+				if (typeof item.order_count === 'number' && item.order_count > 0) return true
+				if (typeof item.total_orders === 'number' && item.total_orders > 0) return true
+				if (Number(item.first_order_amount) > 0) return true
+				// 2. 从 rewards 列表查 FIRST_ORDER 记录（最可靠）
+				const refereeId = item.id || item.referee_id || item.user_id
+				if (refereeId && Array.isArray(this.rewards)) {
+					const hit = this.rewards.some(r => {
+						const rType = String(r.reward_type || r.type || '').toUpperCase()
+						const rRefereeId = r.referee_id || r.invitee_id || r.referee_user_id
+						return rType === 'FIRST_ORDER' && rRefereeId === refereeId
+					})
+					if (hit) return true
+				}
+				// 3. 兜底：后端修复后，total_rewards / total_coins_earned 实时从 referral_rewards 表算
+				// total_rewards > 0 = 有 GRANTED 奖励（FIRST_ORDER/ORDER_COMMISSION）= 已首单消费
+				// total_coins_earned > 0 = 有 GRANTED 积分奖励（语义是 POINT 总额）= 已首单消费
+				// 注册时 SIGN_UP 是 PENDING 不会让这两个字段 > 0，安全
+				if (Number(item.total_rewards) > 0) return true
+				if (Number(item.total_coins_earned) > 0) return true
+				// 4. 真兜底：无任何已激活信号
+				return false
 			},
 
 			/**
@@ -408,20 +523,128 @@
 	letter-spacing: 4px;
 }
 
-.copy-btn {
-	background: linear-gradient(135deg, #F2B131 0%, #E5A02E 100%);
+.code-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 4px;
+}
+
+.action-btn-half {
+	flex: 1;
 	border-radius: 20px;
 	padding: 10px 0;
 	text-align: center;
-	width: 60%;
-	margin: 0 auto;
 	box-shadow: 0 2px 8px rgba(242, 177, 49, 0.3);
+}
+
+.copy-btn {
+	background: linear-gradient(135deg, #F2B131 0%, #E5A02E 100%);
+}
+
+.share-btn {
+	background: linear-gradient(135deg, #FF8A65 0%, #FF6E40 100%);
 }
 
 .copy-text {
 	font-size: 14px;
 	font-weight: 600;
 	color: #fff;
+}
+
+/* 分享指引弹窗 */
+.share-guide-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 9999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 32px;
+}
+
+.share-guide-modal {
+	width: 100%;
+	max-width: 360px;
+	background-color: #FFFFFF;
+	border-radius: 16px;
+	padding: 24px 20px;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+}
+
+.share-guide-close {
+	position: absolute;
+	top: 12px;
+	right: 12px;
+	width: 28px;
+	height: 28px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: #F5F5F5;
+	border-radius: 14px;
+}
+
+.share-guide-close-icon {
+	font-size: 20px;
+	color: #666;
+	line-height: 1;
+}
+
+.share-guide-header {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+.share-guide-icon {
+	font-size: 36px;
+	margin-bottom: 8px;
+}
+
+.share-guide-title {
+	font-size: 16px;
+	font-weight: 700;
+	color: #1A1A1A;
+	text-align: center;
+}
+
+.share-guide-content {
+	font-size: 13px;
+	color: #444444;
+	line-height: 1.7;
+	white-space: pre-line;
+	margin-bottom: 20px;
+}
+
+.share-guide-btn {
+	background: linear-gradient(135deg, #F2B131 0%, #E5A02E 100%);
+	border-radius: 22px;
+	padding: 12px 0;
+	text-align: center;
+}
+
+.share-guide-btn-text {
+	font-size: 15px;
+	font-weight: 600;
+	color: #FFFFFF;
+}
+
+.share-guide-tip {
+	margin-top: 16px;
+	text-align: center;
+}
+
+.share-guide-tip-text {
+	font-size: 12px;
+	color: #999;
 }
 
 /* 统计 - 与首页stat-num/stat-label同风格 */
@@ -433,6 +656,42 @@
 	border-radius: 12px;
 	padding: 16px 0;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* 待激活积分提示行 */
+.pending-row {
+	margin: 8px 16px 0;
+	padding: 10px 14px;
+	background-color: #FFF8E1;
+	border-left: 3px solid #F2B131;
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+.pending-info {
+	display: flex;
+	flex-direction: row;
+	align-items: baseline;
+	gap: 6px;
+}
+.pending-points-label {
+	font-size: 12px;
+	color: #6B6B6B;
+}
+.pending-points-num {
+	font-size: 16px;
+	font-weight: 700;
+	color: #B5750C;
+}
+.pending-count {
+	font-size: 11px;
+	color: #828282;
+}
+.pending-rules {
+	font-size: 11px;
+	color: #828282;
+	line-height: 1.5;
 }
 
 .stat-box {
@@ -484,6 +743,20 @@
 .tab-active .tab-text {
 	color: #5D4037;
 	font-weight: 600;
+}
+
+/* 任务记录 tab：跳转入口样式（带箭头） */
+.tab-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+}
+.tab-arrow {
+	font-size: 16px;
+	color: #BDBDBD;
+	line-height: 1;
+	margin-left: 2px;
 }
 
 .tab-active::after {
@@ -551,9 +824,34 @@
 	flex-direction: column;
 }
 
+.item-name-row {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
 .item-name {
 	font-size: 14px;
 	color: #5D4037;
+}
+
+/* 邀请激活状态徽章 */
+.activation-badge {
+	font-size: 10px;
+	padding: 1px 6px;
+	border-radius: 6px;
+	font-weight: 500;
+	line-height: 1.4;
+}
+.activation-badge.badge-activated {
+	color: #FFFFFF;
+	background-color: #4CAF50;
+}
+.activation-badge.badge-pending {
+	color: #B5750C;
+	background-color: #FFF8E1;
 }
 
 .item-date {

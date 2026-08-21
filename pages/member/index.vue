@@ -35,8 +35,62 @@
 		<!-- 内容卡片区域 -->
 		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
 			<view class="content-card">
-				<!-- 会员等级区域 -->
-				<view class="member-level-section" :class="{ 'platinum-section': currentLevel === 1 }" @click="goToPointsMall">
+				<!-- 加载中：占位骨架（避免数据未到位时闪烁老 UI） -->
+				<view v-if="tierLoading" class="member-level-section member-level-skeleton">
+					<view class="skeleton-line skeleton-title"></view>
+					<view class="skeleton-line skeleton-status"></view>
+					<view class="skeleton-line skeleton-bar"></view>
+				</view>
+
+				<!-- 会员等级区域：动态档位渲染（按 sort_order 选样式） -->
+				<view
+					v-else-if="currentTier"
+					class="member-level-section"
+					:class="'tier-level-' + (getTierSortIndex(currentTierCode))"
+					@click="goToPointsMall"
+				>
+					<view class="level-header">
+						<view class="level-titles">
+							<!-- 所有档位名平铺，当前档高亮 -->
+							<text
+								v-for="tier in membershipTiers"
+								:key="tier.code"
+								class="level-title"
+								:class="{ 'level-active': tier.code === currentTierCode }"
+							>{{ getTierName(tier) }}</text>
+						</view>
+						<tier-icon :tier-code="currentTierCode" :sort-index="getTierSortIndex(currentTierCode)" />
+					</view>
+					<view class="level-info">
+						<text class="level-status">{{ currentTierName }}</text>
+						<view v-if="nextTier" class="upgrade-btn" @click.stop="goToPointsMall">
+							<text class="upgrade-text">{{ t('member.upgrade') }} {{ getTierName(nextTier) }}</text>
+						</view>
+					</view>
+					<view class="progress-section" v-if="nextTier">
+						<view class="progress-bar">
+							<view
+								class="progress-fill"
+								:style="{ width: progressPercent + '%' }"
+							></view>
+						</view>
+						<text class="progress-text">{{ t('member.consumption') }} {{ consumedAmount }}/{{ totalAmount }}</text>
+					</view>
+					<!-- 最高档时显示已累计消费金额 -->
+					<view class="progress-section" v-else>
+						<text class="progress-text">{{ t('member.totalSpent') }}：{{ consumedAmount }}</text>
+					</view>
+					<view class="level-benefit" v-if="getTierDescription(currentTier)">
+						<text class="benefit-text">{{ getTierDescription(currentTier) }}</text>
+					</view>
+					<!-- 已最高档时的占位 -->
+					<view class="level-benefit" v-else-if="!nextTier">
+						<text class="benefit-text">{{ t('member.highestTier') }}</text>
+					</view>
+				</view>
+
+				<!-- 兜底：档位配置未加载时显示老的 UI（避免白屏） -->
+				<view v-else class="member-level-section" :class="{ 'platinum-section': currentLevel === 1 }" @click="goToPointsMall">
 					<view class="level-header">
 						<view class="level-titles">
 							<text class="level-title" :class="{ 'level-active': currentLevel === 0 }">{{ t('member.normal') }}</text>
@@ -45,21 +99,6 @@
 					</view>
 					<view class="level-info">
 						<text class="level-status">{{ currentLevel === 0 ? i18n.t('member.normalMember') : i18n.t('member.platinumMember') }}</text>
-						<view class="upgrade-btn" :class="{ 'upgrade-btn-disabled': !canUpgrade }" @click.stop="handleUpgrade" v-if="currentLevel === 0">
-							<text class="upgrade-text">{{ t('member.upgrade') }}</text>
-						</view>
-					</view>
-					<view class="progress-section" v-if="currentLevel === 0">
-						<view class="progress-bar">
-							<view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
-						</view>
-						<text class="progress-text">{{ t('member.consumption') }} {{ consumedAmount }}/{{ totalAmount }}</text>
-					</view>
-					<view class="level-benefit" v-if="currentLevel === 0">
-						<text class="benefit-text">{{ t('member.platinumBenefit') }}</text>
-					</view>
-					<view class="level-benefit platinum-benefit" v-if="currentLevel === 1">
-						<text class="benefit-text">{{ t('upgrade.benefitBirthday') }} · {{ t('upgrade.benefitDiscount') }} · {{ t('upgrade.benefitPriority') }}</text>
 					</view>
 				</view>
 
@@ -72,6 +111,7 @@
 					<view class="stat-item" @click="goToPointsMall">
 						<text class="stat-value">{{ userPoints }}</text>
 						<text class="stat-label">{{ t('member.points') }}</text>
+						<text class="stat-pending" v-if="pendingPoints > 0">+{{ pendingPoints }}</text>
 					</view>
 					<view class="stat-item" @click="handleFeature('newUserCoupons')">
 						<text class="stat-value">{{ newUserCoupons }}</text>
@@ -94,21 +134,18 @@
 							<image class="feature-icon" src="/static/icons/coupon.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ t('mine.myCoupons') }}</text>
 						</view>
-						<view class="feature-tab" @click="handleFeature('claimCoupons')">
-							<image class="feature-icon" src="/static/icons/claim-coupon.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ t('mine.claimCenter') }}</text>
-						</view>
+						<!-- 移除「领券中心」入口：当前没有可领的优惠券，避免用户进入空页面 -->
 						<view class="feature-tab" @click="handleFeature('referral')">
 							<image class="feature-icon" src="/static/icons/invite.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ t('mine.inviteCode') }}</text>
 						</view>
-						<view class="feature-tab" @click="handleFeature('tasks')">
-							<image class="feature-icon" src="/static/icons/task.svg" mode="aspectFit"></image>
-							<text class="feature-text">{{ t('tasks.title') }}</text>
-						</view>
 						<view class="feature-tab" @click="handleFeature('memberCode')">
 							<image class="feature-icon" src="/static/icons/vending.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ t('memberCode.title') }}</text>
+						</view>
+						<view class="feature-tab" @click="handleFeature('exchange')">
+							<image class="feature-icon" src="/static/icons/mall.svg" mode="aspectFit"></image>
+							<text class="feature-text">{{ t('index.pointsMall') }}</text>
 						</view>
 						<view class="feature-tab" @click="handleFeature('settings')">
 							<image class="feature-icon" src="/static/icons/settings.svg" mode="aspectFit"></image>
@@ -117,8 +154,8 @@
 					</view>
 				</view>
 
-				<!-- 好店推荐 -->
-				<view class="recommend-section">
+				<!-- 好店推荐（点餐入口临时下线，整块隐藏：恢复 ORDERING_ENABLED=true 还原） -->
+				<view class="recommend-section" v-if="ORDERING_ENABLED">
 					<view class="section-header">
 						<text class="section-title">{{ t('mine.recommendedStores') }}</text>
 					</view>
@@ -163,8 +200,16 @@
 		<!-- 自定义底部导航栏 -->
 		<custom-tabbar :current="2"></custom-tabbar>
 
-		<!-- 升级动画 -->
+		<!-- 升级动画（动态版：内容来自档位配置） -->
+		<upgrade-animation-dynamic
+			v-if="currentTier"
+			:visible="showUpgradeAnimation"
+			:tier="currentTier"
+			@close="handleUpgradeAnimationClose"
+		></upgrade-animation-dynamic>
+		<!-- 兜底：档位未加载时用旧组件 -->
 		<upgrade-animation
+			v-else
 			:visible="showUpgradeAnimation"
 			@close="handleUpgradeAnimationClose"
 		></upgrade-animation>
@@ -174,10 +219,13 @@
 <script>
 import store from '@/store/index.js'
 import { showToast, formatPhone, fixMinioUrl } from '@/utils/index.js'
+import { ORDERING_ENABLED } from '@/utils/featureFlags.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import UpgradeAnimation from '@/components/upgrade-animation.vue'
+import UpgradeAnimationDynamic from '@/components/upgrade-animation-dynamic.vue'
+import TierIcon from '@/components/tier-icon.vue'
 import i18n from '@/i18n/index.js'
-import { getMemberInfo, getMemberProgress } from '@/api/services/member.js'
+import { getMemberInfo, getMemberProgress, getMembershipTiers } from '@/api/services/member.js'
 	import { getUserInfo } from '@/api/services/auth.js'
 import { getMyCoupons } from '@/api/services/coupon.js'
 import { getStores } from '@/api/services/store.js'
@@ -185,12 +233,15 @@ import { getStores } from '@/api/services/store.js'
 export default {
 	components: {
 		CustomTabbar,
-		UpgradeAnimation
+		UpgradeAnimation,
+		UpgradeAnimationDynamic,
+		TierIcon
 	},
 	data() {
 		return {
 			langVersion: 0,
 			i18n: i18n,
+			ORDERING_ENABLED: ORDERING_ENABLED,
 			statusBarHeight: 20,
 			contentHeight: 500,
 			userInfo: null,
@@ -199,9 +250,19 @@ export default {
 			totalAmount: 200,
 			userBalance: 0,
 			userPoints: 0,
+			tierLoading: true,   // 会员档位加载中（首次加载完成前不渲染等级区域，避免闪屏）
+		pendingPoints: 0,   // 待激活积分（仅展示，不能消费）
 			newUserCoupons: 0,
 			recommendations: [],
-			showUpgradeAnimation: false
+			showUpgradeAnimation: false,
+			// 动态档位配置（来自后端 GET /membership/tiers）
+			membershipTiers: [],
+			// 当前用户档位信息（来自 GET /member/progress）
+			currentTierCode: '',      // 如 'BRONZE'、'GOLD'、'VIP'
+			nextTierCode: '',         // 下一档 code（已最高档时为空）
+			currentLevelValue: 0,     // 当前档位的 sort_index 数值（0=最低，兜底用）
+			tierUpdatedAt: null,      // 升级时间（判断是否要弹动画）
+			lastSeenTierUpdatedAt: null  // 上次访问时记录的 tier_updated_at（localStorage）
 		}
 	},
 	computed: {
@@ -214,6 +275,47 @@ export default {
 		},
 		canUpgrade() {
 			return this.consumedAmount >= this.totalAmount
+		},
+		// 当前档位配置对象（从 membershipTiers 里按 currentTierCode 查找）
+		// 兜底：如果 code 对不上（如 BRONZE vs REGULAR），用 current_level 数值索引
+		currentTier() {
+			if (this.membershipTiers.length === 0) return null
+			// 1. 按 code 精确匹配
+			if (this.currentTierCode) {
+				const found = this.membershipTiers.find(t => t.code === this.currentTierCode)
+				if (found) return found
+			}
+			// 2. 兜底：用 progress 返回的 current_level 数值（0=最低档）
+			if (this.currentLevelValue >= 0 && this.currentLevelValue < this.membershipTiers.length) {
+				return this.membershipTiers[this.currentLevelValue]
+			}
+			// 3. 最后兜底：返回最低档
+			return this.membershipTiers[0]
+		},
+		// 下一档配置对象
+		nextTier() {
+			if (this.membershipTiers.length === 0) return null
+			if (this.nextTierCode) {
+				const found = this.membershipTiers.find(t => t.code === this.nextTierCode)
+				if (found) return found
+			}
+			// 兜底：用 currentLevel+1
+			const nextIdx = this.currentLevelValue + 1
+			if (nextIdx > 0 && nextIdx < this.membershipTiers.length) {
+				return this.membershipTiers[nextIdx]
+			}
+			return null
+		},
+		// 当前档位名称（按语言取）
+		currentTierName() {
+			const t = this.currentTier
+			if (!t) return ''
+			const lang = i18n.getLanguage()
+			return t['name_' + lang] || t.name || ''
+		},
+		// 当前档位图标（emoji）
+		currentTierIcon() {
+			return (this.currentTier && this.currentTier.icon) || '👤'
 		}
 	},
 	onLoad() {
@@ -233,15 +335,91 @@ export default {
 	},
 	created() {
 		uni.$on('languageChanged', this.onLanguageChanged)
+		// 监听金币/积分到期清零事件（push 推送 days=0 时触发）
+		uni.$on('balanceExpired', this.onBalanceExpired)
 	},
 
 	beforeDestroy() {
 		uni.$off('languageChanged', this.onLanguageChanged)
+		uni.$off('balanceExpired', this.onBalanceExpired)
 	},
 
 	methods: {
 		onLanguageChanged() {
 			this.langVersion++
+		},
+
+		// 收到金币/积分到期清零推送时刷新余额
+		async onBalanceExpired(payload) {
+			console.log('[member] balanceExpired:', payload)
+			try {
+				// 重新拉 /users/me 拿最新 coin_balance / point_balance
+				const memberRes = await getMemberInfo()
+				if (memberRes && memberRes.code === 0 && memberRes.data) {
+					const info = memberRes.data
+					this.userBalance = info.coin_balance ?? 0
+					this.userPoints = info.point_balance ?? 0
+					this.pendingPoints = info.pending_points ?? 0
+				}
+			} catch (e) {
+				console.warn('[member] refresh after expiry failed:', e)
+			}
+		},
+
+		// 按语言取档位名（用于模板循环渲染各档位时）
+		getTierName(tier) {
+			if (!tier) return ''
+			const lang = i18n.getLanguage()
+			return tier['name_' + lang] || tier.name || ''
+		},
+		// 按语言取档位描述
+		getTierDescription(tier) {
+			if (!tier) return ''
+			const lang = i18n.getLanguage()
+			return tier['description_' + lang] || tier.description || ''
+		},
+		// 按语言取升级奖励文案（动画展示用）
+		getTierRewardText(tier) {
+			if (!tier) return ''
+			const lang = i18n.getLanguage()
+			return tier['reward_text_' + lang] || tier.reward_text || ''
+		},
+		// 取当前用户 currentTierCode 在档位列表中的序号（0=最低）
+		getTierSortIndex(code) {
+			if (!code || this.membershipTiers.length === 0) return 0
+			const idx = this.membershipTiers.findIndex(t => t.code === code)
+			return idx >= 0 ? idx : 0
+		},
+
+		// 经营品类枚举 → 多语言文案（未识别返回空，避免显示英文枚举）
+		getBusinessTypeText(types, fallback) {
+			if (!types || !Array.isArray(types) || types.length === 0) {
+				return fallback ? [fallback] : []
+			}
+			const typeKeyMap = {
+				'HOTPOT': 'hotpot',
+				'HOTPOT_BUFFET': 'hotpot',
+				'HOTPOT_PER_ITEM': 'hotpot',
+				'BBQ': 'barbecue',
+				'BARBECUE': 'barbecue',
+				'MALA_TANG': 'malaTang',
+				'MALATANG': 'malaTang',
+				'BEVERAGE': 'beverage',
+				'SEAFOOD_NOODLES': 'seafoodNoodle',
+				'SEAFOOD_NOODLE': 'seafoodNoodle',
+				'SINEFOOD_NOODLE': 'seafoodNoodle',
+				'SINEFOOD_NOODLES': 'seafoodNoodle',
+				'HOSTEL_ROOM': 'hostel',
+				'HOSTEL_HOTPOT': 'hostelHotpot',
+				'HOSTEL_COFFEE': 'hostelCoffee'
+			}
+			const result = types.map(t => {
+				const key = typeKeyMap[t]
+				return key ? this.i18n.t(`storeSelect.businessTypes.${key}`) : ''
+			}).filter(Boolean)
+			// 全部未识别时，用 fallback（门店名）兜底
+			if (result.length === 0 && fallback) return [fallback]
+			return result
 		},
 
 		// 格式化营业时间：兼容 config.opening_time/closing_time、business_hours 字符串、opening_hours 等
@@ -359,18 +537,10 @@ export default {
 				uni.navigateTo({
 					url: '/pages/footprint/index'
 				})
-			} else if (type === 'claimCoupons') {
-				uni.navigateTo({
-					url: '/pages/claim-coupons/index'
-				})
 			} else if (type === 'exchange') {
 				// 金币换积分功能(积分商城第 3 个 Tab)
 				uni.navigateTo({
 					url: '/pages/points-mall/index?tab=2'
-				})
-			} else if (type === 'tasks') {
-				uni.navigateTo({
-					url: '/pages/tasks/index'
 				})
 			} else if (type === 'referral') {
 					uni.navigateTo({
@@ -401,58 +571,53 @@ export default {
 				const results = await Promise.allSettled([
 					getMemberInfo(),
 					getMemberProgress(),
+					getMembershipTiers(),
 					getMyCoupons({ status: 'UNUSED' }),
 					getStores({ limit: 3 }),
 				])
 
-				const [memberInfoRes, progressRes, couponsRes, storesRes] = results;
+				const [memberInfoRes, progressRes, tiersRes, couponsRes, storesRes] = results;
 
 				// balance & points from getMemberInfo
 				if (memberInfoRes.status === 'fulfilled' && memberInfoRes.value.code === 0 && memberInfoRes.value.data) {
 					const info = memberInfoRes.value.data
 					this.userBalance = info.coin_balance ?? 0
 					this.userPoints = info.point_balance ?? 0
+					this.pendingPoints = info.pending_points ?? 0
 				}
 
-				// 会员等级进度
+				// 档位配置（动态）
+				if (tiersRes.status === 'fulfilled' && tiersRes.value.code === 0 && tiersRes.value.data) {
+					this.membershipTiers = (tiersRes.value.data.tiers || []).filter(t => t.is_active !== false)
+				}
+
+				// 会员等级进度（动态档位）
 				if (progressRes.status === 'fulfilled' && progressRes.value.code === 0 && progressRes.value.data) {
 					const d = progressRes.value.data
-					console.log('[member] progress response:', JSON.stringify(d).substring(0, 500))
-					// 已消费金额（兼容多种字段名）
+
+					// 新接口字段：current_tier_code / next_tier_code / tier_updated_at
+					// 新接口字段（兼容多种字段名）
+					this.currentTierCode = d.current_tier_code || d.current_tier || d.tier_code || d.membership_tier || ''
+					this.nextTierCode = d.next_tier_code || ''
+					this.currentLevelValue = Number(d.current_level) || 0
+					this.tierUpdatedAt = d.tier_updated_at || null
+
+					// 兼容老字段
 					this.consumedAmount =
-						d.current_spent ||
 						d.total_spent ||
+						d.current_spent ||
 						d.spent_amount ||
-						d.consumption ||
-						d.current_amount ||
 						d.current_progress ||
 						0
-					// 升级阈值（兼容多种字段名）
-					this.totalAmount =
-						d.threshold ||
-						d.required_for_next ||
-						d.next_tier_threshold ||
-						d.target_amount ||
-						d.upgrade_threshold ||
-						d.next_threshold ||
-						d.required_amount ||
-						d.goal_amount ||
-						d.target ||
-						200  // 后端确认的真实默认值（如未提供则用此值）
-					console.log('[member] consumed=', this.consumedAmount, 'total=', this.totalAmount)
-						const isBackendPlatinum = d.current_tier === 'PLATINUM'
-						const hasMetGoal = this.consumedAmount >= this.totalAmount
-						const hasSeenAnimation = this.hasSeenUpgradeAnimation()
-						const shouldShowPlatinum = isBackendPlatinum || hasMetGoal
-						if (shouldShowPlatinum && !hasSeenAnimation) {
-							this.currentLevel = 0
-							this.showUpgradeAnimation = true
-							this.markUpgradeAnimationShown()
-						} else if (shouldShowPlatinum) {
-							this.currentLevel = 1
-						} else {
-							this.currentLevel = 0
-						}
+					// 下一档升级阈值（新接口字段 next_upgrade_threshold）
+					if (d.next_upgrade_threshold) {
+						this.totalAmount = d.next_upgrade_threshold
+					} else if (this.nextTier && this.nextTier.upgrade_threshold) {
+						this.totalAmount = this.nextTier.upgrade_threshold
+					}
+
+					// 判断是否刚升级 → 弹动画
+					this.checkAndShowUpgradeAnimation()
 				}
 
 				// 优惠券数量（只统计可用：UNUSED/ACTIVE/CLAIMED，和首页一致）
@@ -474,12 +639,15 @@ export default {
 						logo: fixMinioUrl(s.logo || s.image_url) || '/static/images/store-placeholder.svg',
 						status: s.status || 'OPEN',
 						businessHours: this.formatBusinessHours(s),
-						tags: s.business_types || [s.name]
+						tags: this.getBusinessTypeText(s.business_types, s.name)
 					}))
 				}
 
 			} catch (e) {
 				console.error('loadMemberData error:', e)
+			} finally {
+				// 加载完成（不管成功/失败），关闭 loading，让模板渲染最终状态
+				this.tierLoading = false
 			}
 		},
 		handleShopClick(item) {
@@ -515,22 +683,48 @@ export default {
 			this.markUpgradeAnimationShown()
 		},
 
-		hasSeenUpgradeAnimation() {
-			const UPGRADE_SHOWN_KEY = 'siamfeast_upgrade_shown_platinum'
+		// 检查是否刚升级（tierUpdatedAt 比上次访问记录新），如果刚升级 → 弹动画
+		checkAndShowUpgradeAnimation() {
+			if (!this.tierUpdatedAt) return
+			// 跳过普通档（REGULAR）：升到普通不算升级
+			if (this.currentTierCode === 'REGULAR' || !this.currentTierCode) return
+			// 必须有档位配置（用于动画展示）
+			if (!this.currentTier) return
+
+			const UPGRADE_KEY = 'siamfeast_last_tier_updated_at'
+			let lastSeen = ''
 			try {
-				return !!uni.getStorageSync(UPGRADE_SHOWN_KEY)
-			} catch (e) {
-				return false
+				lastSeen = uni.getStorageSync(UPGRADE_KEY) || ''
+			} catch (e) {}
+
+			// 没记录过（首次安装/清缓存）→ 不弹（避免老用户首次打开都弹）
+			// 但如果是后端刚迁移后第一次访问（PLATINUM→VIP 那 16 个用户），允许弹
+			if (!lastSeen) {
+				this.markTierSeen()
+				return
 			}
+
+			// tierUpdatedAt 比上次新 → 弹动画
+			if (this.tierUpdatedAt > lastSeen) {
+				this.showUpgradeAnimation = true
+			}
+			this.markTierSeen()
+		},
+
+		markTierSeen() {
+			const UPGRADE_KEY = 'siamfeast_last_tier_updated_at'
+			try {
+				uni.setStorageSync(UPGRADE_KEY, this.tierUpdatedAt || new Date().toISOString())
+			} catch (e) {}
+		},
+
+		// 兼容旧调用（保留避免代码报错）
+		hasSeenUpgradeAnimation() {
+			return false
 		},
 
 		markUpgradeAnimationShown() {
-			const UPGRADE_SHOWN_KEY = 'siamfeast_upgrade_shown_platinum'
-			try {
-				uni.setStorageSync(UPGRADE_SHOWN_KEY, '1')
-			} catch (e) {
-				// ignore
-			}
+			this.markTierSeen()
 		},
 
 	}
@@ -686,6 +880,27 @@ export default {
 	border: 1px solid rgba(147, 108, 42, 0.15);
 }
 
+/* 加载骨架 */
+.member-level-skeleton {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	min-height: 100px;
+}
+.skeleton-line {
+	background: linear-gradient(90deg, rgba(147, 108, 42, 0.06) 25%, rgba(147, 108, 42, 0.12) 50%, rgba(147, 108, 42, 0.06) 75%);
+	background-size: 200% 100%;
+	animation: skeleton-shimmer 1.4s ease-in-out infinite;
+	border-radius: 6px;
+}
+.skeleton-title { width: 40%; height: 18px; align-self: center; }
+.skeleton-status { width: 30%; height: 16px; align-self: center; }
+.skeleton-bar { width: 100%; height: 6px; margin-top: 6px; }
+@keyframes skeleton-shimmer {
+	0% { background-position: 200% 0; }
+	100% { background-position: -200% 0; }
+}
+
 .member-level-section::before {
 	content: '';
 	position: absolute;
@@ -711,7 +926,16 @@ export default {
 .level-header {
 	display: flex;
 	justify-content: center;
+	align-items: center;
 	margin-bottom: 12px;
+	gap: 8px;
+}
+
+/* 动态档位图标 */
+.level-tier-icon {
+	font-size: 32px;
+	line-height: 1;
+	opacity: 0.8;
 }
 
 .level-titles {
@@ -828,6 +1052,7 @@ export default {
 	flex: 1;
 	min-width: 0;
 	padding: 0 4px;
+	position: relative;
 }
 
 .stat-value {
@@ -846,6 +1071,19 @@ export default {
 	line-height: 1.2;
 	word-break: break-word;
 	width: 100%;
+}
+
+/* 待激活积分标记 */
+.stat-pending {
+	position: absolute;
+	top: -4px;
+	right: 8px;
+	font-size: 11px;
+	color: #FFFFFF;
+	background: linear-gradient(135deg, #F2B131 0%, #FF8A00 100%);
+	padding: 1px 6px;
+	border-radius: 8px;
+	font-weight: 600;
 }
 
 /* 区块头部 */
@@ -1142,4 +1380,73 @@ export default {
 	border-color: rgba(107, 58, 16, 0.2) !important;
 	background-color: rgba(107, 58, 16, 0.08) !important;
 }
+
+/* 金卡档：暖金渐变（沿用原铂金视觉） */
+/* 第 2 档（金卡级别）：暖金渐变 — sort_order=1 */
+.member-level-section.tier-level-1 {
+	background: linear-gradient(135deg, #FFF1C9 0%, #F5D77A 35%, #E8B547 70%, #C9892D 100%) !important;
+	border-color: rgba(201, 137, 45, 0.5) !important;
+}
+.member-level-section.tier-level-1 .level-status,
+.member-level-section.tier-level-1 .progress-text,
+.member-level-section.tier-level-1 .benefit-text {
+	color: #6b3a10 !important;
+}
+.member-level-section.tier-level-1 .benefit-text {
+	border-color: rgba(107, 58, 16, 0.2) !important;
+	background-color: rgba(107, 58, 16, 0.08) !important;
+}
+
+/* 第 3 档（VIP 级别）：深金棕渐变 — sort_order=2 */
+.member-level-section.tier-level-2 {
+	background: linear-gradient(135deg, #E8D5AA 0%, #B89055 30%, #8B5E2A 70%, #5D3A10 100%) !important;
+	border-color: rgba(93, 58, 16, 0.6) !important;
+}
+.member-level-section.tier-level-2 .level-title {
+	color: rgba(255, 248, 231, 0.6);
+}
+.member-level-section.tier-level-2 .level-title.level-active {
+	color: #FFFFFF;
+}
+.member-level-section.tier-level-2 .level-status,
+.member-level-section.tier-level-2 .progress-text,
+.member-level-section.tier-level-2 .benefit-text {
+	color: #FFFFFF !important;
+}
+.member-level-section.tier-level-2 .benefit-text {
+	border-color: rgba(255, 255, 255, 0.25) !important;
+	background-color: rgba(255, 255, 255, 0.12) !important;
+}
+.member-level-section.tier-level-2 .upgrade-btn {
+	background-color: #FFFFFF !important;
+}
+.member-level-section.tier-level-2 .upgrade-text {
+	color: #6b3a10 !important;
+}
+
+/* 第 4 档（钻石级别）：紫钻渐变 — sort_order=3（预留） */
+.member-level-section.tier-level-3 {
+	background: linear-gradient(135deg, #E0E0E0 0%, #B0BEC5 30%, #78909C 70%, #37474F 100%) !important;
+	border-color: rgba(55, 71, 79, 0.6) !important;
+}
+.member-level-section.tier-level-3 .level-title { color: rgba(255, 255, 255, 0.6); }
+.member-level-section.tier-level-3 .level-title.level-active { color: #FFFFFF; }
+.member-level-section.tier-level-3 .level-status,
+.member-level-section.tier-level-3 .progress-text,
+.member-level-section.tier-level-3 .benefit-text { color: #FFFFFF !important; }
+.member-level-section.tier-level-3 .benefit-text {
+	border-color: rgba(255, 255, 255, 0.25) !important;
+	background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* 第 5 档（黑钻级别）：深黑渐变 — sort_order=4（预留） */
+.member-level-section.tier-level-4 {
+	background: linear-gradient(135deg, #424242 0%, #212121 100%) !important;
+	border-color: rgba(255, 215, 0, 0.5) !important;
+}
+.member-level-section.tier-level-4 .level-title { color: rgba(255, 215, 0, 0.6); }
+.member-level-section.tier-level-4 .level-title.level-active { color: #FFD700; }
+.member-level-section.tier-level-4 .level-status,
+.member-level-section.tier-level-4 .progress-text,
+.member-level-section.tier-level-4 .benefit-text { color: #FFD700 !important; }
 </style>
