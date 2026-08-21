@@ -368,9 +368,11 @@ export default {
 						logo: s.logo || '/static/images/store-placeholder.svg',
 						phone: s.phone || '',
 						formatted_address: s.formatted_address || '',
+						formatted_address_zh: s.formatted_address_zh || '',
 						formatted_address_en: s.formatted_address_en || '',
 						formatted_address_th: s.formatted_address_th || '',
 						address: s.address || '',
+						address_zh: s.address_zh || '',
 						address_en: s.address_en || '',
 						address_th: s.address_th || '',
 						is_deliverable: s.is_deliverable || s.delivery_enabled || false,
@@ -526,16 +528,26 @@ export default {
 			if (!types || !Array.isArray(types)) return []
 			const typeKeyMap = {
 				'HOTPOT': 'hotpot',
-				'MALA_TANG': 'malaTang',
-				'BEVERAGE': 'beverage',
+				'BBQ': 'barbecue',
 				'BARBECUE': 'barbecue',
+				'MALA_TANG': 'malaTang',
+				'MALATANG': 'malaTang',
+				'BEVERAGE': 'beverage',
+				'SEAFOOD_NOODLES': 'seafoodNoodle',
+				'SEAFOOD_NOODLE': 'seafoodNoodle',
+				'SINEFOOD_NOODLE': 'seafoodNoodle',
+				'SINEFOOD_NOODLES': 'seafoodNoodle',
 				'HOSTEL_ROOM': 'hostel',
 				'HOSTEL_HOTPOT': 'hostelHotpot',
 				'HOSTEL_COFFEE': 'hostelCoffee'
 			}
 			return types.map(t => {
 				const key = typeKeyMap[t]
-				return key ? this.i18n.t(`storeSelect.businessTypes.${key}`) : t
+				if (!key) {
+					// 临时调试：把未识别的枚举打到控制台，方便补充映射
+					console.warn('[store-select] unknown business_type:', t)
+				}
+				return key ? this.i18n.t(`storeSelect.businessTypes.${key}`) : ''
 			}).filter(Boolean)
 		}
 	}
@@ -900,13 +912,15 @@ export default {
 
 .distance-info {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	gap: 4px;
 }
 
 .distance-icon {
 	width: 14px;
 	height: 14px;
+	flex-shrink: 0;
+	margin-top: 2px;
 }
 
 .distance-text {
@@ -923,10 +937,10 @@ export default {
 .address-text {
 	font-size: 12px;
 	color: #00000099;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	max-width: 200px;
+	flex: 1;
+	min-width: 0;
+	line-height: 1.4;
+	word-break: break-word;
 }
 
 .store-meta {

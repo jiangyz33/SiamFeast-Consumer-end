@@ -144,6 +144,9 @@
 					>
 						<view class="product-image-wrapper">
 							<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
+							<view class="new-badge" v-if="item.is_new_product">
+								<text class="new-badge-text">{{ i18n.t('productDetail.new') }}</text>
+							</view>
 							<view class="product-shop">
 								<view class="shop-logo-wrapper">
 									<image class="shop-logo" :src="storeLogo || '/static/images/banner-placeholder.svg'" mode="aspectFill"></image>
@@ -358,16 +361,24 @@ export default {
 
 		getBusinessTypeName(code) {
 			const map = {
+				'HOTPOT': i18n.t('mall.hotpot') || '火锅',
 				'HOTPOT_BUFFET': i18n.t('mall.hotpot') || '火锅自助',
 				'HOTPOT_PER_ITEM': i18n.t('mall.hotpotPerItem') || '火锅计件',
+				'BBQ': i18n.t('mall.barbecue') || i18n.t('storeSelect.businessTypes.barbecue') || '烧烤',
+				'BARBECUE': i18n.t('mall.barbecue') || i18n.t('storeSelect.businessTypes.barbecue') || '烧烤',
 				'MALA_TANG': i18n.t('mall.malatang') || '麻辣烫',
+				'MALATANG': i18n.t('mall.malatang') || '麻辣烫',
+				'BEVERAGE': i18n.t('storeSelect.businessTypes.beverage') || '饮品',
+				'SEAFOOD_NOODLES': i18n.t('mall.seafoodNoodle') || '海鲜面',
 				'SEAFOOD_NOODLE': i18n.t('mall.seafoodNoodle') || '海鲜面',
+				'SINEFOOD_NOODLE': i18n.t('mall.seafoodNoodle') || '海鲜面',
+				'SINEFOOD_NOODLES': i18n.t('mall.seafoodNoodle') || '海鲜面',
 				'STANDARD_FOOD': i18n.t('mall.standardFood') || '标准餐饮',
 				'HOSTEL_ROOM': i18n.t('mall.hostel') || '民宿',
 				'HOSTEL_HOTPOT': i18n.t('mall.hostelHotpot') || '民宿火锅',
 				'HOSTEL_COFFEE': i18n.t('mall.hostelCoffee') || '民宿咖啡'
 			}
-			return map[code] || code
+			return map[code] || ''
 		},
 
 		handleStoreClick(store) {
@@ -652,6 +663,23 @@ export default {
 .product-image {
 	width: 100%;
 	height: 100%;
+}
+
+/* 新品角标 */
+.new-badge {
+	position: absolute;
+	top: 6px;
+	left: 6px;
+	background: linear-gradient(135deg, #FF6B6B 0%, #DA3300 100%);
+	padding: 3px 8px;
+	border-radius: 4px;
+	z-index: 2;
+}
+.new-badge-text {
+	font-size: 10px;
+	color: #FFFFFF;
+	font-weight: 600;
+	line-height: 1.2;
 }
 
 .product-shop {

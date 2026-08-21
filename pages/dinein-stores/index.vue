@@ -9,7 +9,11 @@
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
 			<text class="nav-title">{{ t('index.dineIn') }}</text>
-			<view class="nav-right"></view>
+			<view class="nav-right">
+				<view class="filter-clear-btn" v-if="filterStoreIds.length > 0" @click="clearStoreFilter">
+					<text class="filter-clear-text">{{ t('campaign.allStoresScope') }}</text>
+				</view>
+			</view>
 		</view>
 
 		<!-- 搜索框 -->
@@ -148,6 +152,7 @@ export default {
 			contentHeight: 500,
 			loading: false,
 			searchKeyword: '',
+			filterStoreIds: [],   // URL 传入的门店 ID 过滤（从活动"立即下单"跳来时）
 			categories: [],
 			activeCategory: -1,
 			stores: []
@@ -156,6 +161,10 @@ export default {
 	computed: {
 		filteredStores() {
 			let list = this.stores
+			// 活动指定门店过滤（从活动弹窗"立即下单"跳来时）
+			if (this.filterStoreIds.length > 0) {
+				list = list.filter(s => this.filterStoreIds.includes(String(s.id)))
+			}
 			if (this.activeCategory >= 0) {
 				const cat = this.categories[this.activeCategory]
 				if (cat && cat.code) {
@@ -173,9 +182,13 @@ export default {
 			return list
 		}
 	},
-	onLoad() {
+	onLoad(options) {
 		this.lang = i18n.getLanguage()
 		this.initPage()
+		// 接收 URL 参数：store_ids=57,56（从活动详情弹窗"立即下单"跳来时只显示这些门店）
+		if (options && options.store_ids) {
+			this.filterStoreIds = options.store_ids.split(',').map(s => s.trim()).filter(Boolean)
+		}
 		this.loadData()
 	},
 	created() {
@@ -356,6 +369,10 @@ export default {
 		},
 		goBack() {
 			uni.navigateBack()
+		},
+
+		clearStoreFilter() {
+			this.filterStoreIds = []
 		}
 	}
 }
@@ -378,7 +395,26 @@ export default {
 .nav-back { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
 .back-icon { width: 20px; height: 20px; }
 .nav-title { font-size: 16px; font-weight: 600; color: #3C3C3C; }
-.nav-right { width: 32px; }
+.nav-right {
+	width: auto;
+	min-width: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+.filter-clear-btn {
+	padding: 4px 10px;
+	background-color: #FFF8E1;
+	border-radius: 12px;
+	border: 1px solid #F2B131;
+}
+.filter-clear-text {
+	font-size: 11px;
+	color: #F2B131;
+	font-weight: 600;
+	white-space: nowrap;
+}
 
 /* 搜索 */
 .search-section { padding: 0 16px 8px; background-color: #FFFFFF; }

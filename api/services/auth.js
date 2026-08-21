@@ -1,8 +1,26 @@
 /**
  * 认证相关 API
+ *
+ * 当前可用接口（按 2026-08-03 文档）：
+ *   - POST /auth/sms/send          发送 SMS 验证码（utils/sms.js 封装，含发码/校验/统一接口）
+ *   - POST /auth/sms/login         SMS 验证码登录/注册（utils/sms.js 封装）
+ *   - POST /auth/verify-code/send  统一发码（SMS 优先，额度用完降级邮箱，utils/sms.js 封装）
+ *   - POST /auth/verify-code/verify 统一校验
+ *   - POST /auth/email-code        发送邮箱验证码（SMS 不可用时的替代通道）
+ *   - POST /auth/email-login       邮箱验证码登录
+ *   - POST /auth/login             手机号 + 密码登录
+ *   - POST /auth/check-phone       校验手机号注册状态（不消耗 SMS 配额）
+ *   - POST /auth/refresh           刷新 access_token
+ *
+ * 已废弃（不在本文件导出）：
+ *   - sendCode        请用 utils/sms.js 的 sendVerifyCode / sendSMSCode
+ *   - loginByCode     请用 utils/sms.js 的 smsLogin
+ *   - register        请用 utils/sms.js 的 smsLogin（scene='register' 自动注册）
+ *   - checkUserExist  请用 checkPhone
+ *   - tempLogin       请用 loginByPassword
  */
 import { USE_MOCK, TOKEN_KEY } from '../config.js'
-import { get, post, put, patch, upload } from '../request.js'
+import { get, post, patch, upload } from '../request.js'
 
 /**
  * 格式化手机号为后端要求的格式（带国际区号前缀）
@@ -30,25 +48,10 @@ import {
 	mockSendCode,
 	mockLoginByCode,
 	mockLoginByPassword,
-	mockRegister,
 	mockGetUserInfo,
 	mockUpdateUserInfo,
-	mockCheckUserExist,
 	mockGetCoinBalance
 } from '../mock/auth.js'
-
-/**
- * 发送短信验证码（已废弃 — 后端 /auth/sms-code 已关闭 404）
- * 请改用 sendEmailCode(phone, email)
- * @deprecated
- */
-export function sendCode(phone, purpose = 'register') {
-	console.warn('[auth] sendCode 已废弃，请改用 sendEmailCode（SMS 服务已下线）')
-	if (USE_MOCK) {
-		return mockSendCode(phone)
-	}
-	return Promise.reject({ code: 'DEPRECATED', message: 'SMS 验证码服务已下线，请使用邮箱验证码' })
-}
 
 /**
  * 发送邮箱验证码（SMS 不可用时的替代通道，账号仍绑手机号）
@@ -81,19 +84,6 @@ export function loginByEmailCode(phone, code) {
 }
 
 /**
- * SMS 验证码登录（已废弃 — 后端 /auth/sms-login 已关闭 404）
- * 请改用 loginByEmailCode(phone, code)
- * @deprecated
- */
-export function loginByCode(phone, code) {
-	console.warn('[auth] loginByCode 已废弃，请改用 loginByEmailCode（SMS 服务已下线）')
-	if (USE_MOCK) {
-		return mockLoginByCode(phone, code)
-	}
-	return Promise.reject({ code: 'DEPRECATED', message: 'SMS 验证码登录已下线，请使用邮箱验证码登录' })
-}
-
-/**
  * 手机号+密码登录
  * POST /auth/login
  * @param {string} phone 手机号
@@ -112,20 +102,6 @@ export function loginByPassword(phone, password) {
 }
 
 /**
- * 手机号注册（已废弃 — 后端 /auth/sms-login 已关闭 404）
- * 新流程：邮箱验证码注册 → 用 sendEmailCode + loginByEmailCode
- * loginByEmailCode 会自动注册新用户，无需调 register
- * @deprecated
- */
-export function register(data) {
-	console.warn('[auth] register 已废弃，请改用 sendEmailCode + loginByEmailCode')
-	if (USE_MOCK) {
-		return mockRegister(data)
-	}
-	return Promise.reject({ code: 'DEPRECATED', message: 'register 接口已下线，请使用邮箱验证码流程' })
-}
-
-/**
  * 获取用户信息
  * @returns {Promise}
  */
@@ -138,7 +114,7 @@ export function getUserInfo() {
 
 /**
  * 更新用户信息
- * @param {Object} data 更新数据
+ * @param {Object} data 更新数据（如 nickname / birthday / email / avatar_url）
  * @returns {Promise}
  */
 export function updateUserInfo(data) {
@@ -167,22 +143,13 @@ export function uploadAvatar(filePath) {
 }
 
 /**
- * 检查用户是否已注册
- * 注意：后端不提供此接口，Firebase 登录后自动判断
- * 此函数仅用于 mock 模式开发
- * @param {string} phone 手机号
- * @returns {Promise}
+ * 校验手机号注册状态（不消耗 SMS 配额，可在发码前调用）
+ * POST /api/v1/auth/check-phone
+ * @param {string} phone E.164 格式（如 +66812345678）
+ * @returns {Promise<{phone_number, registered, has_password, is_active}>}
  */
-export function checkUserExist(phone) {
-	if (USE_MOCK) {
-		return mockCheckUserExist(phone)
-	}
-	// 后端无此接口，尝试获取用户信息判断是否已注册
-	return get('/users/me').then(res => {
-		return { code: 0, data: { exists: true } }
-	}).catch(() => {
-		return { code: 0, data: { exists: false } }
-	})
+export function checkPhone(phone) {
+	return post('/auth/check-phone', { phone_number: phone })
 }
 
 /**
@@ -271,24 +238,18 @@ export function changePhone(oldPhone, oldCode, newPhone, newCode) {
 
 // 导出模块对象
 export const authApi = {
-	sendCode,
 	sendEmailCode,
 	loginByEmailCode,
-	loginByCode,
 	loginByPassword,
-	register,
+	checkPhone,
 	getUserInfo,
 	updateUserInfo,
 	uploadAvatar,
-	checkUserExist,
 	getCoinBalance,
 	logout,
 	refreshToken,
 	sendChangePhoneSMS,
 	changePhone
 }
-
-// 别名：tempLogin = loginByPassword（兼容）
-export const tempLogin = loginByPassword
 
 export default authApi

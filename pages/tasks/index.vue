@@ -17,17 +17,21 @@
 			<view class="header-section">
 				<text class="header-title">{{ t('tasks.headerTitle') }}</text>
 				<text class="header-subtitle">{{ t('tasks.headerSubtitle') }}</text>
+				<view class="rules-tip" v-if="hasInviteTask">
+					<text class="rules-tip-text">{{ t('tasks.inviteProgressRules') }}</text>
+				</view>
 			</view>
 
 			<!-- 任务列表 -->
-			<view class="tasks-section" v-if="!loading && tasks.length > 0">
+			<view class="tasks-section" v-if="!loading && sortedTasks.length > 0">
 				<view class="section-label">{{ t('tasks.sectionAll') }}</view>
 
 				<task-card
-					v-for="item in tasks"
+					v-for="item in sortedTasks"
 					:key="item.task_id"
 					:task="item.task"
 					:userTask="item"
+					:locked="isLockedInviteTask(item)"
 					:loading="claimingId === item.task_id"
 					@claim="handleClaim"
 				></task-card>
@@ -110,9 +114,38 @@ export default {
 			}
 			const u = units[this.claimResult.reward_type]
 			return u ? u[lang] : ''
+		},
+		// 是否存在 INVITE 任务（决定是否显示规则提示）
+		hasInviteTask() {
+			return this.tasks.some(it => it.task && it.task.task_type === 'INVITE')
+		},
+		// 排序：INVITE 类型按 target_count 升序在前，其他类型保持原序
+		sortedTasks() {
+			if (this.tasks.length === 0) return []
+			const inviteTasks = this.tasks
+				.filter(it => it.task && it.task.task_type === 'INVITE')
+				.sort((a, b) => (Number(a.task.target_count) || 0) - (Number(b.task.target_count) || 0))
+			const otherTasks = this.tasks.filter(it => !it.task || it.task.task_type !== 'INVITE')
+			return [...inviteTasks, ...otherTasks]
 		}
 	},
 	methods: {
+		// 判断某 INVITE 任务是否处于"锁定"状态：
+		// 存在 target_count 更小且 status=IN_PROGRESS 的 INVITE 任务 → 本档锁定
+		isLockedInviteTask(item) {
+			if (!item || !item.task || item.task.task_type !== 'INVITE') return false
+			const myTarget = Number(item.task.target_count) || 0
+			// 已 CLAIMED 或 COMPLETED 的任务不锁定（用户能看到进度/可领取）
+			if (item.status === 'CLAIMED' || item.status === 'COMPLETED') return false
+			// 查更低的 INVITE 档位是否还在进行中
+			const hasLowerInProgress = this.tasks.some(it =>
+				it.task &&
+				it.task.task_type === 'INVITE' &&
+				(Number(it.task.target_count) || 0) < myTarget &&
+				it.status === 'IN_PROGRESS'
+			)
+			return hasLowerInProgress
+		},
 		t(key) {
 			void this.langVersion
 			return i18n.t(key)
@@ -237,6 +270,20 @@ export default {
 	display: block;
 	font-size: 26rpx;
 	color: #828282;
+}
+
+/* 邀请任务规则提示 */
+.rules-tip {
+	margin-top: 16rpx;
+	padding: 16rpx 20rpx;
+	background-color: rgba(242, 177, 49, 0.08);
+	border-left: 6rpx solid #F2B131;
+	border-radius: 8rpx;
+}
+.rules-tip-text {
+	font-size: 22rpx;
+	color: #B5750C;
+	line-height: 1.5;
 }
 
 /* 任务列表 */

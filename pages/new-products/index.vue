@@ -9,7 +9,11 @@
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
 			<text class="nav-title">{{ t('newProducts.title') || '新品上市' }}</text>
-			<view class="nav-right"></view>
+			<view class="nav-right">
+				<view class="sort-btn" @click="toggleSortMode">
+					<text class="sort-btn-text">{{ sortMode === 'distance' ? t('newProducts.sortByDefault') : t('newProducts.sortByDistance') }}</text>
+				</view>
+			</view>
 		</view>
 
 		<!-- 内容区域 -->
@@ -33,6 +37,7 @@
 							<view class="shop-row" v-if="item.storeName">
 								<image class="shop-logo" :src="item.storeLogo || '/static/images/banner-placeholder.svg'" mode="aspectFill"></image>
 								<text class="shop-name">{{ item.storeName }}</text>
+								<text class="shop-distance" v-if="item.storeDistanceText">· {{ item.storeDistanceText }}</text>
 							</view>
 						</view>
 						<!-- 下半部分：价格 + 月销 + 按钮 -->
@@ -78,6 +83,7 @@ import { getNewProducts } from '@/api/services/products.js'
 import { getStores } from '@/api/services/store.js'
 import { getMenuItemOptions } from '@/api/services/menu.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
+import { getUserLocation, calculateDistance, formatDistance } from '@/utils/location.js'
 import i18n from '@/i18n/index.js'
 
 export default {
@@ -92,6 +98,10 @@ export default {
 			noMore: false,
 			products: [],
 			storeMap: {},
+			// 用户当前位置（拉到才用，拉不到保持 null 不阻塞）
+			userLocation: null,
+			// 排序模式：'default' 默认（按时间倒序）/ 'distance' 按距离升序
+			sortMode: 'default',
 			page: 1,
 			pageSize: 20
 		}
@@ -127,27 +137,85 @@ export default {
 		},
 
 		async loadStores() {
-			try {
-				const res = await getStores({}, { silent: true })
-				let stores = []
-				if (res.code === 0 && res.data) {
-					const data = res.data
-					stores = Array.isArray(data) ? data : (data.items || [])
-				}
-				const map = {}
-				for (const s of stores) {
-					map[s.id] = {
-						name: s.name || '',
-						name_en: s.name_en || '',
-						name_th: s.name_th || '',
-						logo: fixMinioUrl(s.logo_url || s.logo || '')
-					}
-				}
-				this.storeMap = map
-			} catch (e) {
+			// 并发：拉门店列表 + 拉用户位置（位置失败不阻塞）
+			const storesPromise = getStores({}, { silent: true }).catch(e => {
 				console.error('loadStores error:', e)
+				return null
+			})
+			const locationPromise = getUserLocation().then(loc => {
+				this.userLocation = loc
+			}).catch(e => {
+				// 用户拒绝定位 / 设备无定位 → 静默降级（用户仍能看商品，只是不按距离排序）
+				console.warn('[new-products] getUserLocation failed, fallback to default order:', e && e.code)
+			})
+			const [res] = await Promise.all([storesPromise, locationPromise])
+
+			let stores = []
+			if (res && res.code === 0 && res.data) {
+				const data = res.data
+				stores = Array.isArray(data) ? data : (data.items || [])
 			}
+			const map = {}
+			for (const s of stores) {
+				// 距离：仅当用户位置 + 门店坐标都齐全时才计算
+				let distance = null
+				if (this.userLocation && s.latitude && s.longitude) {
+					distance = calculateDistance(
+						this.userLocation.latitude, this.userLocation.longitude,
+						Number(s.latitude), Number(s.longitude)
+					)
+				}
+				map[s.id] = {
+					name: s.name || '',
+					name_en: s.name_en || '',
+					name_th: s.name_th || '',
+					logo: fixMinioUrl(s.logo_url || s.logo || ''),
+					distance  // 单位：米；null = 无法计算（默认排序）
+				}
+			}
+			this.storeMap = map
 			this.loadProducts()
+		},
+
+		/**
+		 * 排序切换：default ↔ distance
+		 */
+		toggleSortMode() {
+			// 切到距离排序前必须先有用户位置，否则提示
+			if (this.sortMode !== 'distance' && !this.userLocation) {
+				showToast(i18n.t('storeSelect.title') || '无法获取位置')
+				return
+			}
+			this.sortMode = this.sortMode === 'distance' ? 'default' : 'distance'
+			// 触发已加载商品重排（无需重新请求）
+			this.applySort()
+		},
+
+		/**
+		 * 对当前 products 列表按 sortMode 排序
+		 * - default：恢复原始顺序（后端返回的时间倒序）
+		 * - distance：按所属门店距离升序；同门店内保持原顺序；无距离的排最后
+		 */
+		applySort() {
+			if (this.sortMode !== 'distance') {
+				// 恢复原始顺序（loadProducts 时保存的快照）
+				if (this._originalProductsSnapshot) {
+					this.products = this._originalProductsSnapshot.slice()
+				}
+				return
+			}
+			// 先存快照（仅首次进入 distance 模式时存，避免反复切换丢失原顺序）
+			if (!this._originalProductsSnapshot) {
+				this._originalProductsSnapshot = this.products.slice()
+			}
+			this.products = this.products.slice().sort((a, b) => {
+				const da = this.storeMap[a.store_id]?.distance
+				const db = this.storeMap[b.store_id]?.distance
+				if (da == null && db == null) return 0
+				if (da == null) return 1
+				if (db == null) return -1
+				return da - db
+			})
 		},
 
 		async loadProducts(append = false) {
@@ -169,16 +237,23 @@ export default {
 						image_url: fixMinioUrl(p.image_url || ''),
 						store_id: p.store_id,
 						storeName: store['name_' + i18n.getLanguage()] || store.name || '',
-						storeLogo: fixMinioUrl(store.logo_url || store.logo) || '/static/images/store-placeholder.svg'
+						storeLogo: fixMinioUrl(store.logo_url || store.logo) || '/static/images/store-placeholder.svg',
+						// 门店距离（米）+ 格式化文案，用于 UI 显示和排序
+						storeDistance: store.distance,
+						storeDistanceText: store.distance != null ? formatDistance(store.distance) : ''
 					}
 				})
 				if (append) {
 					this.products = [...this.products, ...mapped]
 				} else {
 					this.products = mapped
+					// 重置 / 重建原始顺序快照（首页加载或刷新时）
+					this._originalProductsSnapshot = null
 				}
 				this.noMore = items.length < this.pageSize
 				if (!this.noMore) this.page++
+				// 加载完成后应用当前排序模式（loadMore 拿到下一页后也保持）
+				this.applySort()
 			} catch (e) {
 				console.error('loadProducts error:', e)
 			} finally {
@@ -285,7 +360,31 @@ export default {
 }
 
 .nav-right {
-	width: 32px;
+	min-width: 32px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+}
+
+/* 排序按钮 */
+.sort-btn {
+	padding: 6px 10px;
+	background-color: rgba(242, 177, 49, 0.12);
+	border-radius: 14px;
+}
+
+.sort-btn-text {
+	font-size: 11px;
+	color: #F2B131;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.shop-distance {
+	font-size: 12px;
+	color: #F2B131;
+	font-weight: 500;
+	margin-left: 2px;
 }
 
 /* 商品列表 */

@@ -3,6 +3,18 @@
  */
 import { USE_MOCK } from '../config.js'
 import { get, post } from '../request.js'
+
+/**
+ * 获取券展示码（15 位数字 Y，Feistel 加密后的展示码，供收银端扫码核销）
+ * GET /coupons/:user_coupon_id/display
+ * @param {number} userCouponId 用户券实例 id（user_coupons.id）
+ * @returns {Promise<{display_code: string, expires_in: number}>}
+ *   - display_code: 15 位纯数字，用此生成二维码给收银员扫描
+ *   - expires_in: 0 = 永久有效（同一券的 Y 不变，可本地缓存）
+ */
+export function getCouponDisplayCode(userCouponId) {
+	return get(`/coupons/${userCouponId}/display`)
+}
 import {
 	mockGetMyCoupons,
 	mockGetAvailableCoupons,
@@ -16,13 +28,17 @@ import {
  * @param {Object} params 查询参数
  * @param {String} params.status 状态 (available/used/expired/all)
  * @param {String} params.type 类型 (dinein/delivery/all)
+ * @param {Number} [params.page=1] 页码
+ * @param {Number} [params.page_size=200] 每页数量（默认 200，覆盖后端默认 20 限制）
  * @returns {Promise}
  */
 export function getMyCoupons(params = {}) {
 	if (USE_MOCK) {
 		return mockGetMyCoupons(params)
 	}
-	return get('/coupons', params)
+	// 默认拉 200 条，避免后端默认 page_size=20 导致只能看到前 20 张
+	const query = { page: 1, page_size: 200, ...params }
+	return get('/coupons', query)
 }
 
 /**

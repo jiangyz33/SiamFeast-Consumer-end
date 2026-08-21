@@ -63,12 +63,21 @@
 					<view class="rank-badge" v-if="index < 3">
 						<text class="rank-text">{{ index + 1 }}</text>
 					</view>
+					<!-- 新品角标 -->
+					<view class="new-badge" v-if="item.is_new_product">
+						<text class="new-badge-text">{{ i18n.t('productDetail.new') }}</text>
+					</view>
 					<image class="product-image" :src="fixMinioUrl(item.image_url) || '/static/images/img-placeholder.svg'" mode="aspectFill"></image>
 					<view class="product-info">
 						<view class="product-content">
 							<text class="product-name">{{ item['name_' + i18n.getLanguage()] || item.name || item.name_en }}</text>
 							<view class="product-sales" v-if="item.sales_count > 0">
 								<text class="sales-text">{{ t("mine.monthlySales") }}{{ item.sales_count }}</text>
+							</view>
+							<!-- 所属门店 -->
+							<view class="product-store" v-if="getStoreName(item.store_id)">
+								<text class="store-label">{{ t('hotProducts.fromStore') }}：</text>
+								<text class="store-name">{{ getStoreName(item.store_id) }}</text>
 							</view>
 						</view>
 						<view class="product-footer">
@@ -113,6 +122,7 @@ import i18n from '@/i18n/index.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import { getHotProducts } from '@/api/services/products.js'
 import { getConsumerCategories, getMenuItemOptions } from '@/api/services/menu.js'
+import { getStores } from '@/api/services/store.js'
 
 export default {
 	components: {
@@ -132,6 +142,8 @@ export default {
 			activeCategoryIndex: 0,
 			showSearch: false,
 			searchKeyword: '',
+			// store_id → store 多语言名映射（用于热销商品展示所属门店）
+			storesMap: {}
 		}
 		},
 		computed: {
@@ -159,14 +171,11 @@ export default {
 		},
 	onLoad(options) {
 			this.initPage()
-			if (options && options.shopId) {
-				this.shopId = options.shopId
-			} else {
-				const currentStore = appStore.getCurrentStore()
-				if (currentStore) this.shopId = currentStore.id
-			}
+			// 热销榜是跨门店全局排行，不按门店过滤（忽略 URL 里的 shopId）
 			this.loadCategories()
 			this.loadProducts()
+			this.loadStores()
+			this.loadStores()
 	},
 	created() {
 		uni.$on('languageChanged', this.onLanguageChanged)
@@ -220,8 +229,8 @@ export default {
 			if (this.loading) return
 			this.loading = true
 			try {
+				// 热销榜是全局排行，不按门店过滤
 				const params = { limit: 20 }
-				if (this.shopId) params.store_id = this.shopId
 
 				const res = await getHotProducts(params)
 				const items = res.data?.items || []
@@ -232,6 +241,45 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+
+		/**
+		 * 拉取门店列表，建立 store_id → store 多语言名映射
+		 * 用于商品卡片展示"门店：XXX"
+		 * 并发拉取 + 失败静默（不影响商品列表）
+		 */
+		async loadStores() {
+			try {
+				const res = await getStores({ page_size: 200 })
+				if (res.code === 0 && res.data) {
+					const items = Array.isArray(res.data) ? res.data : (res.data.items || [])
+					const map = {}
+					for (const s of items) {
+						if (s && s.id) {
+							map[s.id] = {
+								name: s.name || '',
+								name_zh: s.name_zh || s.name || '',
+								name_en: s.name_en || '',
+								name_th: s.name_th || ''
+							}
+						}
+					}
+					this.storesMap = map
+				}
+			} catch (e) {
+				console.warn('[hot-products] load stores failed:', e)
+			}
+		},
+
+		/**
+		 * 取门店名（按当前语言）
+		 */
+		getStoreName(storeId) {
+			if (!storeId) return ''
+			const s = this.storesMap[storeId]
+			if (!s) return ''
+			const lang = i18n.getLanguage()
+			return s['name_' + lang] || s.name || s.name_en || ''
 		},
 
 			handleSearch() {
@@ -523,6 +571,23 @@ export default {
 	background-color: #F5F5F5;
 }
 
+/* 新品角标（右上角，避开左上角的排名角标） */
+.new-badge {
+	position: absolute;
+	top: 0;
+	right: 0;
+	background: linear-gradient(135deg, #FF6B6B 0%, #DA3300 100%);
+	padding: 3px 8px;
+	border-radius: 0 8px 0 8px;
+	z-index: 2;
+}
+.new-badge-text {
+	font-size: 10px;
+	color: #FFFFFF;
+	font-weight: 600;
+	line-height: 1.2;
+}
+
 .product-info {
 	flex: 1;
 	display: flex;
@@ -551,6 +616,29 @@ export default {
 	font-size: 12px;
 	font-weight: 500;
 	color: #949494;
+}
+
+/* 所属门店行 */
+.product-store {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	margin-top: 4px;
+}
+
+.store-label {
+	font-size: 11px;
+	color: #949494;
+}
+
+.store-name {
+	font-size: 12px;
+	font-weight: 500;
+	color: #F2B131;
+	max-width: 130px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .product-footer {

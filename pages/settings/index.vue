@@ -41,16 +41,22 @@
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
-					<!-- 生日(系统日期选择器)-->
-					<picker mode="date" :value="birthdayPickerValue" :end="maxBirthdayDate" :start="minBirthdayDate" @change="onBirthdayPickerChange">
-						<view class="setting-item">
-							<text class="setting-label">{{ t('settings.birthday') }}</text>
-							<view class="setting-right">
-								<text class="setting-value">{{ userBirthday || i18n.t('settings.notSet') }}</text>
-								<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
-							</view>
+					<!-- 邮箱（可选，可编辑） -->
+					<view class="setting-item" @click="openEmailModal">
+						<text class="setting-label">{{ t('settings.email') }}</text>
+						<view class="setting-right">
+							<text class="setting-value">{{ userEmail || i18n.t('settings.notSet') }}</text>
+							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
-					</picker>
+					</view>
+					<!-- 生日（自定义日期选择器，跟随 App 语言）-->
+					<view class="setting-item" @click="showBirthdayPicker = true">
+						<text class="setting-label">{{ t('settings.birthday') }}</text>
+						<view class="setting-right">
+							<text class="setting-value">{{ userBirthday || i18n.t('settings.notSet') }}</text>
+							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
+						</view>
+					</view>
 					<view class="setting-item" @click="openPasswordModal">
 						<text class="setting-label">{{ t('settings.changePassword') }}</text>
 						<view class="setting-right">
@@ -119,12 +125,6 @@
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
-					<view class="setting-item" @click="testBirthdayModal" v-if="showTestEntry">
-						<text class="setting-label">🎂 测试生日弹窗</text>
-						<view class="setting-right">
-							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
-						</view>
-					</view>
 					<view class="setting-item">
 						<text class="setting-label">{{ t('settings.version') }}</text>
 						<view class="setting-right">
@@ -164,12 +164,37 @@
 			</view>
 		</view>
 
+		<!-- 邮箱编辑弹窗 -->
+		<view class="modal-mask" v-if="showEmailModal" @click.self="showEmailModal = false">
+			<view class="modal-box">
+				<text class="modal-box-title">{{ t('settings.editEmail') }}</text>
+				<view class="modal-box-body">
+					<input class="modal-input" v-model="emailInput"
+						:placeholder="i18n.t('settings.emailPlaceholder')"
+						type="text"
+						maxlength="100" />
+					<text v-if="emailError" class="modal-field-error">{{ emailError }}</text>
+				</view>
+				<view class="modal-box-footer">
+					<view class="modal-box-btn" @click="showEmailModal = false">
+						<text class="modal-box-btn-text cancel-text">{{ t('common.cancel') }}</text>
+					</view>
+					<view class="modal-box-btn" @click="clearEmail" v-if="userEmail">
+						<text class="modal-box-btn-text cancel-text">{{ t('common.clear') }}</text>
+					</view>
+					<view class="modal-box-btn" @click="confirmEmail">
+						<text class="modal-box-btn-text confirm-text">{{ t('common.confirm') }}</text>
+					</view>
+				</view>
+			</view>
+		</view>
+
 		<!-- 修改密码弹窗 -->
 		<view class="modal-mask" v-if="showPasswordModal" @click.self="showPasswordModal = false">
 			<view class="modal-box">
-				<text class="modal-box-title">{{ t('settings.changePassword') }}</text>
+				<text class="modal-box-title">{{ hasPassword ? t('settings.changePassword') : t('settings.setPassword') }}</text>
 				<view class="modal-box-body">
-					<input class="modal-input" type="password" v-model="passwordForm.oldPassword"
+					<input class="modal-input" type="password" v-model="passwordForm.oldPassword" v-if="hasPassword"
 						:placeholder="i18n.t('settings.oldPasswordPlaceholder')" />
 					<input class="modal-input" type="password" v-model="passwordForm.newPassword"
 						:placeholder="i18n.t('settings.newPasswordPlaceholder')" />
@@ -201,6 +226,23 @@
 			@close="closeTestBirthdayModal"
 			@claimed="handleTestBirthdayClaimed"
 		></birthday-modal>
+
+		<!-- Test upgrade animation -->
+		<upgrade-animation-dynamic
+			:visible="showTestUpgradeModal"
+			:tier="testUpgradeTier"
+			@close="showTestUpgradeModal = false"
+		></upgrade-animation-dynamic>
+
+		<!-- 自定义日期选择弹窗（跟随 App 语言） -->
+		<date-picker-modal
+			:visible="showBirthdayPicker"
+			:value="userBirthday"
+			:min-date="minBirthdayDate"
+			:max-date="maxBirthdayDate"
+			@change="onBirthdayPickerChange"
+			@close="showBirthdayPicker = false"
+		/>
 	</view>
 </template>
 
@@ -209,6 +251,7 @@ import store from '@/store/index.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 import { getUserInfo, updateUserInfo, uploadAvatar } from '@/api/services/auth.js'
+import { getMembershipTiers } from '@/api/services/member.js'
 import { unregisterPush } from '@/utils/push.js'
 import BirthdayModal from '@/components/birthday-modal.vue'
 // #ifdef APP-PLUS
@@ -217,11 +260,15 @@ import { chooseSystemMedia } from '@/uni_modules/uni-chooseSystemImage'
 import { resetPassword } from '@/api/services/password.js'
 import { toggleNotification, getNotificationSettings } from '@/api/services/notification.js'
 import LanguageModal from '@/components/language-modal.vue'
+import DatePickerModal from '@/components/date-picker-modal.vue'
+import UpgradeAnimationDynamic from '@/components/upgrade-animation-dynamic.vue'
 
 export default {
 	components: {
 		LanguageModal,
-		BirthdayModal
+		BirthdayModal,
+		DatePickerModal,
+		UpgradeAnimationDynamic
 	},
 	data() {
 		return {
@@ -235,10 +282,18 @@ export default {
 			userBirthday: '',
 			showNicknameModal: false,
 			nicknameInput: '',
+			// 邮箱编辑
+			showEmailModal: false,
+			emailInput: '',
+			emailError: '',
 			showBirthdayModal: false,
+			showBirthdayPicker: false,
 			birthdayPickerValue: '',
 			showPasswordModal: false,
 			showTestEntry: false,  // 测试入口(上线前改 false)
+			showTestUpgradeModal: false,  // 测试升级动画
+			testUpgradeTierIndex: 1,     // 测试用档位下标（在 membershipTiers 中的位置）
+			membershipTiers: [],          // 从后端拉的档位配置（测试入口也用真实数据）
 			showTestBirthdayModal: false,
 			testBirthdayType: 'COIN',
 			testBirthdayAmount: 100,
@@ -252,6 +307,27 @@ export default {
 	computed: {
 		userNickname() {
 			return this.userInfo?.nickname || i18n.t('mine.title')
+		},
+		// 邮箱：后端返回字段可能是 email 或 email_address
+		userEmail() {
+			return (this.userInfo && (this.userInfo.email || this.userInfo.email_address)) || ''
+		},
+		// 是否已设置密码（决定修改密码弹窗显示"旧密码"输入框）
+		hasPassword() {
+			return !!(this.userInfo && this.userInfo.has_password)
+		},
+		// 测试升级动画用的档位（直接从后端配置按 index 取，跟 member 页真实动画完全一致）
+		testUpgradeTier() {
+			if (!this.membershipTiers || this.membershipTiers.length === 0) return null
+			const idx = Math.min(this.testUpgradeTierIndex, this.membershipTiers.length - 1)
+			return this.membershipTiers[idx] || null
+		},
+		// 测试按钮上的档位名（按当前语言显示）
+		testTierLabel() {
+			const t = this.testUpgradeTier
+			if (!t) return '加载中...'
+			const lang = i18n.getLanguage()
+			return t['name_' + lang] || t.name || t.code || ''
 		},
 		minBirthdayDate() {
 			return '1920-01-01'
@@ -291,6 +367,7 @@ export default {
 			this.userBirthday = this.userInfo?.birthday || ''
 			this.loadNotificationSettings()
 			this.loadLatestUserInfo()
+			this.loadMembershipTiers()   // 测试升级动画用（拉真实档位配置）
 		},
 	created() {
 		uni.$on('languageChanged', this.onLanguageChanged)
@@ -492,9 +569,64 @@ export default {
 			}
 		},
 
-		// 生日 - 系统日期选择器
-		async onBirthdayPickerChange(e) {
-			const date = e.detail.value
+		// ============ 邮箱编辑 ============
+		openEmailModal() {
+			this.emailInput = this.userEmail
+			this.emailError = ''
+			this.showEmailModal = true
+		},
+		validateEmailInput() {
+			const v = (this.emailInput || '').trim()
+			if (!v) {
+				this.emailError = ''
+				return true
+			}
+			const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+			if (!re.test(v)) {
+				this.emailError = this.i18n.t('login.emailInvalid')
+				return false
+			}
+			this.emailError = ''
+			return true
+		},
+		async confirmEmail() {
+			const email = (this.emailInput || '').trim()
+			// 格式校验（非空时）
+			if (email && !this.validateEmailInput()) return
+			try {
+				// 空字符串表示"清除邮箱" → 传空串让后端清空（如果后端不支持，改回 undefined 不更新）
+				const payload = email ? { email } : { email: '' }
+				const res = await updateUserInfo(payload)
+				if (res.code === 0) {
+					if (this.userInfo) {
+						this.userInfo.email = email
+						store.setUserInfo(this.userInfo)
+					}
+					this.showEmailModal = false
+					showToast(this.i18n.t('common.success'))
+				} else {
+					showToast(res.message || this.i18n.t('common.fail'))
+				}
+			} catch (e) {
+				console.error('updateEmail error:', e)
+				const code = e && (e.code || e.bizCode)
+				// 邮箱已被占用 → 标红输入框提示
+				if (code === 'ErrEmailAlreadyBound' || /already.*bound|already.*used/i.test(e.message || '')) {
+					this.emailError = this.i18n.t('login.emailAlreadyBound')
+					return
+				}
+				// 其他错误：request.js 已统一 toast，这里不重复弹
+			}
+		},
+		async clearEmail() {
+			this.emailInput = ''
+			this.emailError = ''
+			// 直接调用 confirmEmail，传空字符串清除
+			await this.confirmEmail()
+		},
+
+		// 生日 - 自定义日期选择器（直接 emit 字符串）
+		async onBirthdayPickerChange(date) {
 			if (!date) return
 			try {
 				const res = await updateUserInfo({ birthday: date })
@@ -505,6 +637,11 @@ export default {
 						store.setUserInfo(this.userInfo)
 					}
 					showToast(this.i18n.t('settings.birthdaySaveSuccess'))
+					// 改完生日后立即触发检查（用户改成"今天"时可立即弹窗领奖）
+					// 强制绕过 30 秒节流：重置 lastBirthdayCheckAt
+					const app = getApp()
+					if (app && app.lastBirthdayCheckAt !== undefined) app.lastBirthdayCheckAt = 0
+					if (app && app.checkBirthday) app.checkBirthday()
 				} else {
 					showToast(res.message || this.i18n.t('common.fail'))
 				}
@@ -526,7 +663,11 @@ export default {
 		},
 		async handleChangePassword() {
 			const { oldPassword, newPassword, confirmPassword } = this.passwordForm
-			if (!oldPassword || !newPassword || !confirmPassword) {
+			// 已有密码必须填旧密码；无密码时跳过旧密码校验
+			if (this.hasPassword && !oldPassword) {
+				return showToast(this.i18n.t('settings.oldPasswordRequired'))
+			}
+			if (!newPassword || !confirmPassword) {
 				return showToast(this.i18n.t('common.fail'))
 			}
 			if (newPassword.length < 6) {
@@ -536,10 +677,11 @@ export default {
 				return showToast(this.i18n.t('settings.passwordMismatch'))
 			}
 			try {
-				const res = await resetPassword({
-					old_password: oldPassword,
-					new_password: newPassword
-				})
+				const payload = { new_password: newPassword }
+				if (this.hasPassword) {
+					payload.old_password = oldPassword
+				}
+				const res = await resetPassword(payload)
 				console.log('[change-password] response:', JSON.stringify(res))
 				if (res.code === 0) {
 					this.showPasswordModal = false
@@ -578,6 +720,50 @@ export default {
 		// ============ 测试生日弹窗 ============
 		testBirthdayModal() {
 			this.showTestBirthdayModal = true
+		},
+
+		// 拉档位配置（测试入口用，跟 member 页同一接口）
+		async loadMembershipTiers() {
+			try {
+				const res = await getMembershipTiers()
+				if (res && res.code === 0 && res.data) {
+					this.membershipTiers = (res.data.tiers || []).filter(t => t.is_active !== false)
+					// 默认指向第 2 档（REGULAR 后的第一个，通常是 GOLD）
+					if (this.membershipTiers.length > 1) this.testUpgradeTierIndex = 1
+				}
+			} catch (e) {
+				console.warn('[settings] loadMembershipTiers failed:', e)
+			}
+		},
+
+		// 测试升级动画：弹窗展示当前选中档位的动画
+		testUpgradeAnimation() {
+			if (!this.testUpgradeTier) {
+				uni.showToast({ title: '档位配置加载中，请稍候', icon: 'none' })
+				return
+			}
+			this.showTestUpgradeModal = true
+		},
+
+		// 循环切换测试档位（自动支持任意档位数：3 档、5 档、7 档都行）
+		switchTestTier() {
+			if (this.membershipTiers.length === 0) return
+			// 跳过 REGULAR（sort=0），从第二档开始循环；如果没有 REGULAR 就从头循环
+			const startIndex = this.membershipTiers[0] && this.membershipTiers[0].code === 'REGULAR' ? 1 : 0
+			const candidates = this.membershipTiers.slice(startIndex)
+			if (candidates.length === 0) return
+			const currentIdxInCandidates = candidates.findIndex(t => t === this.testUpgradeTier)
+			const nextIdx = (currentIdxInCandidates + 1) % candidates.length
+			// testUpgradeTierIndex 是相对完整 membershipTiers 的下标
+			this.testUpgradeTierIndex = startIndex + nextIdx
+			const nextTier = candidates[nextIdx]
+			const lang = i18n.getLanguage()
+			const tierName = nextTier ? (nextTier['name_' + lang] || nextTier.name || nextTier.code) : ''
+			uni.showToast({
+				title: '已切换到 ' + tierName,
+				icon: 'none',
+				duration: 1000
+			})
 		},
 		closeTestBirthdayModal() {
 			this.showTestBirthdayModal = false
@@ -835,6 +1021,16 @@ export default {
 	box-sizing: border-box;
 	border: 1px solid transparent;
 	transition: border-color 0.2s;
+}
+
+/* modal 内字段错误提示 */
+.modal-field-error {
+	display: block;
+	font-size: 12px;
+	color: #DA3300;
+	margin-top: -4px;
+	margin-bottom: 8px;
+	padding-left: 4px;
 }
 
 .modal-input:last-child {

@@ -19,7 +19,7 @@
 
 			<!-- 提示文案 -->
 			<view class="hint-section">
-				<text class="hint-text">{{ t('login.smsLoginHint') }}</text>
+				<text class="hint-text">{{ loginMode === 'email' ? t('login.emailLoginHint') : t('login.smsLoginHint') }}</text>
 			</view>
 
 			<!-- 手机号 + 验证码输入 -->
@@ -39,6 +39,21 @@
 						placeholder-style="color: #828282;"
 						v-model="phone"
 						@input="onPhoneInput"
+					/>
+				</view>
+
+				<!-- 邮箱（仅邮箱模式显示） -->
+				<view class="phone-field" v-if="loginMode === 'email'">
+					<view class="country-picker">
+						<text class="country-flag">✉️</text>
+					</view>
+					<view class="phone-divider"></view>
+					<input
+						class="phone-input"
+						type="text"
+						:placeholder="t('login.emailPlaceholder')"
+						placeholder-style="color: #828282;"
+						v-model="email"
 					/>
 				</view>
 
@@ -71,7 +86,7 @@
 				<text class="btn-text">{{ logging ? t('common.loading') : t('common.confirm') }}</text>
 			</view>
 
-			<!-- 切换到其他登录方式 -->
+			<!-- 切换到其他登录方式（邮箱模式由 SMS 配额用完时自动降级，无需手动切换） -->
 			<view class="login-links">
 				<view class="switch-link" @click="goPasswordLogin">
 					<text class="switch-text">{{ t('login.passwordLogin') }}</text>
@@ -138,8 +153,8 @@
 <script>
 import i18n from '@/i18n/index.js'
 import { validatePhone, getPhoneMaxLength, showToast } from '@/utils/index.js'
-import { sendSMSCode, smsLogin, resolveSMSErrorMessage } from '@/utils/sms.js'
-import { setCountryCode } from '@/api/services/auth.js'
+import { sendSMSCode, smsLogin, resolveSMSErrorMessage, toE164 } from '@/utils/sms.js'
+import { setCountryCode, checkPhone, sendEmailCode, loginByEmailCode } from '@/api/services/auth.js'
 import { post } from '@/api/request.js'
 import store from '@/store/index.js'
 
@@ -154,6 +169,8 @@ export default {
 			statusBarHeight: 20,
 			phone: '',
 			code: '',
+			email: '',           // 邮箱验证码模式用
+			loginMode: 'sms',    // 'sms' 或 'email'，默认短信
 			selectedCountry: COUNTRY_LIST[0],
 			countries: COUNTRY_LIST,
 			agreed: true,
@@ -176,12 +193,26 @@ export default {
 			return getPhoneMaxLength(this.selectedCountry)
 		},
 		fullPhoneNumber() {
-			return this.selectedCountry.code + this.phone
+			return toE164(this.selectedCountry.code, this.phone)
 		},
 		canSendCode() {
+			if (this.loginMode === 'email') {
+				// 邮箱模式：手机号 + 邮箱都必须填
+				return validatePhone(this.phone, this.selectedCountry)
+					&& /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)
+					&& this.cooldown === 0
+			}
 			return validatePhone(this.phone, this.selectedCountry) && this.cooldown === 0
 		},
 		canLogin() {
+			// 登录中 / 已登录 → 禁用按钮
+			if (this.logging) return false
+			if (this.loginMode === 'email') {
+				return validatePhone(this.phone, this.selectedCountry)
+					&& /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)
+					&& this.code.length >= 4
+					&& this.agreed
+			}
 			return validatePhone(this.phone, this.selectedCountry)
 				&& this.code.length >= 4
 				&& this.agreed
@@ -250,6 +281,10 @@ export default {
 				showToast(this.t('login.phoneInvalid'))
 				return
 			}
+			if (this.loginMode === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) {
+				showToast(this.t('login.emailInvalid'))
+				return
+			}
 			if (!this.agreed) {
 				showToast(this.t('login.agreementRequired'))
 				return
@@ -257,23 +292,135 @@ export default {
 
 			this.sendingCode = true
 			try {
-				// 调后端 /auth/sms/send 发送验证码
-				await sendSMSCode(this.fullPhoneNumber, this.scene)
-				// 启动 60 秒倒计时
-				this.cooldown = 60
-				this.cooldownTimer = setInterval(() => {
-					this.cooldown--
-					if (this.cooldown <= 0) {
+				// 邮箱模式：直接调 sendEmailCode（不消耗短信额度，跳过 check-phone）
+				if (this.loginMode === 'email') {
+					await sendEmailCode(this.fullPhoneNumber, this.email.trim())
+					this.startCooldown()
+					showToast(this.t('login.codeSent'))
+					return
+				}
+
+				// SMS 模式：先调 check-phone 校验（不消耗短信额度）：
+				// - 登录场景下未注册 → 引导跳注册
+				// - 注册场景下已注册 → 引导跳登录
+				try {
+					const checkRes = await checkPhone(this.fullPhoneNumber)
+					const checkData = (checkRes && checkRes.data) || {}
+					if (this.scene === 'login' && !checkData.registered) {
+						uni.showModal({
+							title: '',
+							content: this.i18n.t('error.phoneNotRegistered'),
+							confirmText: this.i18n.t('common.confirm'),
+							showCancel: false,
+							success: () => {
+								uni.redirectTo({ url: '/pages/login/register?scene=register' })
+							}
+						})
+						return
+					}
+					if (this.scene === 'register' && checkData.registered) {
+						uni.showModal({
+							title: '',
+							content: this.i18n.t('error.phoneAlreadyRegistered'),
+							confirmText: this.i18n.t('common.confirm'),
+							showCancel: false,
+							success: () => {
+								uni.redirectTo({ url: '/pages/login/sms?scene=login' })
+							}
+						})
+						return
+					}
+				} catch (e) {
+					console.warn('[sms-login] check-phone failed, fallback to send:', e)
+				}
+				// 校验通过，发送验证码（统一接口：SMS 优先，额度用完自动降级邮箱）
+				const data = await sendSMSCode(this.fullPhoneNumber, this.scene)
+				this.startCooldown()
+				// 根据实际渠道展示不同 UI
+				if (data && data.channel === 'email' && data.email) {
+					// SMS 额度用完，后端已自动降级到邮箱
+					uni.showModal({
+						title: '',
+						content: this.i18n.t('login.codeSentToEmail', { email: data.email }),
+						showCancel: false,
+						confirmText: this.i18n.t('common.confirm')
+					})
+				} else {
+					showToast(this.t('login.codeSent'))
+				}
+				// 剩 ≤1 条 SMS 配额 → 显著提示（800ms 后弹，避免和成功提示冲突）
+				if (data && data.warning) {
+					setTimeout(() => {
+						uni.showModal({
+							title: '',
+							content: this.i18n.t('login.quotaWarning', { warning: data.warning }),
+							showCancel: false,
+							confirmText: this.i18n.t('common.confirm')
+						})
+					}, 800)
+				}
+			} catch (e) {
+				console.error('[sms-login] sendCode failed:', e)
+				// 短信额度用完 → 自动切换到邮箱模式 + 提示用户
+				const code = e && (e.code || e.bizCode)
+				// SMS 配额用完 + 未绑邮箱 → 引导用户绑邮箱
+				if (code === 'SMS_QUOTA_NO_EMAIL') {
+					uni.showModal({
+						title: '',
+						content: this.i18n.t('login.quotaExhausted'),
+						showCancel: false,
+						confirmText: this.i18n.t('common.confirm')
+					})
+					return
+				}
+				if (this.loginMode === 'sms' && (
+					code === 'SMS_QUOTA_EXCEEDED' ||
+					code === 'SMS_QUOTA_EXHAUSTED' ||
+					code === 'RATE_LIMITED'
+				)) {
+					// 自动切换到邮箱登录模式
+					this.loginMode = 'email'
+					this.code = ''
+					this.cooldown = 0
+					if (this.cooldownTimer) {
 						clearInterval(this.cooldownTimer)
 						this.cooldownTimer = null
 					}
-				}, 1000)
-				showToast(this.t('login.codeSent'))
-			} catch (e) {
-				console.error('[sms-login] sendCode failed:', e)
+					// 提示用户短信已用完，已切换到邮箱
+					uni.showModal({
+						title: '',
+						content: this.i18n.t('login.smsQuotaExceededAutoSwitch'),
+						showCancel: false,
+						confirmText: this.i18n.t('common.confirm'),
+					})
+					return
+				}
 				showToast(resolveSMSErrorMessage(e))
 			} finally {
 				this.sendingCode = false
+			}
+		},
+
+		// 启动 60s 倒计时
+		startCooldown() {
+			this.cooldown = 60
+			this.cooldownTimer = setInterval(() => {
+				this.cooldown--
+				if (this.cooldown <= 0) {
+					clearInterval(this.cooldownTimer)
+					this.cooldownTimer = null
+				}
+			}, 1000)
+		},
+
+		// 切换 SMS / 邮箱模式
+		toggleLoginMode() {
+			this.loginMode = (this.loginMode === 'sms') ? 'email' : 'sms'
+			this.code = ''        // 切换模式清空验证码（不同通道）
+			this.cooldown = 0     // 重置倒计时
+			if (this.cooldownTimer) {
+				clearInterval(this.cooldownTimer)
+				this.cooldownTimer = null
 			}
 		},
 
@@ -282,8 +429,10 @@ export default {
 			if (!this.canLogin || this.logging) return
 			this.logging = true
 			try {
-				// 调后端 /auth/sms/login(登录即注册)
-				const data = await smsLogin(this.fullPhoneNumber, this.code, this.scene)
+				// 邮箱模式 vs SMS 模式走不同接口
+				const data = this.loginMode === 'email'
+					? await loginByEmailCode(this.fullPhoneNumber, this.code)
+					: await smsLogin(this.fullPhoneNumber, this.code, this.scene)
 				if (data && data.access_token) {
 					store.setToken(data.access_token)
 					if (data.refresh_token) {
@@ -309,6 +458,21 @@ export default {
 				}
 			} catch (e) {
 				console.error('[sms-login] login failed:', e)
+				const code = e && (e.code || e.bizCode)
+				// 429 限流：邮箱登录接口 60s 限流，给用户明确提示
+				if (code === 429 || code === 'RATE_LIMITED' || code === 'RATE_LIMIT_INTERVAL') {
+					showToast(this.i18n.t('login.loginRateLimited'))
+					return
+				}
+				// CODE_INVALID/CODE_NOT_SENT：输入框标红
+				if (code === 'CODE_INVALID' || code === 'INVALID_VERIFY_CODE') {
+					this.codeError = this.i18n.t('login.codeInvalid')
+					return
+				}
+				if (code === 'CODE_NOT_SENT') {
+					this.codeError = this.i18n.t('login.codeNotSent')
+					return
+				}
 				showToast(resolveSMSErrorMessage(e))
 			} finally {
 				this.logging = false
@@ -551,12 +715,14 @@ export default {
 
 .login-links {
 	display: flex;
+	align-items: center;
 	justify-content: center;
-	gap: 48rpx;
+	gap: 16rpx;
 	margin-top: 40rpx;
 }
-.switch-link { padding: 12rpx; }
+.switch-link { padding: 8rpx; }
 .switch-text { font-size: 26rpx; color: #F2B131; }
+.link-divider { font-size: 26rpx; color: #CCCCCC; }
 
 .agreement {
 	display: flex;

@@ -3,6 +3,21 @@
  */
 import { USE_MOCK } from '../config.js'
 import { get, post } from '../request.js'
+
+/**
+ * 获取动态会员码 token（10 位字母数字，60 秒一次性，供收银端扫描识别用户）
+ * POST /qr-token
+ * @returns {Promise<{token: string, expires_in: number}>}
+ *   - token: 10 位字母数字，用此生成二维码给收银员扫描
+ *   - expires_in: 60 秒（过期后需重新获取）
+ *
+ * 关键行为：
+ *   - token 是一次性的，被收银员扫描后立即失效（后端 GETDEL）
+ *   - 同一用户同时只有一个有效 token，获取新 token 会让旧 token 失效
+ */
+export function getQRToken() {
+	return post('/qr-token')
+}
 import {
 	mockGetMemberInfo,
 	mockGetMemberProgress,
@@ -35,6 +50,16 @@ export function getMemberProgress() {
 		return mockGetMemberProgress()
 	}
 	return get('/member/progress')
+}
+
+/**
+ * 获取所有启用的会员档位配置（公共接口，无需 auth）
+ * GET /api/v1/membership/tiers
+ * 返回档位列表（按 sort_order 升序），含三语名称/图标/颜色/升级阈值/奖励
+ * @returns {Promise<{tiers: Array}>}
+ */
+export function getMembershipTiers() {
+	return get('/membership/tiers')
 }
 
 /**
@@ -252,6 +277,7 @@ export function claimBirthday() {
 export const memberApi = {
 	getMemberInfo,
 	getMemberProgress,
+	getMembershipTiers, // 动态档位（HMR 强制刷新标记）
 	getMemberBalance,
 	getMemberPoints,
 	getPointsBenefits,

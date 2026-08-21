@@ -39,7 +39,7 @@
 				</view>
 				<view class="shop-address-row">
 					<image class="address-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-					<text class="address-text">{{ shopInfo.address }}</text>
+					<text class="address-text">{{ shopInfo['formatted_address_' + i18n.getLanguage()] || shopInfo['address_' + i18n.getLanguage()] || shopInfo.address }}</text>
 				</view>
 			</view>
 
@@ -506,6 +506,12 @@ export default {
 							banner: fixMinioUrl(s.banner_image || s.background_image_url) || '/static/images/banner-placeholder.svg',
 							phone: s.phone || '',
 							address: s.formatted_address || s.address || this.shopInfo.address,
+							address_zh: s.address_zh || s.formatted_address_zh || this.shopInfo.address_zh || '',
+							address_en: s.address_en || s.formatted_address_en || this.shopInfo.address_en || '',
+							address_th: s.address_th || s.formatted_address_th || this.shopInfo.address_th || '',
+							formatted_address_zh: s.formatted_address_zh || this.shopInfo.formatted_address_zh || '',
+							formatted_address_en: s.formatted_address_en || this.shopInfo.formatted_address_en || '',
+							formatted_address_th: s.formatted_address_th || this.shopInfo.formatted_address_th || '',
 							businessHours: s.config
 								? `${(s.config.opening_time||'').slice(0,5)}-${(s.config.closing_time||'').slice(0,5)}`
 								: this.shopInfo.businessHours

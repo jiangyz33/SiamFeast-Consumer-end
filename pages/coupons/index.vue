@@ -26,7 +26,7 @@
 		</view>
 
 		<!-- 优惠券列表 -->
-		<scroll-view class="coupon-list" scroll-y :style="{ height: contentHeight + 'px' }">
+		<scroll-view class="coupon-list" scroll-y :style="{ height: contentHeight + 'px' }" @scrolltolower="loadMore" :lower-threshold="80">
 			<view class="list-container">
 				<view
 					v-for="item in currentCoupons"
@@ -36,11 +36,27 @@
 				>
 					<!-- 左侧金额区域 -->
 					<view class="coupon-left">
-						<view class="coupon-amount">
+						<!-- ITEM 菜品券：无金额，显示碗图标 -->
+						<view v-if="item.couponType === 'ITEM'" class="coupon-amount item-coupon-amount">
+							<view class="item-coupon-icon">
+								<svg viewBox="0 0 32 32" fill="currentColor">
+									<path d="M4 14 L28 14 L26 24 Q26 27 23 27 L9 27 Q6 27 6 24 Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+									<path d="M2 14 L30 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+									<path d="M10 10 Q10 7 12 7 Q12 5 14 5 M18 9 Q18 6 20 6 Q20 4 22 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+								</svg>
+							</view>
+						</view>
+						<!-- PERCENT 折扣券：显示折扣文案 -->
+						<view v-else-if="item.couponType === 'PERCENT'" class="coupon-amount">
+							<text class="amount-num percent-text">{{ formatPercentValue(item.amount) }}</text>
+						</view>
+						<!-- FIXED 固定金额券 -->
+						<view v-else class="coupon-amount">
 							<text class="amount-symbol">฿</text>
 							<text class="amount-num">{{ item.amount }}</text>
 						</view>
-						<text class="coupon-condition">{{ t("coupons.minSpend", { amount: item.minSpend }) }}</text>
+						<text class="coupon-condition" v-if="item.couponType === 'ITEM'">{{ t('coupons.itemVoucher') }}</text>
+						<text class="coupon-condition" v-else>{{ t("coupons.minSpend", { amount: item.minSpend }) }}</text>
 					</view>
 
 					<!-- 右侧信息区域 -->
@@ -62,6 +78,12 @@
 						<view class="coupon-action" v-if="!item.isAvailable">
 							<text class="expired-text">{{ getStatusLabel(item) }}</text>
 						</view>
+						<!-- 可用券：线下核销按钮（弹出二维码） -->
+						<view class="coupon-action coupon-action-row" v-if="item.isAvailable">
+							<view class="redeem-btn" @click="showRedeemModal(item)">
+								<text class="redeem-btn-text">{{ t('coupons.offlineRedeem') }}</text>
+							</view>
+						</view>
 					</view>
 
 					<!-- 装饰圆形 -->
@@ -80,11 +102,24 @@
 				<view class="loading-state" v-if="loading">
 					<text class="loading-text">{{ t("common.loading") }}</text>
 				</view>
+
+				<!-- 加载更多 / 到底提示 -->
+				<view class="loading-state" v-if="!loading && currentCoupons.length > 0">
+					<text class="loading-text" v-if="loadingMore">{{ t("common.loading") }}</text>
+					<text class="loading-text" v-else-if="noMore">{{ t("common.noMore") }}</text>
+				</view>
 			</view>
 
 			<!-- 底部占位 -->
 			<view class="bottom-placeholder"></view>
 		</scroll-view>
+
+		<!-- 线下核销二维码弹窗 -->
+		<coupon-redeem-modal
+			:visible="showRedeemModalFlag"
+			:coupon="redeemCoupon"
+			@close="showRedeemModalFlag = false"
+		/>
 	</view>
 </template>
 
@@ -92,8 +127,10 @@
 import { showToast } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
 import { getMyCoupons } from '@/api/services/coupon.js'
+import CouponRedeemModal from '@/components/coupon-redeem-modal.vue'
 
 export default {
+	components: { CouponRedeemModal },
 	data() {
 		return {
 			langVersion: 0,
@@ -103,7 +140,15 @@ export default {
 			activeTab: 0,
 			tabs: [],
 			coupons: [],
-			loading: false
+			loading: false,
+			showRedeemModalFlag: false,
+			redeemCoupon: {},
+			// 分页：默认拉满 200 条覆盖常见场景；超过则按需追加
+			page: 1,
+			pageSize: 200,
+			total: 0,
+			loadingMore: false,
+			noMore: false
 		}
 	},
 	computed: {
@@ -159,15 +204,22 @@ export default {
 
 		async loadData() {
 			this.loading = true
+			this.page = 1
+			this.noMore = false
 			try {
-				const res = await getMyCoupons({ status: 'all' })
+				const res = await getMyCoupons({ status: 'all', page: this.page, page_size: this.pageSize })
 
 				if (res && res.code === 0 && res.data) {
 					const raw = res.data
 					const items = raw.items || raw.list || raw || []
 					this.coupons = (Array.isArray(items) ? items : []).map(c => this.normalizeCoupon(c))
+					// 分页元数据
+					this.total = Number(raw.total) || this.coupons.length
+					// 数据量不足一页 → 标记到底
+					if (this.coupons.length < this.pageSize) this.noMore = true
 				} else {
 					this.coupons = []
+					this.total = 0
 				}
 			} catch (e) {
 				console.error('loadData error:', e)
@@ -177,12 +229,49 @@ export default {
 			}
 		},
 
+		// 分页加载更多
+		async loadMore() {
+			if (this.loadingMore || this.noMore || this.loading) return
+			this.loadingMore = true
+			try {
+				const nextPage = this.page + 1
+				const res = await getMyCoupons({ status: 'all', page: nextPage, page_size: this.pageSize })
+				if (res && res.code === 0 && res.data) {
+					const raw = res.data
+					const items = raw.items || raw.list || raw || []
+					const newOnes = (Array.isArray(items) ? items : []).map(c => this.normalizeCoupon(c))
+					if (newOnes.length === 0) {
+						this.noMore = true
+					} else {
+						this.coupons = this.coupons.concat(newOnes)
+						this.page = nextPage
+						if (newOnes.length < this.pageSize) this.noMore = true
+					}
+				} else {
+					this.noMore = true
+				}
+			} catch (e) {
+				console.error('loadMore error:', e)
+			} finally {
+				this.loadingMore = false
+			}
+		},
+
 		normalizeCoupon(c) {
 			const tpl = c.template || {}
 			const lang = i18n.getLanguage()
 			const status = (c.status || '').toUpperCase()
-			const validEnd = c.valid_end || c.end_date || ''
-			const validStart = c.valid_start || c.start_date || ''
+			// 有效期判定（按 valid_type 区分）：
+			//   FIXED            → 用 valid_end（实例字段，user 领取时算）
+			//   DAYS_AFTER_CLAIM → 不用模板 end_date（30 年占位，会显示成 2056），仅展示"领取后 N 天"
+			//   未知 / 缺失       → 兜底用 valid_end || end_date（维持原行为）
+			const validType = (c.valid_type || tpl.valid_type || '').toUpperCase()
+			const validDays = Number(c.valid_days || tpl.valid_days || 0)
+			// valid_end / valid_start：FIXED 时返回（券模板窗口）；DAYS_AFTER_CLAIM 时省略
+			const validEnd = c.valid_end || ''
+			const validStart = c.valid_start || ''
+			// expire_at：用户实例真实到期日（领取 + valid_days，或 FIXED 的 valid_end）
+			const expireAt = c.expire_at || ''
 
 			let isExpired = false
 			let isAvailable = false
@@ -193,25 +282,41 @@ export default {
 				isUsed = true
 			} else if (status === 'LOCKED') {
 				isLocked = true
-			} else if (validEnd && new Date(validEnd) < new Date()) {
+			} else if (expireAt && new Date(expireAt) < new Date()) {
+				// 优先用 expire_at 判过期
+				isExpired = true
+			} else if (!expireAt && validEnd && new Date(validEnd) < new Date()) {
+				// 兜底：FIXED 类型且后端没返回 expire_at 时，按 valid_end 判
 				isExpired = true
 			} else if (status === 'UNUSED' || status === 'ACTIVE' || status === 'CLAIMED') {
 				isAvailable = true
 			}
 
+			// 渲染文案（按 8-04 回执优先级）：
+			// 1. expire_at（用户实例真实到期日，最实用）
+			// 2. valid_type + valid_days（DAYS_AFTER_CLAIM 时）
+			// 3. valid_start + valid_end（FIXED 时）
 			let validity = ''
-			if (validStart && validEnd) {
+			if (expireAt) {
+				// 真实到期日：2026-09-01 → 「有效期至 2026.09.01」
+				validity = expireAt.substring(0, 10).replace(/-/g, '.') + ' ' + this.i18n.t('coupons.expireEnd')
+			} else if (validType === 'DAYS_AFTER_CLAIM' && validDays > 0) {
+				// DAYS_AFTER_CLAIM 但后端没返回 expire_at 时，回退到规则展示
+				validity = this.i18n.t('coupons.validDays', { days: validDays })
+			} else if (validType === 'FIXED' && validStart && validEnd) {
+				// FIXED：显示起止日期
 				validity = validStart.substring(0, 10).replace(/-/g, '.') + ' - ' + validEnd.substring(0, 10).replace(/-/g, '.')
-			} else if (validEnd) {
-				validity = validEnd.substring(0, 10).replace(/-/g, '.') + ' ' + this.i18n.t('coupons.expireEnd')
 			}
 
 			return {
 				id: c.id,
+				// 后端列表接口已返回 user_coupon_id，透传给 QR 弹窗使用（实例 ID，单人独有）
+				userCouponId: c.user_coupon_id || c.id,
 				name: tpl['name_' + lang] || tpl.name || c['name_' + lang] || c.name || '',
 				amount: c.value || tpl.discount_value || c.discount_value || c.amount || 0,
 				minSpend: tpl.min_order_amount || c.min_order_amount || c.min_spend || 0,
 				type: (tpl.coupon_tag || c.coupon_tag || '').toLowerCase() || 'all',
+				couponType: String(c.type || tpl.type || c.coupon_type || '').toUpperCase(),   // FIXED/PERCENT/ITEM
 				tag: tpl.coupon_tag || '',
 				validity: validity,
 				description: tpl['description_' + lang] || tpl.description || c['description_' + lang] || c.description || '',
@@ -220,6 +325,15 @@ export default {
 				isUsed: isUsed,
 				isLocked: isLocked
 			}
+		},
+
+		// PERCENT 折扣券格式化：30 → 中文"7折" / 英文"30% OFF" / 泰文"ลด 30%"
+		formatPercentValue(value) {
+			const v = Number(value) || 0
+			const lang = i18n.getLanguage()
+			if (lang === 'zh') return `${(10 - v / 10).toFixed(1).replace('.0', '')}折`
+			if (lang === 'th') return `ลด ${v}%`
+			return `${v}% OFF`
 		},
 
 		getTypeName(tag) {
@@ -235,6 +349,12 @@ export default {
 			if (item.isUsed) return this.i18n.t('coupons.used')
 			if (item.isLocked) return this.i18n.t('coupons.locked')
 			return this.i18n.t('coupons.expired')
+		},
+
+		showRedeemModal(item) {
+			if (!item || !item.id) return
+			this.redeemCoupon = item
+			this.showRedeemModalFlag = true
 		},
 
 		goBack() {
@@ -405,7 +525,25 @@ export default {
 	font-size: 36px;
 	font-weight: 800;
 	color: #FFFFFF;
-	line-height: 1;
+}
+
+/* 菜品券特殊样式 */
+.item-coupon-amount {
+	justify-content: center;
+}
+.item-coupon-icon {
+	width: 36px;
+	height: 36px;
+	color: #FFFFFF;
+}
+.item-coupon-icon svg {
+	width: 100%;
+	height: 100%;
+}
+
+/* PERCENT 折扣券 */
+.percent-text {
+	font-size: 22px;
 }
 
 .coupon-condition {
@@ -498,6 +636,22 @@ export default {
 .expired-text {
 	font-size: 12px;
 	color: #949494;
+}
+
+/* 线下核销按钮 */
+.coupon-action-row {
+	justify-content: flex-end;
+}
+.redeem-btn {
+	padding: 6px 14px;
+	border-radius: 14px;
+	background-color: rgba(242, 177, 49, 0.12);
+	border: 1px solid #F2B131;
+}
+.redeem-btn-text {
+	font-size: 12px;
+	color: #B5750C;
+	font-weight: 600;
 }
 
 /* 加载状态 */

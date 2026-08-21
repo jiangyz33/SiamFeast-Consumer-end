@@ -155,7 +155,7 @@ export default {
 	onShow() {
 		// 从后台切回前台 / 从其他页面返回 → 立即查一次状态
 		if (this.exchangeId && !this.isRedeemed) {
-			console.log('[exchange-success] onShow, immediate status check')
+			// onShow status check
 			this.checkStatus()
 			// 如果轮询被停过，重启
 			if (!this.pollTimer) {
@@ -165,7 +165,7 @@ export default {
 	},
 	onHide() {
 		// 切到后台 → 暂停轮询省电（onShow 会重启）
-		console.log('[exchange-success] onHide, pause polling')
+		// onHide pause polling
 		this.stopPolling()
 	},
 	onUnload() {
@@ -221,11 +221,24 @@ export default {
 			},
 
 			async loadDetailAndGenerateQR() {
-				if (!this.uniqueCode && this.exchangeId) {
+				// 始终调详情接口：补全 uniqueCode、exchangeId（订单号）、多语言商品名等
+				// 后端创建兑换订单响应可能未及时返回完整字段，这里做最终兜底
+				if (this.exchangeId) {
 					try {
 						const res = await getMallOrderDetail(this.exchangeId)
 						if (res.code === 0 && res.data) {
 							const d = res.data
+							// 补全订单号：详情接口可能返回 order_no / exchange_no / id 等多种字段
+							if (!this.exchangeId && (d.id || d.exchange_id)) {
+								this.exchangeId = String(d.id || d.exchange_id)
+							}
+							if (d.order_no || d.exchange_no) {
+								// 如果详情返回了正式单号，优先用正式单号显示
+								const formalNo = d.order_no || d.exchange_no
+								if (formalNo && this.exchangeId !== formalNo) {
+									this.exchangeId = formalNo
+								}
+							}
 							if (!this.uniqueCode) this.uniqueCode = d.unique_code || ''
 							// 保存所有语言的商品名（后端字段 product_name_<lang>）
 							if (d.product_name_zh) this.productNameZh = d.product_name_zh
@@ -238,6 +251,14 @@ export default {
 							if (d.quantity) this.quantity = d.quantity
 							if (!this.exchangeType && d.exchange_type) {
 								this.exchangeType = String(d.exchange_type).toUpperCase()
+							}
+							// 补全提货门店 + 提货时间（后端详情接口若返回则填上）
+							if (!this.storeName && d.store_name) this.storeName = d.store_name
+							if (!this.storeNameEn && d.store_name_en) this.storeNameEn = d.store_name_en
+							if (!this.storeNameTh && d.store_name_th) this.storeNameTh = d.store_name_th
+							if (!this.pickupTimeDisplay && d.pickup_time) {
+								// ISO 8601 → YYYY-MM-DD HH:mm
+								try { this.pickupTimeDisplay = String(d.pickup_time).replace('T', ' ').substring(0, 16) } catch (e) {}
 							}
 							const cost = d.coin_cost || d.points_cost || 0
 							if (cost > 0 && !this.exchangeCost) {
@@ -274,20 +295,20 @@ export default {
 				this.pollTimer = setInterval(() => {
 					this.pollCount++
 					if (this.pollCount > this.MAX_POLL) {
-						console.warn('[exchange-success] polling exceeded max attempts, stopping')
+						// polling exceeded max
 						this.stopPolling()
 						return
 					}
 					this.checkStatus()
 				}, 5000)
-				console.log('[exchange-success] polling started (5s interval, max ' + this.MAX_POLL + ' attempts)')
+				// polling started
 			},
 
 			stopPolling() {
 				if (this.pollTimer) {
 					clearInterval(this.pollTimer)
 					this.pollTimer = null
-					console.log('[exchange-success] polling stopped')
+					// polling stopped
 				}
 			},
 

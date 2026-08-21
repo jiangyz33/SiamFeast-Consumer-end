@@ -362,9 +362,11 @@ export default {
 						phone: store.phone || '',
 						status: store.status || 'OPEN',
 						address: store.address || '',
+						address_zh: store.address_zh || '',
 						address_en: store.address_en || '',
 						address_th: store.address_th || '',
 						formatted_address: store.formatted_address || '',
+						formatted_address_zh: store.formatted_address_zh || '',
 						formatted_address_en: store.formatted_address_en || '',
 						formatted_address_th: store.formatted_address_th || '',
 						latitude: store.latitude,
@@ -482,16 +484,24 @@ export default {
 			if (!types || !Array.isArray(types)) return []
 			const typeKeyMap = {
 				'HOTPOT': 'hotpot',
-				'MALA_TANG': 'malaTang',
-				'BEVERAGE': 'beverage',
+				'HOTPOT_BUFFET': 'hotpot',
+				'HOTPOT_PER_ITEM': 'hotpot',
+				'BBQ': 'barbecue',
 				'BARBECUE': 'barbecue',
+				'MALA_TANG': 'malaTang',
+				'MALATANG': 'malaTang',
+				'BEVERAGE': 'beverage',
+				'SEAFOOD_NOODLES': 'seafoodNoodle',
+				'SEAFOOD_NOODLE': 'seafoodNoodle',
+				'SINEFOOD_NOODLE': 'seafoodNoodle',
+				'SINEFOOD_NOODLES': 'seafoodNoodle',
 				'HOSTEL_ROOM': 'hostel',
 				'HOSTEL_HOTPOT': 'hostelHotpot',
 				'HOSTEL_COFFEE': 'hostelCoffee'
 			}
 			return types.map(t => {
 				const key = typeKeyMap[t]
-				return key ? this.i18n.t(`storeSelect.businessTypes.${key}`) : t
+				return key ? this.i18n.t(`storeSelect.businessTypes.${key}`) : ''
 			}).filter(Boolean)
 		},
 

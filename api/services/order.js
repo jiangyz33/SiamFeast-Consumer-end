@@ -189,6 +189,19 @@ export function calculateCoinDeduct(orderAmount, coinsToUse) {
 	})
 }
 
+/**
+ * 获取金币档位列表（按档位抵扣改造后的新接口）
+ * GET /api/v1/coin-tiers
+ * @param {Object} params
+ * @param {number} params.subtotal 商品原始小计
+ * @param {number} [params.campaign_discount] 活动优惠原始金额
+ * @param {number} [params.coupon_discount] 优惠券优惠原始金额
+ * @returns {Promise<{coin_balance, max_deduct_percent, tiers: [{id, coin_amount, deduct_amount, rate, usable, reason, reason_en, reason_th}]}>}
+ */
+export function getCoinTiers(params = {}) {
+	return get('/coin-tiers', params)
+}
+
 // ============ 后台订单接口 ============
 
 /**
@@ -254,6 +267,7 @@ export const orderApi = {
 	getOrderStatus,
 	getCoinBalance,
 	calculateCoinDeduct,
+	getCoinTiers,
 	getStoreOrders,
 	updateOrderStatus
 }

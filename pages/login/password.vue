@@ -125,7 +125,7 @@ export default {
 			return getPhoneMaxLength(this.selectedCountry)
 		},
 		fullPhoneNumber() {
-			return this.selectedCountry.code + this.phone
+			return toE164(this.selectedCountry.code, this.phone)
 		},
 		canSubmit() {
 			return this.phone && this.password && this.password.length >= 6
