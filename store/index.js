@@ -6,7 +6,23 @@ const TOKEN_KEY = 'siamfeast_token'
 const USER_INFO_KEY = 'siamfeast_userInfo'
 const LOGIN_TYPE_KEY = 'siamfeast_loginType'
 const CURRENT_STORE_KEY = 'siamfeast_currentStore'
-const CART_KEY = 'siamfeast_cart'
+const CART_KEY_PREFIX = 'siamfeast_cart'
+const LEGACY_CART_KEY = 'siamfeast_cart'   // 老版本无用户维度的 key（仅数据迁移用）
+
+/**
+ * 取当前用户的购物车 storage key
+ * - 已登录：siamfeast_cart_<userId>，每个账号独立
+ * - 未登录（游客）：siamfeast_cart（全局 key，兼容老版本）
+ */
+function getCartKey() {
+	const info = uni.getStorageSync(USER_INFO_KEY)
+	let uid = null
+	if (info) {
+		if (typeof info === 'object') uid = info.id || info.user_id
+		else if (typeof info === 'number') uid = info
+	}
+	return uid ? `${CART_KEY_PREFIX}_${uid}` : LEGACY_CART_KEY
+}
 
 const store = {
 	state: {
@@ -74,6 +90,14 @@ const store = {
 		} catch (e) {
 			console.error('setUserInfo error:', e)
 		}
+		// 同步足迹管理器的用户维度（多账号隔离）
+		try {
+			const uid = userInfo && (userInfo.id || userInfo.user_id)
+			// 动态 import 避免循环依赖
+			import('@/utils/footprint.js').then(m => m.default && m.default.setUser(uid))
+		} catch (e) {
+			console.warn('[store] footprint setUser failed:', e)
+		}
 	},
 
 	/**
@@ -136,6 +160,14 @@ const store = {
 		} catch (e) {
 			console.error('logout error:', e)
 		}
+		// 切回游客维度（避免下个账号登录前看到上个账号的足迹）
+		try {
+			import('@/utils/footprint.js').then(m => m.default && m.default.setUser(null))
+		} catch (e) {
+			console.warn('[store] footprint setUser(null) failed:', e)
+		}
+		// 通知全局：App.vue 停止金币确认轮询等登录态相关的周期任务
+		try { uni.$emit('logoutSuccess') } catch (e) {}
 	},
 
 	/**
@@ -190,8 +222,23 @@ const store = {
 
 		getCart(storeId) {
 			try {
-				const raw = uni.getStorageSync(CART_KEY)
-				const all = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : {}
+				const cartKey = getCartKey()
+				const raw = uni.getStorageSync(cartKey)
+				let all = raw ? (typeof raw === 'string' ? JSON.parse(raw) : raw) : {}
+				// 数据迁移：老版本全局 key → 当前用户 key（仅一次）
+				if (cartKey !== LEGACY_CART_KEY && Object.keys(all).length === 0) {
+					const legacy = uni.getStorageSync(LEGACY_CART_KEY)
+					if (legacy) {
+						try {
+							const parsed = typeof legacy === 'string' ? JSON.parse(legacy) : legacy
+							if (parsed && Object.keys(parsed).length > 0) {
+								uni.setStorageSync(cartKey, JSON.stringify(parsed))
+								uni.removeStorageSync(LEGACY_CART_KEY)
+								all = parsed
+							}
+						} catch (e) {}
+					}
+				}
 				if (storeId) return all[storeId] || []
 				return all
 			} catch (e) {
@@ -212,7 +259,7 @@ const store = {
 					cart.push({ ...item, quantity: item.quantity || 1 })
 				}
 				all[storeId] = cart
-				uni.setStorageSync(CART_KEY, JSON.stringify(all))
+				uni.setStorageSync(getCartKey(), JSON.stringify(all))
 			} catch (e) {
 				console.error('addToCart error:', e)
 			}
@@ -222,7 +269,7 @@ const store = {
 			try {
 				const all = this.getCart()
 				delete all[storeId]
-				uni.setStorageSync(CART_KEY, JSON.stringify(all))
+				uni.setStorageSync(getCartKey(), JSON.stringify(all))
 			} catch (e) {
 				console.error('clearCart error:', e)
 			}

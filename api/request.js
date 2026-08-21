@@ -292,6 +292,21 @@ export function request(options) {
 						return
 					}
 
+					// 业务权限类 403（登录态正常，但业务拒绝）：展示三语提示，不清 token、不跳登录页
+					// ORDERING_DISABLED：门店 C 端点餐开关关闭；COUPON_STORE_NOT_MATCH：跨店用券
+					const businessForbiddenErrors = [
+						'ORDERING_DISABLED',
+						'COUPON_STORE_NOT_MATCH'
+					]
+					if (bizCode && businessForbiddenErrors.includes(bizCode)) {
+						// 保留后端三语 message 供调用方按语言取用
+						if (!silent) {
+							uni.showToast({ title: getErrorMessage(responseData) || (responseData && responseData.message) || '操作失败', icon: 'none' })
+						}
+						reject(responseData || { code: statusCode, message: 'forbidden' })
+						return
+					}
+
 					// 真正的 token 过期（用户已登录但 token 失效）
 					const hasToken = !!uni.getStorageSync(TOKEN_KEY)
 					if (hasToken) {
@@ -313,8 +328,10 @@ export function request(options) {
 					reject({ code: 401, message: (responseData && responseData.message) || '未授权', bizCode })
 				} else {
 					// 404 静默(订单/商品等不存在,不弹 toast)
+					// 保留响应体：调用方需区分「路由不存在」（如新版路径回退旧路径）与「业务数据不存在」
 					if (statusCode === 404) {
-						reject({ code: 404, message: 'Not Found' })
+						const bizBody = (responseData && (responseData.code || responseData.biz_code || responseData.detail)) ? responseData : null
+						reject({ code: 404, message: 'Not Found', data: bizBody })
 						return
 					}
 					// 5xx 静默(服务器错误,不弹 toast)

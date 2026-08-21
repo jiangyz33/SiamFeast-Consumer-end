@@ -41,18 +41,25 @@ export function getCampaignClaimableCoupons(campaignId) {
 /**
  * 抢券
  * @param {number} templateId 优惠券模板 ID
+ * @param {number} [campaignId] 活动 ID（从活动入口领取时传，按"每人每活动"维度计数）
  * @returns {Promise<{user_coupon_id, template_id, coupon_name}>}
  *
  * 错误码:
  *  - COUPON_SOLD_OUT        已抢光
  *  - DAILY_QUOTA_EXCEEDED   当日发放总量用尽
- *  - CLAIM_LIMIT_REACHED    用户超过 per_user_limit
+ *  - CLAIM_LIMIT_REACHED    用户超过 per_user_limit（按活动维度计数）
  *  - DAILY_LIMIT_REACHED    用户超过 daily_limit
  *  - COUPON_INACTIVE        活动未开始/已结束
+ *  - CAMPAIGN_NOT_FOUND     活动不存在（传了 campaign_id 时）
+ *  - CAMPAIGN_INACTIVE      活动未开始/已结束/已暂停（传了 campaign_id 时）
+ *  - COUPON_NOT_IN_CAMPAIGN 该券不在此活动中（防绕过）
  */
-export function claimCoupon(templateId) {
+export function claimCoupon(templateId, campaignId) {
 	if (!templateId) return Promise.reject({ code: 'INVALID_PARAMS', message: 'templateId required' })
-	return post('/coupons/claim', { coupon_id: templateId }).then(res => {
+	const body = { coupon_id: templateId }
+	if (campaignId) body.campaign_id = campaignId
+	// silent: true → 不让 request.js 自动弹 toast（避免和 handleClaim 的 toast 重叠）
+	return post('/coupons/claim', body, { silent: true }).then(res => {
 		if (res.code === 0) return res.data
 		return Promise.reject(res)
 	})
@@ -76,16 +83,18 @@ export function getLocalizedText(obj, zhKey = 'name') {
 }
 
 /**
- * 活动类型 → 图标 emoji
+ * 活动类型 → 图标（SVG 路径，统一品牌金线性风格；不再使用 emoji）
  */
 export function getCampaignTypeIcon(type) {
 	const m = {
-		DISCOUNT: '🏷️',
-		FULL_REDUCTION: '🎁',
-		COUPON_GRANT: '🎫',
-		SPECIAL_DATE: '🎊'
+		DISCOUNT: '/static/icons/campaign-tag.svg',
+		FULL_REDUCTION: '/static/icons/campaign-gift.svg',
+		COUPON_GRANT: '/static/icons/campaign-ticket.svg',
+		SPECIAL_DATE: '/static/icons/campaign-calendar.svg',
+		STORE_OPENING: '/static/icons/campaign-store.svg',
+		BANNER_PROMO: '/static/icons/campaign-tag.svg'
 	}
-	return m[type] || '🎉'
+	return m[type] || '/static/icons/campaign-tag.svg'
 }
 
 /**
@@ -97,7 +106,9 @@ export function getCampaignTypeName(type) {
 		DISCOUNT: { zh: '折扣活动', en: 'Discount', th: 'โปรโมชัน' },
 		FULL_REDUCTION: { zh: '满减活动', en: 'Spend & Save', th: 'ซื้อครบลด' },
 		COUPON_GRANT: { zh: '领券活动', en: 'Claim Coupons', th: 'รับคูปอง' },
-		SPECIAL_DATE: { zh: '双号日活动', en: 'Double Day', th: 'วันตัวเลขซ้ำ' }
+		SPECIAL_DATE: { zh: '特别日期活动', en: 'Special Date', th: 'วันพิเศษ' },
+		STORE_OPENING: { zh: '开业活动', en: 'Grand Opening', th: 'เปิดร้านใหม่' },
+		BANNER_PROMO: { zh: '专题活动', en: 'Promotion', th: 'โปรโมชันพิเศษ' }
 	}
 	return (m[type] && m[type][lang]) || type
 }
@@ -125,19 +136,35 @@ export function formatDateRange(startDate, endDate) {
 
 /**
  * 抢券错误码 → 用户友好提示
+ * 优先用 i18n 当前语言；找不到 code 时回退到后端 message
  */
 export function resolveClaimErrorMessage(err) {
-	if (!err) return '抢券失败'
+	if (!err) return i18n.t?.('coupons.claimFailed') || '抢券失败'
 	const code = err.code || err.bizCode || ''
-	const m = {
-		COUPON_SOLD_OUT: '已抢光',
-		DAILY_QUOTA_EXCEEDED: '今日已领完,明天再来',
-		CLAIM_LIMIT_REACHED: '您已领过此券',
-		DAILY_LIMIT_REACHED: '今日领取已达上限',
-		COUPON_INACTIVE: '活动未开始或已结束',
-		UNAUTHENTICATED: '请先登录'
+	// 错误码 → i18n key 映射（兼容历史 code 与 HTTP 状态码）
+	// 注意：领券失败的提示在 coupons 命名空间，活动专属提示在 campaign 命名空间
+	const codeToI18nKey = {
+		COUPON_SOLD_OUT: 'campaign.soldOut',
+		DAILY_QUOTA_EXCEEDED: 'coupons.claimFailed',
+		CLAIM_LIMIT_REACHED: 'campaign.claimed',
+		DAILY_LIMIT_REACHED: 'coupons.claimFailed',
+		COUPON_INACTIVE: 'coupons.claimFailed',
+		CAMPAIGN_DATE_NOT_MATCHED: 'campaign.specialDateNotToday',
+		DATE_NOT_MATCHED: 'campaign.specialDateNotToday',
+		SPECIAL_DATE_NOT_TODAY: 'campaign.specialDateNotToday',
+		UNAUTHENTICATED: 'common.loginExpired'
 	}
-	return m[code] || err.message || '抢券失败'
+	// 后端 409 + message 含"指定日期" → 兜底识别为"仅限活动指定日期可领"
+	const msgLower = (err.message || '').toLowerCase()
+	if (code === 409 || code === 403) {
+		if (msgLower.includes('date') || msgLower.includes('日期') || (err.message || '').includes('指定日期')) {
+			return i18n.t?.('campaign.specialDateNotToday') || err.message || '仅限活动指定日期可领'
+		}
+	}
+	if (code && codeToI18nKey[code]) {
+		return i18n.t?.(codeToI18nKey[code]) || err.message || '抢券失败'
+	}
+	return err.message || i18n.t?.('coupons.claimFailed') || '抢券失败'
 }
 
 // ============ Mock 数据(开发期用,后端就绪后可删)============

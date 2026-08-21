@@ -9,8 +9,11 @@
  * ```js
  * import { authApi, storeApi, menuApi, orderApi, paymentApi } from '@/api/index.js'
  *
- * // 登录
- * const res = await authApi.loginByCode(phone, code)
+ * // 登录（密码）
+ * const res = await authApi.loginByPassword(phone, password)
+ *
+ * // 登录（SMS 验证码 / 注册）
+ * // 见 utils/sms.js：smsLogin(phone, code, 'register'|'login', options)
  *
  * // 获取门店列表
  * const stores = await storeApi.getStores()

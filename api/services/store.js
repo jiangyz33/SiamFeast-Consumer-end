@@ -205,18 +205,34 @@ export function getPublicStores(params = {}) {
 
 /**
  * 查门店开业信息
- * GET /stores/:store_id/opening-info
+ * 新路径 GET /user/stores/:store_id/opening-info（2026-08-14 后端迁移），旧路径 404 时自动回退
  */
-export function getOpeningInfo(storeId) {
-	return get(`/stores/${storeId}/opening-info`)
+export async function getOpeningInfo(storeId) {
+	try {
+		return await get(`/user/stores/${storeId}/opening-info`)
+	} catch (e) {
+		// 旧后端（无 /user 前缀路由）返回 404（request.js reject {code:404}）时回退旧路径
+		if (e && e.code === 404 && !e.data) {
+			return get(`/stores/${storeId}/opening-info`)
+		}
+		throw e
+	}
 }
 
 /**
  * 领取开业券
- * POST /stores/:store_id/claim-opening-coupon
+ * 新路径 POST /user/stores/:store_id/claim-opening-coupon（2026-08-14 后端迁移），旧路径 404 时自动回退
  */
-export function claimOpeningCoupon(storeId) {
-	return post(`/stores/${storeId}/claim-opening-coupon`)
+export async function claimOpeningCoupon(storeId) {
+	try {
+		return await post(`/user/stores/${storeId}/claim-opening-coupon`)
+	} catch (e) {
+		// 旧后端（无 /user 前缀路由）返回 404（request.js reject {code:404}）时回退旧路径
+		if (e && e.code === 404 && !e.data) {
+			return post(`/stores/${storeId}/claim-opening-coupon`)
+		}
+		throw e
+	}
 }
 
 // 导出模块对象

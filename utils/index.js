@@ -351,6 +351,13 @@ export function getUserLocation() {
  */
 export function getErrorMessage(error) {
 	const code = error?.code || error?.data?.code || ''
+	// 后端返回三语 message（message / message_en / message_th）时，按 APP 语言直接取对应字段
+	const lang = typeof i18n?.getLanguage === 'function' ? i18n.getLanguage() : 'zh'
+	if (error?.message_en || error?.message_th || error?.data?.message_en) {
+		const src = error?.message_en !== undefined ? error : error?.data
+		const localized = lang === 'en' ? src.message_en : (lang === 'th' ? src.message_th : src.message)
+		if (localized) return localized
+	}
 	// 后端某些场景只返回中文 message，没有 bizCode —— 用关键词反查
 	const rawMsg = error?.message || error?.data?.message || ''
 	const keywordToCode = {
@@ -365,6 +372,9 @@ export function getErrorMessage(error) {
 		'频繁': 'RATE_LIMITED',
 		'金币余额不足': 'COIN_INSUFFICIENT',
 		'积分余额不足': 'POINTS_INSUFFICIENT',
+		'暂未开通线上点餐': 'ORDERING_DISABLED',
+		'不属于本门店': 'COUPON_STORE_NOT_MATCH',
+		'开业券配置有误': 'OPENING_COUPON_NOT_STORE_BOUND',
 	}
 	const effectiveCode = code || (rawMsg && keywordToCode[rawMsg]) || ''
 	const codeMap = {
@@ -399,6 +409,29 @@ export function getErrorMessage(error) {
 		// 兼容后端可能的命名变体
 		'INSUFFICIENT_COINS': 'error.coinInsufficient',
 		'INSUFFICIENT_POINTS': 'error.pointsInsufficient',
+		// SMS / 验证码相关 bizCode
+		'INVALID_PHONE': 'error.phoneInvalid',
+		'PHONE_FORMAT_INVALID': 'error.phoneFormatInvalid',
+		'CODE_INVALID': 'error.codeInvalid',
+		'CODE_EXPIRED': 'error.codeExpired',
+		'CODE_NOT_SENT': 'error.codeNotSent',
+		'CODE_TOO_MANY_ATTEMPTS': 'error.codeTooManyAttempts',
+		'ACCOUNT_DISABLED': 'error.accountDisabled',
+		'SMS_NOT_CONFIGURED': 'error.smsNotConfigured',
+		'SMS_SEND_FAILED': 'error.smsSendFailed',
+		// SMS 年度配额相关
+		'SMS_QUOTA_EXHAUSTED': 'error.smsQuotaExhausted',
+		'SMS_QUOTA_EXCEEDED': 'error.smsQuotaExhausted',
+		'SMS_QUOTA_NO_EMAIL': 'error.smsQuotaNoEmail',
+		// 登录/注册场景识别相关 bizCode
+		'USER_NOT_FOUND': 'error.userNotFound',
+		'PHONE_ALREADY_REGISTERED': 'error.phoneAlreadyRegistered',
+		// 活动领券相关 bizCode
+		'SPECIAL_DATE_NOT_TODAY': 'campaign.specialDateNotToday',
+		// 门店 C 端点餐开关 / 用券门店校验（迁移 000100+）
+		'ORDERING_DISABLED': 'error.orderingDisabled',
+		'COUPON_STORE_NOT_MATCH': 'error.couponStoreNotMatch',
+		'OPENING_COUPON_NOT_STORE_BOUND': 'error.openingCouponNotStoreBound',
 	}
 	const i18nKey = codeMap[effectiveCode]
 	if (i18nKey && i18n?.t) {
