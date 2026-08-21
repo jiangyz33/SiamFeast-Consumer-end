@@ -1,19 +1,26 @@
 <template>
-	<view class="task-card" :class="{ 'task-card-completed': isCompleted, 'task-card-claimed': isClaimed }">
+	<view class="task-card" :class="{
+		'task-card-completed': isCompleted,
+		'task-card-claimed': isClaimed,
+		'task-card-locked': locked
+	}">
 		<!-- 任务信息 -->
 		<view class="task-info">
 			<view class="task-header">
-				<text class="task-icon">{{ typeIcon }}</text>
+				<text class="task-icon">{{ locked ? '🔒' : typeIcon }}</text>
 				<text class="task-name">{{ taskName }}</text>
-				<view class="task-type-tag" v-if="taskTypeLabel">
+				<view class="task-type-tag" v-if="taskTypeLabel && !locked">
 					<text class="task-type-text">{{ taskTypeLabel }}</text>
 				</view>
 			</view>
 
-			<text class="task-desc" v-if="task.description">{{ task.description }}</text>
+			<text class="task-desc" v-if="task.description && !locked">{{ task.description }}</text>
 
-			<!-- 进度 -->
-			<view class="progress-section">
+			<!-- 进度（锁定时不显示进度条，显示锁定提示） -->
+			<view v-if="locked" class="locked-tip">
+				<text class="locked-tip-text">{{ t('tasks.inviteLocked') }}</text>
+			</view>
+			<view v-else class="progress-section">
 				<view class="progress-bar">
 					<view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
 				</view>
@@ -23,14 +30,17 @@
 
 		<!-- 奖励 + 按钮 -->
 		<view class="task-action">
-			<view class="reward-info">
+			<view class="reward-info" :class="{ 'reward-info-locked': locked }">
 				<text class="reward-icon">{{ rewardIcon }}</text>
 				<text class="reward-amount">{{ task.reward_amount }}</text>
 				<text class="reward-unit">{{ rewardUnit }}</text>
 			</view>
 
-			<!-- 状态按钮 -->
-			<view v-if="isClaimed" class="action-btn action-claimed">
+			<!-- 锁定态：不显示按钮 -->
+			<view v-if="locked" class="action-btn action-locked">
+				<text class="action-text">{{ t('tasks.locked') }}</text>
+			</view>
+			<view v-else-if="isClaimed" class="action-btn action-claimed">
 				<text class="action-text">{{ t('tasks.claimed') }}</text>
 			</view>
 			<view
@@ -69,7 +79,8 @@ export default {
 	props: {
 		task: { type: Object, required: true },        // task 子对象
 		userTask: { type: Object, required: true },    // user_task 主对象(含 progress/status)
-		loading: { type: Boolean, default: false }
+		loading: { type: Boolean, default: false },
+		locked: { type: Boolean, default: false }       // INVITE 任务高档锁定态（低档未达成）
 	},
 	computed: {
 		isCompleted() {
@@ -146,6 +157,33 @@ export default {
 
 .task-card-claimed {
 	opacity: 0.6;
+}
+
+/* 锁定态（INVITE 任务高档未解锁） */
+.task-card-locked {
+	background-color: #F9F9F9;
+	border: 2rpx dashed #E0E0E0;
+	opacity: 0.85;
+}
+
+.locked-tip {
+	margin-top: 12rpx;
+	padding: 8rpx 12rpx;
+	background-color: rgba(130, 130, 130, 0.08);
+	border-radius: 8rpx;
+}
+.locked-tip-text {
+	font-size: 22rpx;
+	color: #828282;
+	line-height: 1.4;
+}
+
+.reward-info-locked {
+	opacity: 0.5;
+}
+
+.action-locked {
+	background-color: #E0E0E0;
 }
 
 /* 任务信息 */

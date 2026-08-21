@@ -3,17 +3,17 @@
 		<!-- 状态栏占位 -->
 		<view class="status-bar" :style="{ height: statusBarHeight + 'px' }"></view>
 
-		<!-- 顶部导航栏 -->
+		<!-- 顶部导航栏（固定，不滚） -->
 		<view class="nav-bar">
 			<view class="nav-back" @click="goBack">
 				<image class="back-icon" src="/static/icons/arrow-left.svg" mode="aspectFit"></image>
 			</view>
-			<text class="nav-title">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.name }}</text>
+			<text class="nav-title">{{ shopInfo["name_" + currentLang()] || shopInfo.name }}</text>
 			<view class="nav-right"></view>
 		</view>
 
-		<!-- 内容区域 -->
-		<scroll-view class="content-scroll" scroll-y :style="{ height: contentHeight + 'px' }">
+		<!-- 顶部固定信息区（不滚）：店铺 banner + info + 开业横幅 -->
+		<view class="shop-top-section">
 			<!-- 店铺头部图片 -->
 			<view class="shop-header">
 				<image class="shop-banner" :src="shopInfo.banner" mode="aspectFill"></image>
@@ -22,7 +22,7 @@
 			<!-- 店铺详细信息 -->
 			<view class="shop-info-card">
 				<view class="shop-info-left">
-					<text class="shop-full-name" @click="onShopNameClick">{{ shopInfo["name_" + i18n.getLanguage()] || shopInfo.fullName }}</text>
+					<text class="shop-full-name" @click="onShopNameClick">{{ shopInfo["name_" + currentLang()] || shopInfo.fullName }}</text>
 					<view class="shop-rating">
 						<text class="rating-text" v-if="shopInfo.phone">{{ shopInfo.phone }}</text>
 					</view>
@@ -37,7 +37,7 @@
 					</view>
 					<view class="shop-address" @click="openShopMap">
 						<image class="address-icon" src="/static/icons/location.svg" mode="aspectFit"></image>
-						<text class="address-text">{{ shopInfo['formatted_address_' + i18n.getLanguage()] || shopInfo['address_' + i18n.getLanguage()] || shopInfo.formatted_address || shopInfo.address }}</text>
+						<text class="address-text">{{ shopInfo['formatted_address_' + currentLang()] || shopInfo['address_' + currentLang()] || shopInfo.formatted_address || shopInfo.address }}</text>
 					</view>
 				</view>
 				<view class="shop-info-right">
@@ -52,137 +52,172 @@
 					<text class="opening-title">{{ t('opening.active') }}</text>
 					<text class="opening-days" v-if="openingInfo.days_left > 0">{{ t('opening.daysLeft', { n: openingInfo.days_left }) }}</text>
 				</view>
+				<view class="opening-subtitle" v-if="openingInfo.points_policy === 'FIRST_ORDER'">
+					<text class="opening-subtitle-text">{{ t('opening.firstOrderOnly') }}</text>
+				</view>
 				<view class="opening-benefits">
-					<view class="benefit-item" v-if="openingInfo.extra_points > 0">
+					<view class="benefit-item" :class="{ 'benefit-disabled': !openingInfo.user_points_applicable }" v-if="openingInfo.extra_points > 0">
 						<text class="benefit-icon">⭐</text>
 						<text class="benefit-text">{{ t('opening.extraPoints', { n: openingInfo.extra_points }) }}</text>
+						<text class="benefit-tag" v-if="!openingInfo.user_points_applicable">{{ t('opening.alreadyEnjoyed') }}</text>
 					</view>
-					<view class="benefit-item" v-if="openingInfo.extra_coins > 0">
+					<view class="benefit-item" :class="{ 'benefit-disabled': !openingInfo.user_points_applicable }" v-if="openingInfo.extra_coins > 0">
 						<text class="benefit-icon">💰</text>
 						<text class="benefit-text">{{ t('opening.extraCoins', { n: openingInfo.extra_coins }) }}</text>
+						<text class="benefit-tag" v-if="!openingInfo.user_points_applicable">{{ t('opening.alreadyEnjoyed') }}</text>
 					</view>
-					<view class="benefit-item" v-if="openingInfo.discount_percent > 0">
+					<view class="benefit-item" :class="{ 'benefit-disabled': !openingInfo.user_discount_applicable }" v-if="openingInfo.discount_percent > 0">
 						<text class="benefit-icon">🏷️</text>
 						<text class="benefit-text">{{ t('opening.discount', { n: openingInfo.discount_percent }) }}</text>
+						<text class="benefit-tag" v-if="!openingInfo.user_discount_applicable">{{ t('opening.alreadyEnjoyed') }}</text>
 					</view>
 				</view>
-				<view class="opening-coupon-section" v-if="openingInfo.has_coupon">
+				<view class="opening-coupon-section" v-if="openingInfo.has_coupon && !openingClaimed">
 					<view class="opening-claim-btn" :class="{ 'btn-disabled': openingClaiming || openingClaimed }" @click="handleClaimOpeningCoupon">
 						<text class="opening-claim-text">
-							{{ openingClaiming ? t('common.loading') : (openingClaimed ? t('opening.claimed') : t('opening.claimCoupon')) }}
+							{{ openingClaiming ? t('common.loading') : t('opening.claimCoupon') }}
 						</text>
 					</view>
 				</view>
 			</view>
+		</view>
 
-			<!-- 门店位置地图(隐藏,点击地址跳转 Google Maps)-->
-			<view class="shop-map" v-if="false && shopInfo.latitude && shopInfo.longitude">
-				<iframe class="map-iframe" :src="mapEmbedUrl" frameborder="0" allowfullscreen></iframe>
+			<!-- 本店未开通线上点餐提示横幅（菜单可浏览，不可下单） -->
+			<view class="ordering-disabled-banner" v-if="!orderingEnabled">
+				<text class="ordering-disabled-icon">ℹ️</text>
+				<text class="ordering-disabled-text">{{ t('error.orderingDisabled') }}</text>
 			</view>
 
-				<!-- category tabs -->
-				<view class="category-tabs">
-					<view
-						v-for="(item, index) in categories"
-						:key="index"
-						class="category-tab"
-						:class="{ 'category-tab-active': activeCategory === index }"
-						@click="selectCategory(index)"
-					>
-						<text class="category-tab-text">{{ item['name_' + i18n.getLanguage()] || item.nameKey }}</text>
-					</view>
-				</view>
-
-				<!-- product list (non-room tab) -->
-				<view class="product-section">
-					<view
-						v-for="(item, index) in currentProducts"
-					:key="index"
-					class="product-item"
-					@click="handleProductClick(item)"
+		<!-- 美团型左右双栏：左侧分类独立滚动 + 右侧菜品独立滚动，互不影响 -->
+		<view class="menu-section">
+			<!-- 左侧：分类列表（独立 scroll-view，永远不滚出） -->
+			<scroll-view class="menu-sidebar" scroll-y :scroll-into-view="sidebarIntoId">
+				<view
+					v-for="cat in categoryList"
+					:key="cat.id + '_' + cat.index"
+					:id="'sidebar-item-' + cat.index"
+					class="sidebar-item"
+					:class="{ 'sidebar-item-active': activeGroupIndex === cat.index }"
+					@click="handleSidebarClick(cat.index)"
 				>
-					<view class="product-image-wrapper">
-						<image class="product-image" :src="item.image" mode="aspectFill"></image>
+					<text class="sidebar-text">{{ cat['name_' + currentLang()] || cat.nameKey }}</text>
+					<text class="sidebar-count" v-if="cat.count > 0">{{ cat.count }}</text>
+				</view>
+			</scroll-view>
+
+			<!-- 右侧：菜品长列表（独立 scroll-view，可一直往下滚） -->
+			<scroll-view
+				class="menu-main"
+				scroll-y
+				:scroll-into-view="scrollIntoGroupId"
+				:scroll-with-animation="true"
+				@scroll="onMenuScroll"
+			>
+				<view
+					v-for="(group, gIdx) in groupedProducts"
+					:key="'group-' + group.id + '_' + gIdx"
+					class="menu-group"
+					:id="'menu-group-' + gIdx"
+				>
+					<view class="menu-group-header">
+						<text class="menu-group-title">{{ group['name_' + currentLang()] || group.nameKey }}</text>
+						<text class="menu-group-count" v-if="group.products.length > 0">{{ group.products.length }}</text>
 					</view>
-					<view class="product-info">
-						<view class="product-header">
-							<text class="product-name">{{ item.name }}</text>
-							<view class="product-tags" v-if="item.tags && item.tags.length > 0">
-								<text class="tag" v-for="(tag, tagIndex) in item.tags" :key="tagIndex">{{ tag }}</text>
+					<view
+						v-for="(item, idx) in group.products"
+						:key="item.id + '_' + idx"
+						class="product-item"
+						@click="handleProductClick(item)"
+					>
+						<view class="product-image-wrapper">
+							<image class="product-image" :src="item.image" mode="aspectFill"></image>
+							<view class="new-badge" v-if="item.is_new_product">
+								<text class="new-badge-text">{{ t('productDetail.new') }}</text>
 							</view>
 						</view>
-						<text class="product-desc" v-if="item.description">{{ item.description }}</text>
-						<view class="product-footer">
-							<view class="product-price">
-								<text class="price-symbol">฿</text>
-								<text class="price-num">{{ item.price }}</text>
-								<text class="price-original" v-if="item.originalPrice && Number(item.originalPrice) > Number(item.price)">฿{{ item.originalPrice }}</text>
-							</view>
-							<view class="add-btn" @click.stop="handleAddToCart(item)">
-								<text class="add-icon">+</text>
-							</view>
-						</view>
-					</view>
-				</view>
-
-			</view>
-			<!-- 底部占位 -->
-			<view class="bottom-placeholder"></view>
-		</scroll-view>
-
-			<!-- 购物车底栏 -->
-			<view class="cart-bar" v-if="cartCount > 0">
-				<view class="cart-bar-left" @click="toggleCartPopup">
-					<view class="cart-icon-wrapper">
-						<image class="cart-icon" src="/static/icons/cart.svg" mode="aspectFit"></image>
-						<view class="cart-badge">
-							<text class="badge-text">{{ cartCount }}</text>
-						</view>
-					</view>
-					<view class="cart-bar-price">
-						<text class="cart-bar-symbol">฿</text>
-						<text class="cart-bar-num">{{ cartTotal }}</text>
-					</view>
-				</view>
-				<view class="cart-bar-checkout" @click="handleCartClick">
-					<text class="cart-bar-checkout-text">{{ t('dinein.checkout') }}</text>
-					</view>
-			</view>
-
-			<!-- 购物车弹窗 -->
-			<view class="cart-popup-mask" v-if="showCartPopup" @click="toggleCartPopup"></view>
-			<view class="cart-popup" :class="{ 'cart-popup-show': showCartPopup }" v-if="cartCount > 0">
-				<view class="cart-popup-header">
-					<text class="cart-popup-title">{{ t('dinein.cartTitle') }}</text>
-					<view class="cart-popup-clear" @click="handleClearCart">
-						<text class="cart-popup-clear-text">{{ t('dinein.clearCart') }}</text>
-					</view>
-				</view>
-				<scroll-view class="cart-popup-list" scroll-y>
-					<view class="cart-popup-item" v-for="(item, idx) in cartItems" :key="item.id + '_' + idx + '_' + item.quantity">
-						<image class="cart-popup-item-img" :src="item.image" mode="aspectFill"></image>
-						<view class="cart-popup-item-info">
-							<text class="cart-popup-item-name">{{ item.name }}</text>
-							<text class="cart-popup-item-spec" v-if="item.specs && Object.keys(item.specs).length > 0">{{ formatSpecs(item.specs) }}</text>
-						</view>
-						<view class="cart-popup-item-right">
-							<text class="cart-popup-item-price">฿{{ (item.price * item.quantity).toFixed(2) }}</text>
-							<view class="cart-popup-qty">
-								<view class="cart-popup-qty-btn" @click="changeCartQty(idx, -1)">
-									<text class="cart-popup-qty-text">-</text>
+						<view class="product-info">
+							<view class="product-header">
+								<text class="product-name">{{ item.name }}</text>
+								<view class="product-tags" v-if="item.tags && item.tags.length > 0">
+									<text class="tag" v-for="(tag, tagIndex) in item.tags" :key="tagIndex">{{ tag }}</text>
 								</view>
-								<text class="cart-popup-qty-num">{{ item.quantity }}</text>
-								<view class="cart-popup-qty-btn" @click="changeCartQty(idx, 1)">
-									<text class="cart-popup-qty-text">+</text>
+							</view>
+							<text class="product-desc" v-if="item.description">{{ item.description }}</text>
+							<view class="product-footer">
+								<view class="product-price">
+									<text class="price-symbol">฿</text>
+									<text class="price-num">{{ item.price }}</text>
+									<text class="price-original" v-if="item.originalPrice && Number(item.originalPrice) > Number(item.price)">฿{{ item.originalPrice }}</text>
+								</view>
+								<view class="add-btn" v-if="orderingEnabled" @click.stop="handleAddToCart(item)">
+									<text class="add-icon">+</text>
 								</view>
 							</view>
 						</view>
 					</view>
-					<view class="cart-popup-empty" v-if="cartItems.length === 0">
-						<text class="cart-popup-empty-text">{{ t('dinein.cartEmpty') }}</text>
-					</view>
-				</scroll-view>
+				</view>
+				<!-- 空状态 -->
+				<view v-if="groupedProducts.length === 0" class="menu-empty">
+					<text>{{ t('common.noData') }}</text>
+				</view>
+				<!-- 底部占位：让出 cart-bar / tab-bar -->
+				<view class="menu-bottom-placeholder" :class="{ 'with-cart': cartCount > 0 }"></view>
+			</scroll-view>
+		</view>
+
+		<!-- 购物车悬浮按钮（收起状态）：右下角圆形按钮，浮于页面上方 -->
+		<view class="cart-fab" v-if="cartCount > 0 && !showCartPopup" @click="toggleCartPopup">
+			<image class="cart-fab-icon" src="/static/icons/cart.svg" mode="aspectFit"></image>
+			<view class="cart-fab-badge">
+				<text class="cart-fab-badge-text">{{ cartCount }}</text>
 			</view>
+		</view>
+
+		<!-- 购物车面板（展开状态）：底部弹起的卡片 -->
+		<view class="cart-panel-mask" v-if="showCartPopup" @click="toggleCartPopup"></view>
+		<view class="cart-panel" :class="{ 'cart-panel-show': showCartPopup }" v-if="cartCount > 0">
+			<view class="cart-panel-header">
+				<text class="cart-panel-title">{{ t('dinein.cartTitle') }}</text>
+				<view class="cart-panel-clear" @click="handleClearCart">
+					<text class="cart-panel-clear-text">{{ t('dinein.clearCart') }}</text>
+				</view>
+			</view>
+			<scroll-view class="cart-panel-list" scroll-y>
+				<view class="cart-panel-item" v-for="(item, idx) in cartItems" :key="item.id + '_' + idx + '_' + item.quantity">
+					<image class="cart-panel-item-img" :src="item.image" mode="aspectFill"></image>
+					<view class="cart-panel-item-info">
+						<text class="cart-panel-item-name">{{ getCartItemName(item) }}</text>
+						<text class="cart-panel-item-spec" v-if="item.specs && Object.keys(item.specs).length > 0">{{ formatSpecs(item.specs) }}</text>
+					</view>
+					<view class="cart-panel-item-right">
+						<text class="cart-panel-item-price">฿{{ (item.price * item.quantity).toFixed(2) }}</text>
+						<view class="cart-panel-qty">
+							<view class="cart-panel-qty-btn" @click="changeCartQty(idx, -1)">
+								<text class="cart-panel-qty-text">-</text>
+							</view>
+							<text class="cart-panel-qty-num">{{ item.quantity }}</text>
+							<view class="cart-panel-qty-btn" @click="changeCartQty(idx, 1)">
+								<text class="cart-panel-qty-text">+</text>
+							</view>
+						</view>
+					</view>
+				</view>
+				<view class="cart-panel-empty" v-if="cartItems.length === 0">
+					<text class="cart-panel-empty-text">{{ t('dinein.cartEmpty') }}</text>
+				</view>
+			</scroll-view>
+			<!-- 底部总价 + 结算按钮 -->
+			<view class="cart-panel-footer">
+				<view class="cart-panel-total">
+					<text class="cart-panel-total-label">{{ t('dinein.total') }}</text>
+					<text class="cart-panel-total-symbol">฿</text>
+					<text class="cart-panel-total-num">{{ cartTotal }}</text>
+				</view>
+				<view class="cart-panel-checkout" @click="handleCartClick">
+					<text class="cart-panel-checkout-text">{{ t('dinein.checkout') }}</text>
+				</view>
+			</view>
+		</view>
 
 		<!-- 自定义底部导航栏 -->
 		<custom-tabbar :current="0"></custom-tabbar>
@@ -328,6 +363,11 @@ export default {
 			statusBarHeight: 20,
 			contentHeight: 500,
 			activeCategory: 0,
+			// 美团型左分类 + 右分组列表
+			activeGroupIndex: 0,           // 当前高亮的分组（左侧）
+			scrollIntoGroupId: '',         // 右侧菜品 scroll-into-view 目标 id
+			sidebarIntoId: '',             // 左侧分类 scroll-into-view 目标 id（高亮项滚入可见）
+			scrollLockUntil: 0,            // 滚动联动防抖
 			cartCount: 0,
 			cartTotal: 0,
 			cartItems: [],
@@ -348,10 +388,20 @@ export default {
 				extra_coins: 0,
 				discount_percent: 0,
 				coupon_ids: [],
-				has_coupon: false
+				has_coupon: false,
+				// 后端 /opening-info 新增字段（2026-08-02 上线）
+				// 字段未返回时，前端兜底：折扣默认可用（活动期恒为 true），积分默认可用（避免误灰）
+				discount_policy: '',
+				user_discount_used: false,
+				user_discount_applicable: true,
+				points_policy: '',
+				user_points_used: false,
+				user_points_applicable: true
 			},
 			openingClaiming: false,
 			openingClaimed: false,
+			// C 端点餐开关（后端 ordering_enabled，默认 false=未开通）：false 时菜单可浏览但禁止加购/下单
+			orderingEnabled: true,
 			testOpeningMode: false,
 			_nameClickCount: 0,
 			shopInfo: {
@@ -382,21 +432,88 @@ export default {
 			useNewOptions: false,
 		}
 	},
+	watch: {},
 	computed: {
 			currentProducts() {
 				if (this.activeCategory === -1) return []
 				if (this.categories.length === 0) return this.allProducts
-				const cat = this.categories[this.activeCategory]
+				return this.filterProductsByCategoryIndex(this.activeCategory)
+			},
+			/**
+			 * 按 categories[idx] 过滤菜品（抽出来避免循环里改 activeCategory 触发响应式）
+			 */
+			filterProductsByCategoryIndex(idx) {
+				const cats = this.categories || []
+				const all = this.allProducts || []
+				if (typeof idx !== 'number' || idx < 0 || cats.length === 0) return all
+				const cat = cats[idx]
 				if (!cat) return []
-				// 新路径：分类对象自带 items（来自 /stores/{id}/menu）
-				if (Array.isArray(cat.items) && cat.items.length > 0) {
-					return cat.items
+				if (Array.isArray(cat.items) && cat.items.length > 0) return cat.items
+				if (Array.isArray(cat.catIds)) {
+					return all.filter(p => cat.catIds.indexOf(p.category_id) !== -1)
 				}
-				// 兜底：从 allProducts 按 catIds 过滤
-				if (cat.catIds) {
-					return this.allProducts.filter(p => cat.catIds.includes(p.category_id))
+				return all.filter(p => p.store_menu_category_id === cat.id || p.category_id === cat.id)
+			},
+			/**
+			 * 按分类分组渲染：用于左侧分类导航 + 右侧分组长列表的"美团饿了么"布局
+			 * 顺序：跟 this.categories 一致，每组 { ...categoryInfo, products: [...] }
+			 * 空分组自动跳过（避免左侧出现点了没内容的分类）
+			 */
+			groupedProducts() {
+				const groups = []
+				const cats = this.categories || []
+				const all = this.allProducts || []
+				if (cats.length === 0) {
+					if (all.length > 0) {
+						groups.push({
+							id: 'all',
+							nameKey: '全部',
+							name: '全部',
+							name_en: 'All',
+							name_th: 'ทั้งหมด',
+							products: all.slice()
+						})
+					}
+					return groups
 				}
-				return this.allProducts.filter(p => p.store_menu_category_id === cat.id || p.category_id === cat.id)
+				// 用普通 for 循环 + 局部变量，避免 forEach 闭包和响应式代理干扰
+				for (let idx = 0; idx < cats.length; idx++) {
+					const cat = cats[idx]
+					if (!cat) continue
+					let items = []
+					if (Array.isArray(cat.items) && cat.items.length > 0) {
+						items = cat.items
+					} else if (Array.isArray(cat.catIds)) {
+						items = all.filter(p => cat.catIds.indexOf(p.category_id) !== -1)
+					} else {
+						items = all.filter(p => p.store_menu_category_id === cat.id || p.category_id === cat.id)
+					}
+					if (items.length > 0) {
+						groups.push({
+							id: cat.id,
+							nameKey: cat.nameKey || cat.name || '',
+							name: cat.name || '',
+							name_en: cat.name_en || '',
+							name_th: cat.name_th || '',
+							products: items
+						})
+					}
+				}
+				return groups
+			},
+			/**
+			 * 左侧分类列表（仅含商品数 > 0 的分类，跟 groupedProducts 一一对应）
+			 */
+			categoryList() {
+				return this.groupedProducts.map((g, idx) => ({
+					id: g.id,
+					nameKey: g.nameKey,
+					name: g.name,
+					name_en: g.name_en,
+					name_th: g.name_th,
+					index: idx,
+					count: g.products.length
+				}))
 			},
 		mapEmbedUrl() {
 			const lat = this.shopInfo.latitude
@@ -425,6 +542,22 @@ export default {
 	},
 
 	methods: {
+		// 当前语言（响应式）：模板里用 currentLang() 替代 i18n.getLanguage()，确保切语言时重新渲染
+		currentLang() {
+			void this.langVersion
+			return i18n.getLanguage()
+		},
+		/**
+		 * 取购物车项的多语言名
+		 * 优先用当前语言字段（name_zh / name_en / name_th），缺失时回退到 name（老数据兼容）
+		 * 调用 void this.langVersion 确保切换语言时响应式重渲染
+		 */
+		getCartItemName(item) {
+			void this.langVersion
+			if (!item) return ''
+			const lang = i18n.getLanguage()
+			return item['name_' + lang] || item.name || item.name_zh || item.name_en || item.name_th || ''
+		},
 		onLanguageChanged() {
 			this.langVersion++
 		},
@@ -454,6 +587,26 @@ export default {
 		},
 
 		// ============ 新店开业 ============
+		// 格式化开业券面额展示
+		formatOpeningCouponValue(coupon) {
+			const type = String(coupon.coupon_type || coupon.type || '').toUpperCase()
+			const value = Number(coupon.discount_value || coupon.value || 0)
+			if (type === 'ITEM') return this.t('coupons.itemVoucher')
+			if (type === 'PERCENT') {
+				const lang = i18n.getLanguage()
+				if (lang === 'zh') return `${10 - value / 10}折`  // 30% → 7折
+				if (lang === 'th') return `ลด ${value}%`
+				return `${value}% OFF`
+			}
+			return `฿${value}`
+		},
+
+		// 格式化有效期（ISO 8601 → YYYY-MM-DD）
+		formatExpireDate(isoStr) {
+			if (!isoStr) return ''
+			try { return String(isoStr).replace('T', ' ').substring(0, 10) } catch (e) { return '' }
+		},
+
 		async loadOpeningInfo() {
 			if (!this.shopInfo.id) return
 			try {
@@ -466,8 +619,19 @@ export default {
 						extra_coins: res.data.extra_coins || 0,
 						discount_percent: res.data.discount_percent || 0,
 						coupon_ids: res.data.coupon_ids || [],
-						has_coupon: (res.data.coupon_ids || []).length > 0
+						has_coupon: (res.data.coupon_ids || []).length > 0,
+						// 新字段：策略 + 用户本单是否适用（后端综合判断后的最终结果，前端只读 *_applicable）
+						// 字段未返回（老后端）时默认 true，避免误把所有权益灰掉
+						discount_policy: res.data.discount_policy || '',
+						user_discount_used: res.data.user_discount_used === true,
+						user_discount_applicable: res.data.user_discount_applicable !== false,
+						points_policy: res.data.points_policy || '',
+						user_points_used: res.data.user_points_used === true,
+						user_points_applicable: res.data.user_points_applicable !== false
 					}
+					// 后端返回 user_claimed = 用户是否已领取过开业券（仅首单/每人限领）
+					// 已领取则隐藏领券按钮
+					this.openingClaimed = res.data.user_claimed === true || res.data.has_claimed === true
 				}
 			} catch (e) {
 				console.warn('[opening] load info failed:', e)
@@ -481,7 +645,36 @@ export default {
 				const res = await claimOpeningCoupon(this.shopInfo.id)
 				if (res && res.code === 0) {
 					this.openingClaimed = true
-					uni.showToast({ title: this.t('opening.claimSuccess'), icon: 'success' })
+					// 后端返回 user_coupon 详情 → 展示券信息弹窗 + 双按钮（立即使用 / 我的券包）
+					const coupon = res.data && res.data.user_coupon
+					if (coupon) {
+						const lang = i18n.getLanguage()
+						const couponName = coupon['name_' + lang] || coupon.name || ''
+						const discount = this.formatOpeningCouponValue(coupon)
+						const expire = coupon.expire_at ? this.formatExpireDate(coupon.expire_at) : ''
+						// 最低消费：后端字段 min_amount（兼容 min_spend / min_order_amount）
+						const minAmount = Number(coupon.min_amount || coupon.min_spend || coupon.min_order_amount || 0)
+						const minSpendLine = minAmount > 0 ? this.t('coupons.minSpend', { amount: minAmount }) : ''
+						// 拼接多行内容：名称 / 面额 / 门槛 / 有效期
+						const contentLines = [couponName, discount]
+						if (minSpendLine) contentLines.push(minSpendLine)
+						if (expire) contentLines.push(this.t('opening.validUntil') + ': ' + expire)
+						uni.showModal({
+							title: this.t('opening.claimSuccess'),
+							content: contentLines.join('\n'),
+							confirmText: this.t('coupons.immediateUse'),
+							cancelText: this.t('coupons.myCouponsTitle'),
+							success: (modalRes) => {
+								// 立即使用 / 我的优惠券 都跳券包页（券包页内可进一步选择下单）
+								if (modalRes.confirm || modalRes.cancel) {
+									uni.navigateTo({ url: '/pages/coupons/index' })
+								}
+							}
+						})
+					} else {
+						// 兜底：没有 user_coupon 详情时用 toast
+						uni.showToast({ title: this.t('opening.claimSuccess'), icon: 'success' })
+					}
 				}
 			} catch (e) {
 				console.error('[opening] claim failed:', e)
@@ -594,6 +787,8 @@ export default {
 
 				if (storeRes.code === 0 && storeRes.data) {
 					const s = storeRes.data
+					// C 端点餐开关：字段缺失时视为开通（兼容旧缓存），false 时仅可浏览菜单
+					this.orderingEnabled = s.ordering_enabled !== false
 					storeBusinessTypes = s.business_types || []
 					this.shopInfo = {
 						id: s.id,
@@ -605,6 +800,7 @@ export default {
 						logo: fixMinioUrl(s.logo_url || s.logo) || '/static/images/store-placeholder.svg',
 						phone: s.phone || '',
 						formatted_address: s.formatted_address || '',
+						formatted_address_zh: s.formatted_address_zh || '',
 						formatted_address_en: s.formatted_address_en || '',
 						formatted_address_th: s.formatted_address_th || '',
 						latitude: s.latitude,
@@ -616,11 +812,11 @@ export default {
 						bikeTime: s.bikeTime || '',
 						walkTime: s.walkTime || '',
 						address: s.address || '',
+						address_zh: s.address_zh || s.address || '',
 						address_en: s.address_en || '',
 						address_th: s.address_th || '',
 						business_types: storeBusinessTypes
 					}
-					console.log('[dinein] formatted businessHours:', this.shopInfo.businessHours)
 					this.updateShopDistance()
 
 					// 加载开业信息
@@ -776,19 +972,7 @@ export default {
 
 		// 格式化营业时间：兼容 config.opening_time/closing_time、business_hours 字符串、businessHours 等多种形态
 		formatBusinessHours(s) {
-			if (!s) {
-				console.log('[dinein] formatBusinessHours: input empty')
-				return ''
-			}
-			console.log('[dinein] formatBusinessHours input:', JSON.stringify({
-				config: s.config,
-				store_config: s.store_config,
-				business_hours: s.business_hours,
-				businessHours: s.businessHours,
-				opening_hours: s.opening_hours,
-				opening_time: s.opening_time,
-				closing_time: s.closing_time
-			}))
+			if (!s) return ''
 			// 形态1：config 对象里有 opening_time / closing_time
 			const cfg = s.config || s.store_config
 			if (cfg && cfg.opening_time && cfg.closing_time) {
@@ -805,7 +989,6 @@ export default {
 			if (s.opening_time && s.closing_time) {
 				return `${String(s.opening_time).slice(0, 5)}-${String(s.closing_time).slice(0, 5)}`
 			}
-			console.log('[dinein] formatBusinessHours: no time field found, returning empty')
 			return ''
 		},
 
@@ -822,10 +1005,14 @@ export default {
 				id: item.id,
 				name: localizedName,
 				name_zh: item.name || item.name_en || '',
+				name_en: item.name_en || item.name || '',
+				name_th: item.name_th || item.name || '',
 				description: localizedDesc || '',
 				price: item.price,
 				originalPrice: item.original_price || item.originalPrice || null,
 				image: fixMinioUrl((item.image_url && !item.image_url.includes('example.com')) ? item.image_url : '/static/images/img-placeholder.svg'),
+				is_new_product: item.is_new_product || false,
+				exclude_from_discount: item.exclude_from_discount === true,   // 酒水/排除分类标识，给 checkout 判断用
 				category_id: item.category_id,
 				category_name: item.category_name || '',
 				category_name_en: item.category_name_en || '',
@@ -886,6 +1073,77 @@ export default {
 			this.activeCategory = index
 		},
 
+		/**
+		 * 点击左侧分类 → 右侧滚动到对应分组
+		 * 通过设置 scroll-into-view 触发 scroll-view 自动滚动
+		 */
+		/**
+		 * 点击左侧分类 → 滚到对应分组
+		 * 用 scroll-into-view + 双重 nextTick 触发更新（uni-app H5 必须先清空再设值）
+		 */
+		/**
+		 * 点击左侧分类 → 右侧菜品滚动到对应分组
+		 * 右侧是独立 scroll-view，用 scroll-into-view 触发
+		 */
+		handleSidebarClick(groupIdx) {
+			if (groupIdx < 0 || groupIdx >= this.groupedProducts.length) return
+			this.activeGroupIndex = groupIdx
+			// 锁定滚动联动（避免滚动过程中 onMenuScroll 改回 activeGroupIndex）
+			this.scrollLockUntil = Date.now() + 800
+			const targetId = 'menu-group-' + groupIdx
+			// 双重 nextTick：先清空（让 Vue 识别变化），再设新值（触发滚动）
+			this.scrollIntoGroupId = ''
+			this.$nextTick(() => {
+				this.$nextTick(() => {
+					this.scrollIntoGroupId = targetId
+				})
+			})
+			// 同步让左侧高亮项也滚入可见区（分类多时）
+			this.sidebarIntoId = ''
+			this.$nextTick(() => {
+				this.sidebarIntoId = 'sidebar-item-' + groupIdx
+			})
+			// H5 兜底：原生 scrollIntoView 确保滚动
+			// #ifdef H5
+			setTimeout(() => {
+				const el = document.getElementById(targetId)
+				if (el && el.scrollIntoView) {
+					el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+				}
+			}, 50)
+			// #endif
+		},
+
+		/**
+		 * 右侧菜品滚动 → 同步左侧高亮
+		 * 注意：手动点击触发的滚动期间不响应（避免循环）
+		 */
+		onMenuScroll(e) {
+			if (Date.now() < this.scrollLockUntil) return
+			const query = uni.createSelectorQuery().in(this)
+			query.selectAll('.menu-group').boundingClientRect()
+			query.select('.menu-main').boundingClientRect()
+			query.exec(res => {
+				if (!res || !res[0] || !res[1]) return
+				const rects = res[0]
+				const mainRect = res[1]
+				// 阈值：相对 menu-main 顶部的偏移（含 sticky header 高度）
+				const threshold = mainRect.top + 30
+				let currentIdx = 0
+				rects.forEach((r, i) => {
+					if (r.top <= threshold) currentIdx = i
+				})
+				if (currentIdx !== this.activeGroupIndex) {
+					this.activeGroupIndex = currentIdx
+					// 左侧高亮项滚入可见区
+					this.sidebarIntoId = ''
+					this.$nextTick(() => {
+						this.sidebarIntoId = 'sidebar-item-' + currentIdx
+					})
+				}
+			})
+		},
+
 		async loadCategoryProducts() {
 			if (this.activeCategory === -1 || this.categories.length === 0) return
 			const catId = this.categories[this.activeCategory].id
@@ -909,6 +1167,11 @@ export default {
 		handleAddToCart(item) {
 			if (item.is_sold_out) {
 				showToast(this.i18n.t('dinein.soldOut'))
+				return
+			}
+			// 本店未开通 C 端点餐：菜单可浏览，禁止加购
+			if (!this.orderingEnabled) {
+				showToast(this.i18n.t('error.orderingDisabled'))
 				return
 			}
 			// 商家关业确认（每次进入门店首次加购时弹一次）
@@ -1137,11 +1400,16 @@ export default {
 				this.cartItems.push({
 					id: item.id,
 					name: item.name,
+					// 多语言字段：用于切换语言后购物车名实时跟随（兼容老数据：缺失时回退到 name）
+					name_zh: item.name_zh || item.name || '',
+					name_en: item.name_en || item.name || '',
+					name_th: item.name_th || item.name || '',
 					price: item.price,
 					image: item.image,
 					quantity: quantity,
 					specs: normalizedSpecs,
-					store_id: this.shopInfo.id
+					store_id: this.shopInfo.id,
+					exclude_from_discount: item.exclude_from_discount === true   // 酒水/排除分类标识
 				})
 			}
 			// 防抖：连续加购时合并多次 toast，避免快速触发卡 UI
@@ -1322,7 +1590,7 @@ export default {
 <style scoped>
 .dinein-page {
 	min-height: 100vh;
-	background-color: #F2B131;
+	background-color: #FFFFFF;
 	display: flex;
 	flex-direction: column;
 }
@@ -1335,6 +1603,7 @@ export default {
 /* 导航栏 */
 .nav-bar {
 	height: 44px;
+	flex-shrink: 0;
 	background-color: #F2B131;
 	display: flex;
 	align-items: center;
@@ -1371,18 +1640,30 @@ export default {
 	width: 32px;
 }
 
-/* 内容区域 */
-.content-scroll {
-	flex: 1;
+/* 顶部固定信息区：不滚 */
+.shop-top-section {
+	flex-shrink: 0;
 	background-color: #FFFFFF;
-	border-radius: 12px 12px 0 0;
+}
+
+/* 美团型左右双栏区：撑满剩余空间，内含两个独立 scroll-view */
+.menu-section {
+	display: flex;
+	flex-direction: row;
+	background-color: #FFFFFF;
+	overflow: hidden;
+	/* flex: 1 让菜单区自动撑满 dinein-page 的剩余高度
+	   tabbar 是 fixed 定位（脱离 flex 流），会浮在菜单区底部上方
+	   菜单内容通过 menu-bottom-placeholder 给最后菜品留位 */
+	flex: 1 1 auto;
+	min-height: 0;
 }
 
 /* 店铺头部 */
 .shop-header {
 	width: 100%;
-	height: 129px;
-	padding: 10px 16px;
+	height: 100px;
+	padding: 8px 16px;
 }
 
 .shop-banner {
@@ -1395,7 +1676,7 @@ export default {
 /* 店铺详细信息 */
 .shop-info-card {
 	display: flex;
-	padding: 0 16px 12px;
+	padding: 0 16px 8px;
 }
 
 .shop-info-left {
@@ -1497,37 +1778,59 @@ export default {
 
 /* 新店开业横幅 */
 .opening-banner {
-	margin: 12px 16px;
-	padding: 20px 16px;
+	margin: 8px 16px;
+	padding: 12px 14px;
 	background: linear-gradient(135deg, #FFF8E1 0%, #FFFFFF 100%);
-	border-radius: 16px;
+	border-radius: 14px;
 	border: 1px solid #FFE082;
 	box-shadow: 0 2px 8px rgba(242, 177, 49, 0.1);
+}
+
+/* 本店未开通线上点餐提示横幅 */
+.ordering-disabled-banner {
+	margin: 8px 16px;
+	padding: 10px 14px;
+	background: #F5F5F5;
+	border-radius: 10px;
+	border: 1px solid #E0E0E0;
+	display: flex;
+	align-items: center;
+}
+
+.ordering-disabled-icon {
+	font-size: 26rpx;
+	margin-right: 8rpx;
+}
+
+.ordering-disabled-text {
+	font-size: 26rpx;
+	color: #666666;
+	flex: 1;
 }
 
 .opening-banner-header {
 	display: flex;
 	align-items: center;
-	margin-bottom: 12px;
+	margin-bottom: 8px;
 }
 
 .opening-emoji {
-	font-size: 28px;
-	margin-right: 8px;
+	font-size: 20px;
+	margin-right: 6px;
 }
 
 .opening-title {
-	font-size: 18px;
+	font-size: 14px;
 	font-weight: 700;
 	color: #FF6B9D;
 	flex: 1;
 }
 
 .opening-days {
-	font-size: 13px;
+	font-size: 11px;
 	color: #F2B131;
 	font-weight: 600;
-	padding: 4px 10px;
+	padding: 2px 8px;
 	background-color: rgba(242, 177, 49, 0.15);
 	border-radius: 12px;
 }
@@ -1536,36 +1839,60 @@ export default {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 6px;
-	margin-bottom: 8px;
+	margin-bottom: 6px;
 }
 
 .benefit-item {
 	display: flex;
 	align-items: center;
-	padding: 4px 8px;
+	padding: 3px 6px;
 	background-color: rgba(255, 255, 255, 0.8);
-	border-radius: 8px;
+	border-radius: 6px;
+}
+
+.benefit-item.benefit-disabled {
+	opacity: 0.5;
 }
 
 .benefit-icon {
-	font-size: 18px;
+	font-size: 14px;
 	margin-right: 3px;
 }
 
 .benefit-text {
-	font-size: 15px;
+	font-size: 12px;
 	color: #333;
 	font-weight: 500;
 }
 
+.benefit-tag {
+	margin-left: 6px;
+	padding: 1px 6px;
+	font-size: 10px;
+	color: #FFFFFF;
+	background-color: #999;
+	border-radius: 8px;
+	line-height: 1.4;
+}
+
+.opening-subtitle {
+	margin: -4px 0 8px;
+}
+
+.opening-subtitle-text {
+	font-size: 11px;
+	color: #F2B131;
+	font-weight: 600;
+}
+
 .opening-coupon-section {
-	margin-top: 8px;
+	margin-top: 4px;
 }
 
 .opening-claim-btn {
-	height: 44px;
+	height: 36px;
 	background: linear-gradient(90deg, #FF6B9D 0%, #F2B131 100%);
-	border-radius: 22px;
+	border-radius: 18px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -1578,7 +1905,7 @@ export default {
 
 .opening-claim-text {
 	color: #FFFFFF;
-	font-size: 14px;
+	font-size: 13px;
 	font-weight: 600;
 }
 
@@ -1615,52 +1942,106 @@ export default {
 }
 
 /* 分类标签 */
-.category-tabs {
+/* 左右双栏：左分类 + 右分组菜品列表（美团饿了么型）*/
+
+/* 左侧分类导航：独立 scroll-view，永远不滚出视口 */
+.menu-sidebar {
+	width: 92px;
+	flex-shrink: 0;
+	height: 100%;
+	background-color: #F7F7F7;
+	border-right: 1px solid #F0F0F0;
+}
+
+.sidebar-item {
+	position: relative;
+	padding: 14px 8px;
+	text-align: center;
 	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
-	white-space: nowrap;
+	flex-direction: column;
 	align-items: center;
-	justify-content: space-around;
-	padding: 0 16px;
-	gap: 0;
-	height: 44px;
-	border-bottom: 1px solid #F5F5F5;
+	gap: 2px;
+	transition: background-color 0.15s;
+}
+
+.sidebar-item-active {
 	background-color: #FFFFFF;
 }
 
-.category-tab {
-	padding: 10px 14px;
-	position: relative;
-	transition: opacity 0.2s;
-	flex-shrink: 0;
-}
-
-.category-tab:active {
-	opacity: 0.7;
-}
-
-.category-tab-text {
-	font-size: 14px;
-	font-weight: 700;
-	color: rgba(0, 0, 0, 0.5);
-	transition: color 0.2s;
-}
-
-.category-tab-active .category-tab-text {
-	color: #000000CC;
-}
-
-.category-tab-active::after {
+.sidebar-item-active::before {
 	content: '';
 	position: absolute;
-	bottom: 0;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 20px;
-	height: 3px;
+	left: 0;
+	top: 14px;
+	bottom: 14px;
+	width: 3px;
 	background-color: #F2B131;
-	border-radius: 2px;
+	border-radius: 0 2px 2px 0;
+}
+
+.sidebar-text {
+	font-size: 12px;
+	color: #666;
+	line-height: 1.3;
+	word-break: break-all;
+}
+
+.sidebar-item-active .sidebar-text {
+	color: #F2B131;
+	font-weight: 600;
+}
+
+.sidebar-count {
+	font-size: 10px;
+	color: #999;
+}
+
+.sidebar-item-active .sidebar-count {
+	color: #F2B131;
+}
+
+/* 右侧分组菜品列表：独立 scroll-view */
+.menu-main {
+	flex: 1;
+	min-width: 0;
+	height: 100%;
+	padding: 0 12px;
+	background-color: #FFFFFF;
+}
+
+.menu-group {
+	padding: 8px 0;
+}
+
+.menu-group-header {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+	padding: 8px 4px 10px;
+	border-bottom: 1px solid #F5F5F5;
+	margin-bottom: 8px;
+	position: sticky;
+	top: 0;
+	background-color: #FFFFFF;
+	z-index: 2;
+}
+
+.menu-group-title {
+	font-size: 14px;
+	font-weight: 700;
+	color: #1A1A1A;
+}
+
+.menu-group-count {
+	font-size: 11px;
+	color: #999;
+}
+
+.menu-empty {
+	padding: 60px 0;
+	text-align: center;
+	color: #999;
+	font-size: 13px;
 }
 
 /* 商品列表 */
@@ -1691,12 +2072,30 @@ export default {
 	width: 100px;
 	height: 100px;
 	flex-shrink: 0;
+	position: relative;
 }
 
 .product-image {
 	width: 100%;
 	height: 100%;
 	border-radius: 10px;
+}
+
+/* 新品角标 */
+.new-badge {
+	position: absolute;
+	top: 4px;
+	left: 4px;
+	background: linear-gradient(135deg, #FF6B6B 0%, #DA3300 100%);
+	padding: 2px 6px;
+	border-radius: 4px;
+	z-index: 2;
+}
+.new-badge-text {
+	font-size: 10px;
+	color: #FFFFFF;
+	font-weight: 600;
+	line-height: 1.2;
 }
 
 .product-info {
@@ -1735,9 +2134,12 @@ export default {
 	font-size: 12px;
 	color: #949494;
 	margin-top: 4px;
+	/* 允许换行：长描述自动折行，最多 2 行省略 */
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
 	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	line-height: 1.4;
 }
 
 .product-footer {
@@ -1793,21 +2195,256 @@ export default {
 	font-weight: 500;
 }
 
-/* 购物车底栏 */
-.cart-bar {
+/* ============ 购物车悬浮按钮（收起状态）============ */
+.cart-fab {
 	position: fixed;
-	bottom: 56px;
-	left: 12px;
-	right: 12px;
+	left: 16px;
+	/* bottom 留出 tabbar（56px）+ safe area（~34px）+ 间距（12px）*/
+	bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 12px);
+	width: 52px;
 	height: 52px;
-	background-color: #4B4B4B;
+	max-width: 52px;
 	border-radius: 26px;
+	background: linear-gradient(135deg, #F2B131 0%, #E5A02E 100%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 4px 16px rgba(242, 177, 49, 0.4);
+	z-index: 100;
+}
+
+.cart-fab-icon {
+	width: 28px;
+	height: 28px;
+}
+
+.cart-fab-badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 20px;
+	height: 20px;
+	border-radius: 10px;
+	background-color: #FF4444;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 4px;
+	border: 2px solid #FFFFFF;
+}
+
+.cart-fab-badge-text {
+	font-size: 11px;
+	color: #FFFFFF;
+	font-weight: 700;
+	line-height: 1;
+}
+
+/* ============ 购物车面板（展开状态）============ */
+.cart-panel-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 199;
+}
+
+.cart-panel {
+	position: fixed;
+	left: 8px;
+	width: calc(100vw - 16px);
+	bottom: calc(56px + env(safe-area-inset-bottom, 0px) + 8px);
+	box-sizing: border-box;
+	overflow: hidden;
+	background-color: #FFFFFF;
+	border-radius: 16px;
+	z-index: 200;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+	transform: translateY(20px);
+	opacity: 0;
+	pointer-events: none;
+	transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.cart-panel-show {
+	transform: translateY(0);
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.cart-panel-header {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0 6px 0 6px;
-	z-index: 100;
-	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+	padding: 12px 16px 8px;
+	border-bottom: 1px solid #F5F5F5;
+}
+
+.cart-panel-title {
+	font-size: 15px;
+	font-weight: 700;
+	color: #1A1A1A;
+}
+
+.cart-panel-clear {
+	padding: 4px 8px;
+}
+
+.cart-panel-clear-text {
+	font-size: 12px;
+	color: #FF4444;
+}
+
+.cart-panel-list {
+	padding: 0 16px;
+	box-sizing: border-box;
+	max-height: 40vh;
+	width: 100%;
+}
+
+.cart-panel-item {
+	display: flex;
+	align-items: center;
+	padding: 10px 0;
+	border-bottom: 1px solid #F8F8F8;
+}
+
+.cart-panel-item-img {
+	width: 36px;
+	height: 36px;
+	border-radius: 6px;
+	margin-right: 8px;
+	flex-shrink: 0;
+}
+
+.cart-panel-item-info {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.cart-panel-item-name {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1A1A1A;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.cart-panel-item-spec {
+	font-size: 11px;
+	color: #999;
+}
+
+.cart-panel-item-right {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+}
+
+.cart-panel-item-price {
+	font-size: 12px;
+	font-weight: 700;
+	color: #DA3300;
+	white-space: nowrap;
+}
+
+.cart-panel-qty {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.cart-panel-qty-btn {
+	width: 22px;
+	height: 22px;
+	border-radius: 11px;
+	background-color: #FFF8E1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.cart-panel-qty-btn:active {
+	opacity: 0.6;
+}
+
+.cart-panel-qty-text {
+	font-size: 14px;
+	color: #F2B131;
+	font-weight: 700;
+}
+
+.cart-panel-qty-num {
+	font-size: 13px;
+	font-weight: 600;
+	color: #1A1A1A;
+	min-width: 16px;
+	text-align: center;
+}
+
+.cart-panel-empty {
+	padding: 32px 0;
+	text-align: center;
+}
+
+.cart-panel-empty-text {
+	font-size: 13px;
+	color: #999;
+}
+
+/* 底部总价 + 结算按钮 */
+.cart-panel-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 16px 14px;
+	border-top: 1px solid #F5F5F5;
+}
+
+.cart-panel-total {
+	display: flex;
+	align-items: baseline;
+	gap: 2px;
+}
+
+.cart-panel-total-label {
+	font-size: 12px;
+	color: #666;
+	margin-right: 6px;
+}
+
+.cart-panel-total-symbol {
+	font-size: 13px;
+	font-weight: 600;
+	color: #DA3300;
+}
+
+.cart-panel-total-num {
+	font-size: 20px;
+	font-weight: 700;
+	color: #DA3300;
+}
+
+.cart-panel-checkout {
+	padding: 10px 28px;
+	background: linear-gradient(135deg, #F2B131 0%, #E5A02E 100%);
+	border-radius: 22px;
+}
+
+.cart-panel-checkout-text {
+	font-size: 14px;
+	color: #FFFFFF;
+	font-weight: 700;
 }
 
 .cart-bar-left {
@@ -2057,8 +2694,13 @@ export default {
 }
 
 /* 底部占位 */
-.bottom-placeholder {
-	height: 120px;
+/* 底部占位：custom-tabbar 高度约 56px + safe area */
+/* 菜单底部占位：让出 cart-bar / tab-bar */
+.menu-bottom-placeholder {
+	height: 20px;
+}
+.menu-bottom-placeholder.with-cart {
+	height: 70px;
 }
 
 /* 规格选择弹窗 */

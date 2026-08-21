@@ -125,22 +125,35 @@
 			<view class="divider"></view>
 
 			<!-- 优惠券选择 -->
+			<!-- 优惠券区：酒水订单时禁用选择，显示提示 -->
 			<view class="coupon-section">
 				<view class="section-card">
-					<view class="coupon-row" @click="availableCoupons.length > 0 ? (showCouponPicker = true) : null">
+					<!-- 预览未就绪：显示加载中（避免先显示"可用"再变"不可用"的闪烁） -->
+					<view v-if="!previewData" class="coupon-row">
+						<view class="coupon-left">
+							<text class="coupon-label">{{ t('checkout.coupon') }}</text>
+							<text class="coupon-count">{{ t('common.loading') }}</text>
+						</view>
+					</view>
+					<!-- 后端判断不可用（纯酒水/活动订单防折上折等） -->
+					<view v-else-if="isAllExcludedFromDiscount" class="excluded-hint-row">
+						<text class="excluded-hint-text">🚫 {{ t('checkout.excludedFromDiscount') }}</text>
+					</view>
+					<!-- 正常显示优惠券选择 -->
+					<view v-else class="coupon-row" @click="availableCoupons.length > 0 ? (showCouponPicker = true) : null">
 						<view class="coupon-left">
 							<text class="coupon-label">{{ t('checkout.coupon') }}</text>
 							<text class="coupon-count" v-if="availableCoupons.length > 0">{{ t('checkout.couponAvailable', { n: availableCoupons.length }) }}</text>
 							<text class="coupon-count" v-else>{{ t('checkout.couponNone') }}</text>
 						</view>
 						<view class="coupon-right">
-							<text class="coupon-selected" v-if="selectedCoupon">-฿{{ selectedCoupon.amount.toFixed(2) }}</text>
+							<text class="coupon-selected" v-if="selectedCoupon">{{ formatCouponAmount(selectedCoupon) }}</text>
 							<text class="coupon-hint" v-else-if="availableCoupons.length > 0">{{ t('checkout.pleaseSelect') }}</text>
 							<text class="coupon-hint" v-else>{{ t('checkout.couponNoAvailable') }}</text>
 							<image class="arrow-icon-small" src="/static/icons/arrow-right.svg" mode="aspectFit" v-if="availableCoupons.length > 0"></image>
 						</view>
 					</view>
-					<view class="coupon-selected-info" v-if="selectedCoupon">
+					<view class="coupon-selected-info" v-if="selectedCoupon && !isAllExcludedFromDiscount">
 						<text class="coupon-name">{{ selectedCoupon.name }}</text>
 						<text class="coupon-remove" @click.stop="clearCoupon">×</text>
 					</view>
@@ -150,61 +163,45 @@
 			<!-- 分隔线 -->
 			<view class="divider"></view>
 
-			<!-- 金币抵扣 -->
-			<view class="coin-section" v-if="coinBalance > 0">
+			<!-- 金币抵扣：酒水订单时不显示选择区（避免用户误以为能抵扣） -->
+			<view class="coin-section" v-if="coinBalance > 0 && !isAllExcludedFromDiscount">
 				<view class="section-card">
 					<view class="coin-row">
 						<view class="coin-left">
 							<image class="coin-icon" src="/static/icons/coin.svg" mode="aspectFit"></image>
 							<text class="coin-label">{{ t('orderDetail.coinDeduct') }}</text>
-							<!-- 显示用户当前金币余额（不再本地算 maxCoinUsage，由后端 used_coins 决定）-->
 							<text class="coin-balance">{{ t("orderDetail.coinsUnit", { n: coinBalance }) }}</text>
 						</view>
 						<view class="coin-right">
-							<text class="coin-deduct" v-if="useCoins">-฿{{ coinDeductAmount }}</text>
+							<text class="coin-deduct" v-if="selectedCoinTier">-฿{{ Number(selectedCoinTier.deduct_amount).toFixed(2) }}</text>
 							<switch :checked="useCoins" @change="handleCoinToggle" color="#F2B131" :disabled="!coinDeductAvailable" />
 						</view>
-					</view>
-					<view class="coin-hint-row" v-if="maxDeductAmount > 0">
-						<!-- 后端文档建议：不要展示金币数（分段累进模型下没有简单 rate），只展示金额 -->
-						<text class="coin-hint">{{ t('checkout.coinMaxDeductAmount', { amount: maxDeductAmount.toFixed(2) }) }}</text>
 					</view>
 					<view class="coin-hint-row threshold-not-met" v-if="!coinDeductAvailable">
 						<text class="coin-hint">{{ t('checkout.coinThresholdNotMet') }}</text>
 					</view>
 
-					<!-- 双方案选择（best + alternative，仅在都存在且不同时显示） -->
-					<view v-if="useCoins && hasAlternativePlan" class="coin-plan-group">
+					<!-- 档位列表（按档位抵扣：用户选一个档位，一次只抵一档） -->
+					<view v-if="useCoins && coinTiers.length > 0" class="coin-tier-group">
 						<view
-							class="coin-plan-card"
-							:class="{ 'coin-plan-active': selectedPlan === 'best' }"
-							@click="selectCoinPlan('best')"
+							v-for="tier in coinTiers"
+							:key="tier.id"
+							class="coin-tier-card"
+							:class="{
+								'coin-tier-active': selectedCoinTierId === tier.id,
+								'coin-tier-disabled': !tier.usable
+							}"
+							@click="selectCoinTier(tier)"
 						>
-							<view class="coin-plan-header">
-								<text class="coin-plan-tag">{{ t('checkout.coinPlanRecommended') }}</text>
-								<text class="coin-plan-summary">{{ t('checkout.coinPlanSummary', { coins: coinPreview.best.used_coins, amount: Number(coinPreview.best.deduct_amount).toFixed(2) }) }}</text>
+							<view class="coin-tier-main">
+								<text class="coin-tier-summary">{{ t('checkout.coinPlanSummary', { coins: tier.coin_amount, amount: Number(tier.deduct_amount).toFixed(2) }) }}</text>
 							</view>
-							<view class="coin-plan-tiers" v-if="coinPreview.best.tiers_used && coinPreview.best.tiers_used.length > 0">
-								<text class="coin-plan-tier" v-for="(tier, ti) in coinPreview.best.tiers_used" :key="'b' + ti">
-									{{ formatTierLine(tier) }}
-								</text>
-							</view>
+							<text class="coin-tier-check" v-if="selectedCoinTierId === tier.id">✓</text>
+							<text class="coin-tier-reason" v-else-if="!tier.usable">{{ getTierReasonText(tier) }}</text>
 						</view>
-						<view
-							class="coin-plan-card"
-							:class="{ 'coin-plan-active': selectedPlan === 'alternative' }"
-							@click="selectCoinPlan('alternative')"
-						>
-							<view class="coin-plan-header">
-								<text class="coin-plan-tag">{{ t('checkout.coinPlanAlternative') }}</text>
-								<text class="coin-plan-summary">{{ t('checkout.coinPlanSummary', { coins: coinPreview.alternative.used_coins, amount: Number(coinPreview.alternative.deduct_amount).toFixed(2) }) }}</text>
-							</view>
-							<view class="coin-plan-tiers" v-if="coinPreview.alternative.tiers_used && coinPreview.alternative.tiers_used.length > 0">
-								<text class="coin-plan-tier" v-for="(tier, ti) in coinPreview.alternative.tiers_used" :key="'a' + ti">
-									{{ formatTierLine(tier) }}
-								</text>
-							</view>
-						</view>
+					</view>
+					<view v-else-if="useCoins && tierLoading" class="coin-tier-loading">
+						<text class="coin-tier-loading-text">{{ t('common.loading') }}</text>
 					</view>
 				</view>
 			</view>
@@ -242,12 +239,12 @@
 						<text class="cost-label">🎉 {{ campaignName }}</text>
 						<text class="cost-value discount">-฿{{ campaignDiscount.toFixed(2) }}</text>
 					</view>
-					<view class="cost-row" v-if="selectedCoupon">
+					<view class="cost-row" v-if="selectedCoupon && !isAllExcludedFromDiscount">
 						<text class="cost-label">
 							{{ t('checkout.coupon') }}（{{ selectedCoupon.name }}）
 							<text v-if="previewCouponDiscount === 0" class="coupon-skip-hint">{{ t('checkout.couponNotApplicable') }}</text>
 						</text>
-						<text class="cost-value discount">-฿{{ (previewCouponDiscount !== null ? previewCouponDiscount : selectedCoupon.amount).toFixed(2) }}</text>
+						<text class="cost-value discount">-฿{{ (previewCouponDiscount !== null ? previewCouponDiscount : 0).toFixed(2) }}</text>
 					</view>
 					<view class="cost-row" v-if="useCoins && coinDeductAmount > 0">
 						<text class="cost-label">{{ t('orderDetail.coinDeduct') }}</text>
@@ -256,6 +253,17 @@
 					<view class="total-row">
 						<text class="total-label">{{ t('checkout.totalAmount') }}</text>
 						<text class="total-value">฿{{ totalPrice }}</text>
+					</view>
+					<!-- 预计获得金币/积分 -->
+					<view class="reward-row" v-if="expectedCoins > 0 || expectedPoints > 0">
+						<view class="reward-item" v-if="expectedCoins > 0">
+							<text class="reward-icon">🪙</text>
+							<text class="reward-text">{{ t('checkout.expectedCoins', { n: expectedCoins }) }}</text>
+						</view>
+						<view class="reward-item" v-if="expectedPoints > 0">
+							<text class="reward-icon">⭐</text>
+							<text class="reward-text">{{ t('checkout.expectedPoints', { n: expectedPoints }) }}</text>
+						</view>
 					</view>
 				</view>
 			</view>
@@ -284,20 +292,25 @@
 					<text class="picker-title">{{ t('checkout.selectCoupon') }}</text>
 					<text class="picker-close" @click="showCouponPicker = false">×</text>
 				</view>
-				<scroll-view class="picker-list" scroll-y>
+				<scroll-view class="picker-list" scroll-y @scrolltolower="loadMoreCoupons" :lower-threshold="60">
 					<view
 						class="picker-item"
-						:class="{ 'picker-item-active': selectedCoupon && selectedCoupon.id === coupon.id }"
+						:class="{
+							'picker-item-active': selectedCoupon && selectedCoupon.id === coupon.id,
+							'picker-item-disabled': isCouponDisabled(coupon)
+						}"
 						v-for="coupon in availableCoupons"
 						:key="coupon.id"
-						@click="selectCoupon(coupon)"
+						@click="!isCouponDisabled(coupon) && selectCoupon(coupon)"
 					>
 						<view class="picker-coupon-amount">
-							<text class="picker-coupon-value">฿{{ coupon.amount.toFixed(2) }}</text>
+							<text class="picker-coupon-value">{{ formatCouponAmount(coupon) }}</text>
 						</view>
 						<view class="picker-coupon-info">
 							<text class="picker-coupon-name">{{ coupon.name }}</text>
-							<text class="picker-coupon-desc">{{ coupon.description || '' }}</text>
+							<text class="picker-coupon-desc" v-if="unavailableCouponIds.includes(coupon.id)">{{ t('checkout.couponNotApplicable') }}</text>
+							<text class="picker-coupon-desc" v-else-if="coupon.expectedDiscount !== null && coupon.expectedDiscount <= 0">{{ t('checkout.couponNotStackable') }}</text>
+							<text class="picker-coupon-desc" v-else>{{ coupon.description || '' }}</text>
 						</view>
 						<view class="picker-check" v-if="selectedCoupon && selectedCoupon.id === coupon.id">
 							<text class="check-mark">✓</text>
@@ -305,6 +318,12 @@
 					</view>
 					<view class="picker-item picker-item-none" @click="clearCoupon">
 						<text class="picker-coupon-name">{{ t('checkout.couponNotUse') }}</text>
+					</view>
+					<!-- 加载更多 / 到底提示 -->
+					<view class="picker-more" v-if="couponLoadingMore || couponNoMore">
+						<text class="picker-more-text">
+							{{ couponLoadingMore ? t('common.loading') : (availableCoupons.length > 0 ? t('common.noMore') : '') }}
+						</text>
 					</view>
 				</scroll-view>
 			</view>
@@ -316,7 +335,7 @@
 				<text class="total-text">{{ t('checkout.totalColon') }}</text>
 				<text class="total-price">฿{{ totalPrice }}</text>
 			</view>
-			<view class="submit-btn" :class="{ 'submit-btn-disabled': submitting }" @click="handleSubmit">
+			<view class="submit-btn" :class="{ 'submit-btn-disabled': submitting || orderingDisabled }" @click="handleSubmit">
 				<text class="submit-text">{{ submitting ? i18n.t('checkout.submitting') : i18n.t('checkout.submitOrder') }}</text>
 			</view>
 		</view>
@@ -366,14 +385,14 @@
 <script>
 import { getAddressList } from '@/api/services/address.js'
 import { getAvailableCoupons, getMyCoupons } from '@/api/services/coupon.js'
-import { getPaymentMethods } from '@/api/services/payment.js'
 import { createPayment } from '@/api/services/payment.js'
 import i18n from '@/i18n/index.js'
-import { createOrder, getCoinBalance, calculateCoinDeduct, previewOrder } from '@/api/services/order.js'
+import { createOrder, getCoinBalance, getCoinTiers, previewOrder } from '@/api/services/order.js'
 import { createGroupBuyOrder } from '@/api/services/groupbuy.js'
-import { showToast } from '@/utils/index.js'
+import { showToast, fixMinioUrl, getErrorMessage } from '@/utils/index.js'
 import appStore from '@/store/index.js'
 import { getStore } from '@/api/services/store.js'
+import { getConsumerMenuItems } from '@/api/services/menu.js'
 
 const ORDER_SOURCE_MAP = {
 	'delivery': 'DELIVERY',
@@ -393,6 +412,8 @@ export default {
 			deliveryType: 'delivery',
 			loading: true,
 			submitting: false,
+			// 本店 C 端点餐被总控关闭（下单被 403 ORDERING_DISABLED 拦截后置 true，禁用提交）
+			orderingDisabled: false,
 			remark: '',
 			cartItems: [],
 			addressInfo: null,
@@ -411,25 +432,33 @@ export default {
 				{ label: '1.5小时后', value: '1.5h' }
 			],
 			showPaymentPicker: false,
-			paymentMethods: [],
+			paymentMethods: [
+				{ code: 'cash_pos', name: '收银台支付' }
+			],
 			selectedPaymentIndex: 0,
 			availableCoupons: [],
 			showCouponPicker: false,
 			selectedCoupon: null,
+			unavailableCouponIds: [],   // preview 返回 coupon_discount=0 的券 ID（防折上折不可用）
+			// 券分页：拉满 100 条覆盖大多数场景；超出则触底加载
+			couponPage: 1,
+			couponPageSize: 100,
+			couponTotal: 0,
+			couponLoadingMore: false,
+			couponNoMore: false,
 		coinBalance: 0,
 		useCoins: false,
 		coinDeductAmount: 0,
 		previewData: null,  // 后端 preview 返回的价格明细(含活动折扣)
 			maxCoinUsage: 0,
-		// 金币抵扣配置（来自后端 /user-orders/calculate-coin-deduct 响应）
+		// 金币档位（新方案：单档抵扣）
 		coinConfig: {
-			maxDeductPercent: 10,        // 每单最大抵扣比例（%），后端配置
-			maxDeductAmount: 0,          // 本单最大可抵扣金额
-			usedCoins: 0                 // 实际使用的金币数
+			maxDeductPercent: 10,        // 全局比例上限（%）
+			maxDeductAmount: 0           // 本单最大可抵扣金额（仅用于 UI 展示）
 		},
-		// 后端返回的双方案（best + alternative），用户可在 UI 中切换
-		coinPreview: { best: null, alternative: null, tierUnavailable: false },
-		selectedPlan: 'best',           // 'best' | 'alternative'
+		coinTiers: [],                  // GET /coin-tiers 返回的档位列表
+		selectedCoinTierId: null,       // 用户选中的档位 ID（null = 不使用金币）
+		tierLoading: false,             // 拉档位中
 		deliveryFee: 0,
 		langVersion: 0
 	}
@@ -447,6 +476,13 @@ export default {
 		},
 		coinDeductAvailable() {
 			return this.maxDeductAmount >= 1 && this.coinBalance > 0
+		},
+		// 整单是否全部为"不参与减免"分类（如纯酒水订单）
+		// 优先用后端 preview 返回的 discount_eligible（更准确），前端预判作兜底
+		isAllExcludedFromDiscount() {
+			if (this.previewData && this.previewData.discount_eligible === false) return true
+			if (this.cartItems.length > 0 && this.cartItems.every(it => it.exclude_from_discount === true)) return true
+			return false
 		},
 		totalPrice() {
 			// 优先用后端 preview 的 total_amount(含活动折扣)
@@ -476,9 +512,22 @@ export default {
 		campaignName() {
 			if (!this.previewData) return ''
 			const lang = i18n.getLanguage()
-			// 优先用多语言字段
+			// 优先用后端多语言字段（如果有）
 			if (lang === 'en' && this.previewData.campaign_name_en) return this.previewData.campaign_name_en
 			if (lang === 'th' && this.previewData.campaign_name_th) return this.previewData.campaign_name_th
+			// 后端没返回多语言 → 用 campaign_type 映射到本地多语言文案
+			const campaignType = this.previewData.campaign_type || ''
+			if (campaignType && lang !== 'zh') {
+				const typeNames = {
+					DISCOUNT: { en: 'Discount', th: 'โปรโมชัน' },
+					FULL_REDUCTION: { en: 'Spend & Save', th: 'ซื้อครบลด' },
+					COUPON_GRANT: { en: 'Claim Coupons', th: 'รับคูปอง' },
+					SPECIAL_DATE: { en: 'Special Date', th: 'วันพิเศษ' },
+					STORE_OPENING: { en: 'Opening Discount', th: 'ส่วนลดเปิดร้านใหม่' }
+				}
+				const mapped = typeNames[campaignType]
+				if (mapped && mapped[lang]) return mapped[lang]
+			}
 			return this.previewData.campaign_name || ''
 		},
 		// preview 返回的优惠券折扣(可能因防折上折变为 0)
@@ -488,6 +537,20 @@ export default {
 			}
 			return null
 		},
+		// 预计获得金币（preview 返回）
+		expectedCoins() {
+			if (this.previewData && this.previewData.expected_coins) {
+				return Number(this.previewData.expected_coins) || 0
+			}
+			return 0
+		},
+		// 预计获得积分（preview 返回）
+		expectedPoints() {
+			if (this.previewData && this.previewData.expected_points) {
+				return Number(this.previewData.expected_points) || 0
+			}
+			return 0
+		},
 		// preview 返回的金币抵扣
 		previewCoinDeduct() {
 			if (this.previewData && this.previewData.coin_deduct !== undefined) {
@@ -495,18 +558,20 @@ export default {
 			}
 			return null
 		},
-		// 当前选中的金币方案对象（best 或 alternative）
-		selectedCoinPlan() {
-			if (!this.coinPreview.best) return null
-			return this.selectedPlan === 'alternative' && this.coinPreview.alternative
-				? this.coinPreview.alternative
-				: this.coinPreview.best
+		// 当前选中的金币档位对象（来自 coinTiers）
+		selectedCoinTier() {
+			if (this.selectedCoinTierId === null) return null
+			return this.coinTiers.find(t => t.id === this.selectedCoinTierId) || null
 		},
-		// 是否可以展示双方案选择 UI
-		hasAlternativePlan() {
-			return !!(this.coinPreview.best && this.coinPreview.alternative
-				&& (this.coinPreview.best.used_coins !== this.coinPreview.alternative.used_coins
-					|| this.coinPreview.best.deduct_amount !== this.coinPreview.alternative.deduct_amount))
+		// 按当前语言取档位的不可用原因
+		getTierReasonText() {
+			return (tier) => {
+				if (!tier) return ''
+				const lang = i18n.getLanguage()
+				if (lang === 'en') return tier.reason_en || tier.reason || ''
+				if (lang === 'th') return tier.reason_th || tier.reason || ''
+				return tier.reason || ''
+			}
 		},
 		selectedTimeLabel() {
 			return this.timeOptions[this.selectedTimeIndex]?.label || i18n.t('checkout.deliveryBadge')
@@ -544,6 +609,12 @@ export default {
 			if (!this.shopId && this.cartItems.length > 0 && this.cartItems[0].store_id) {
 				this.shopId = this.cartItems[0].store_id
 			}
+			// 修正已有 image 字段（可能是相对路径，需要拼 minio 完整 URL）
+			this.cartItems.forEach(it => {
+				if (it.image) it.image = fixMinioUrl(it.image) || '/static/images/img-placeholder.svg'
+			})
+			// 兜底：对缺图片的 item 反查 menu 接口（覆盖 reorder / 列表 / 直接跳转等入口）
+			this.enrichCartImagesFromMenu()
 		}
 		this.initPage()
 			// Guard: no store selected
@@ -583,6 +654,30 @@ export default {
 			const bottomBarHeight = 64
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
 			this.contentHeight = systemInfo.windowHeight - navBarHeight - bottomBarHeight - safeAreaBottom - this.statusBarHeight
+		},
+
+		// 兜底：购物车里缺图片的 item，从 menu 接口反查补全
+		// 覆盖场景：reorder 接口没返回 image_url、order.detail_items 没图片字段、上游 handleReorder 没做 enrich
+		async enrichCartImagesFromMenu() {
+			const needImage = this.cartItems.filter(it => !it.image || it.image === '/static/images/img-placeholder.svg')
+			if (needImage.length === 0 || !this.shopId) return
+			try {
+				const res = await getConsumerMenuItems(this.shopId, { page_size: 200 })
+				if (!res || res.code !== 0 || !res.data) return
+				const menuItems = res.data.items || res.data || []
+				const imgMap = {}
+				for (const m of menuItems) {
+					if (m.id && m.image_url) imgMap[m.id] = m.image_url
+				}
+				this.cartItems.forEach(it => {
+					const itemId = it.id || it.menu_item_id
+					if ((!it.image || it.image === '/static/images/img-placeholder.svg') && imgMap[itemId]) {
+						it.image = fixMinioUrl(imgMap[itemId]) || '/static/images/img-placeholder.svg'
+					}
+				})
+			} catch (e) {
+				console.warn('[checkout] enrich cart images failed:', e)
+			}
 		},
 
 		async loadCheckoutData() {
@@ -639,9 +734,8 @@ export default {
 					}
 				}
 
-				const [addressRes, paymentRes, couponRes, coinRes] = await Promise.allSettled([
+				const [addressRes, couponRes, coinRes] = await Promise.allSettled([
 					getAddressList(),
-					getPaymentMethods(this.shopId),
 					getAvailableCoupons({
 						order_amount: this.productTotal,
 						order_type: this.orderType,
@@ -659,15 +753,17 @@ export default {
 					}
 				}
 
-				if (paymentRes.status === 'fulfilled' && paymentRes.value.code === 0 && paymentRes.value.data) {
-					this.paymentMethods = paymentRes.value.data.methods || []
-				}
-
 				// 优惠券 - 优先用available接口，回退到my接口
 				let couponItems = []
+				let couponTotal = 0
+				let couponNoMore = false
 				if (couponRes.status === 'fulfilled' && couponRes.value.code === 0 && couponRes.value.data) {
-					const items = couponRes.value.data.items || couponRes.value.data || []
+					const raw = couponRes.value.data
+					const items = raw.items || raw || []
 					couponItems = Array.isArray(items) ? items : []
+					couponTotal = Number(raw.total) || couponItems.length
+					// available 接口当前默认 page_size=100，若返回量 < page_size → 到底
+					couponNoMore = couponItems.length < this.couponPageSize
 				}
 				// 如果available接口返回空，尝试从my接口获取可用优惠券
 				if (couponItems.length === 0) {
@@ -676,9 +772,13 @@ export default {
 						if (myRes.code === 0 && myRes.data) {
 							const myItems = myRes.data.items || myRes.data || []
 							couponItems = (Array.isArray(myItems) ? myItems : []).filter(c => c.status === 'UNUSED' || c.status === 'CLAIMED' || c.status === 'ACTIVE')
+							couponTotal = couponItems.length
+							couponNoMore = true   // 兜底路径，一次性拉满不再追加
 						}
 					} catch(e) { console.log('fallback getMyCoupons failed:', e) }
 				}
+				this.couponTotal = couponTotal
+				this.couponNoMore = couponNoMore
 				if (couponItems.length > 0) {
 					const lang = i18n.getLanguage()
 					this.availableCoupons = couponItems.map(c => {
@@ -686,16 +786,28 @@ export default {
 						return {
 							id: c.id,
 							coupon_code: c.coupon_code || '',
+							type: c.type || tpl.type || c.coupon_type || '',   // FIXED/PERCENT/ITEM
 							name: tpl['name_' + lang] || tpl.name || c['name_' + lang] || c.name || c.coupon_name || '',
 							amount: c.value || tpl.discount_value || c.discount_value || c.amount || 0,
-							min_spend: tpl.min_order_amount || c.min_order_amount || c.min_spend || 0,
+							minSpend: tpl.min_order_amount || c.min_order_amount || c.min_spend || 0,
 							valid_end: c.valid_end || c.validity_end || '',
-							description: tpl['description_' + lang] || tpl.description || c['description_' + lang] || c.description || ''
+							description: tpl['description_' + lang] || tpl.description || c['description_' + lang] || c.description || '',
+							// 后端 /coupons/available 返回该字段时，表示该券在当前订单下的实际抵扣额
+							// expected_discount = 0 ⇒ 本单不可用（防折上折/纯酒水等），加载阶段直接剔除
+							// 字段未返回 ⇒ 兼容旧后端，回退到"选中后由 preview 判定"
+							expectedDiscount: c.expected_discount !== undefined
+								? Number(c.expected_discount) || 0
+								: null
 						}
-					}).filter(c => c.amount > 0 && (!c.min_spend || this.productTotal >= c.min_spend))
-					if (this.availableCoupons.length > 0) {
-						this.selectedCoupon = this.availableCoupons.reduce((best, c) => c.amount > best.amount ? c : best, this.availableCoupons[0])
-					}
+					}).filter(c => {
+						// 过滤掉菜品券（ITEM 类型仅线下核销，不参与下单）
+						if (String(c.type).toUpperCase() === 'ITEM') return false
+						// 过滤掉无金额的券 + 不满足门槛的券
+						if (!(c.amount > 0 && (!c.minSpend || this.productTotal >= c.minSpend))) return false
+						// expected_discount <= 0 的券（防折上折）不再隐藏，保留展示但标注"不可叠加"
+						return true
+					})
+					// 不自动选券——让用户自己选（避免混合订单/活动订单默认选中但不生效）
 				}
 
 				if (coinRes.status === 'fulfilled' && coinRes.value.code === 0 && coinRes.value.data) {
@@ -773,16 +885,111 @@ export default {
 			this.showPaymentPicker = false
 		},
 
+		// 格式化券面额：FIXED→฿X / PERCENT→7折 / ITEM→菜品券
+		formatCouponAmount(coupon) {
+			if (!coupon) return ''
+			const type = String(coupon.type || coupon.couponType || '').toUpperCase()
+			if (type === 'ITEM') return this.i18n.t('coupons.itemVoucher')
+			if (type === 'PERCENT') {
+				const v = Number(coupon.amount) || 0
+				const lang = i18n.getLanguage()
+				if (lang === 'zh') return `${(10 - v / 10).toFixed(1).replace('.0', '')}折`
+				if (lang === 'th') return `ลด ${v}%`
+				return `${v}% OFF`
+			}
+			return `฿${Number(coupon.amount || 0).toFixed(2)}`
+		},
+
+		// 判断券是否被禁用（防折上折 or preview 返回 0）
+		isCouponDisabled(coupon) {
+			if (!coupon) return true
+			// preview 实测不可用
+			if (this.unavailableCouponIds.includes(coupon.id)) return true
+			// expected_discount <= 0 → 与活动冲突（防折上折）
+			if (coupon.expectedDiscount !== null && coupon.expectedDiscount <= 0) return true
+			return false
+		},
+
 		selectCoupon(coupon) {
 			this.selectedCoupon = coupon
 			this.showCouponPicker = false
-			this.loadPreview()
+			// 优惠券变化 → 档位可用性可能变化，先清空选中，preview 完再拉档位
+			this.selectedCoinTierId = null
+			this.loadPreview().then(() => {
+				if (this.useCoins) this.loadCoinTiers()
+			})
 		},
 
 		clearCoupon() {
 			this.selectedCoupon = null
 			this.showCouponPicker = false
-			this.loadPreview()
+			this.selectedCoinTierId = null
+			this.loadPreview().then(() => {
+				if (this.useCoins) this.loadCoinTiers()
+			})
+		},
+
+		// 触底加载更多可用券（仅超过 100 张时触发）
+		async loadMoreCoupons() {
+			if (this.couponLoadingMore || this.couponNoMore) return
+			this.couponLoadingMore = true
+			try {
+				const nextPage = this.couponPage + 1
+				const params = {
+					order_amount: this.productTotal,
+					order_type: this.orderType,
+					...(this.shopId ? { store_id: this.shopId } : {}),
+					page: nextPage,
+					page_size: this.couponPageSize
+				}
+				const res = await getAvailableCoupons(params)
+				if (res && res.code === 0 && res.data) {
+					const raw = res.data
+					const items = Array.isArray(raw.items) ? raw.items : (Array.isArray(raw) ? raw : [])
+					if (items.length === 0) {
+						this.couponNoMore = true
+					} else {
+						const lang = i18n.getLanguage()
+						const newOnes = items.map(c => {
+							const tpl = c.template || {}
+							return {
+								id: c.id,
+								coupon_code: c.coupon_code || '',
+								type: c.type || tpl.type || c.coupon_type || '',
+								name: tpl['name_' + lang] || tpl.name || c['name_' + lang] || c.name || c.coupon_name || '',
+								amount: c.value || tpl.discount_value || c.discount_value || c.amount || 0,
+								minSpend: tpl.min_order_amount || c.min_order_amount || c.min_spend || 0,
+								valid_end: c.valid_end || c.validity_end || '',
+								description: tpl['description_' + lang] || tpl.description || c['description_' + lang] || c.description || '',
+								expectedDiscount: c.expected_discount !== undefined
+									? Number(c.expected_discount) || 0
+									: null
+							}
+						}).filter(c => {
+							if (String(c.type).toUpperCase() === 'ITEM') return false
+							if (!(c.amount > 0 && (!c.minSpend || this.productTotal >= c.minSpend))) return false
+							// expected_discount <= 0 的券（防折上折）不再隐藏
+							return true
+						})
+						// 去重：避免跨页重复
+						const existingIds = new Set(this.availableCoupons.map(c => c.id))
+						const deduped = newOnes.filter(c => !existingIds.has(c.id))
+						if (deduped.length === 0) {
+							this.couponNoMore = true
+						} else {
+							this.availableCoupons = this.availableCoupons.concat(deduped)
+							this.couponPage = nextPage
+							if (newOnes.length < this.couponPageSize) this.couponNoMore = true
+						}
+					}
+				} else {
+					this.couponNoMore = true
+				}
+			} catch (e) {
+				console.warn('[checkout] loadMoreCoupons failed:', e)
+			} finally {
+				this.couponLoadingMore = false
+			}
 		},
 
 		// ============ 结算预览(含活动折扣) ============
@@ -791,42 +998,150 @@ export default {
 			try {
 				const previewBody = {
 					store_id: this.shopId,
-					items: this.cartItems.map(item => ({
-						menu_item_id: item.id || item.menu_item_id,
-						quantity: item.quantity,
-						unit_price: item.price,
-						specs: item.specs || {}
-					})),
+					items: this.cartItems.map(item => {
+						const mapped = {
+							menu_item_id: item.id || item.menu_item_id,
+							quantity: item.quantity,
+							unit_price: item.price,
+							specs: item.specs || {}
+						}
+						// 复购场景：带 selection 时直接用结构化选择提交
+						if (item.selection && typeof item.selection === 'object' && Object.keys(item.selection).length > 0) {
+							Object.assign(mapped, item.selection)
+						}
+						return mapped
+					}),
 					order_type: this.orderType === 'dinein' ? 'DINE_IN' : (this.deliveryType === 'delivery' ? 'DELIVERY' : 'PICKUP')
 				}
 				if (this.selectedCoupon) {
 					previewBody.coupon_id = this.selectedCoupon.id
 				}
-				// 关键:用户开启金币且有 usedCoins 时,传 coins_to_use + coin_plan
-				if (this.useCoins && this.coinConfig.usedCoins > 0) {
-					previewBody.coins_to_use = Math.min(this.coinConfig.usedCoins, this.coinBalance)
-					if (this.selectedPlan) previewBody.coin_plan = this.selectedPlan
+				// 按档位抵扣：开启金币且选了档位时，传 coin_tier_id
+				if (this.useCoins && this.selectedCoinTierId) {
+					previewBody.coin_tier_id = this.selectedCoinTierId
 				}
-				console.log('[checkout] preview request:', JSON.stringify({ useCoins: this.useCoins, usedCoins: this.coinConfig.usedCoins, coins_to_use: previewBody.coins_to_use }))
 				const res = await previewOrder(previewBody)
 				if (res && res.code === 0 && res.data) {
 					this.previewData = res.data
-					console.log('[checkout] preview response:', JSON.stringify(res.data))
+					// 选了券但 preview 返回 coupon_discount=0 → 标记该券不可用（防折上折）
+					if (this.selectedCoupon && Number(res.data.coupon_discount) === 0) {
+						if (!this.unavailableCouponIds.includes(this.selectedCoupon.id)) {
+							this.unavailableCouponIds.push(this.selectedCoupon.id)
+						}
+					}
+					// 同步档位数据
+					if (res.data.coin_tier_id && res.data.coin_tier_id !== this.selectedCoinTierId) {
+						this.selectedCoinTierId = res.data.coin_tier_id
+					}
+				} else if (res && (res.code === 'COIN_TIER_NOT_FOUND' || res.code === 'COIN_TIER_NOT_USABLE')) {
+					// 档位失效：清空选择 + 重新拉档位
+					this.selectedCoinTierId = null
+					await this.loadCoinTiers()
 				}
 			} catch (e) {
 				console.warn('[checkout] preview failed:', e)
+				// 兼容 request.js 已经把错误对象包装过的场景
+				if (e && (e.code === 'COIN_TIER_NOT_FOUND' || e.code === 'COIN_TIER_NOT_USABLE')) {
+					this.selectedCoinTierId = null
+					await this.loadCoinTiers()
+				}
+				// 门店 C 端点餐被关闭：禁用提交按钮（三语提示由 request 层 getErrorMessage toast）
+				if (e && e.code === 'ORDERING_DISABLED') {
+					this.orderingDisabled = true
+				}
+				// 跨店用券：清掉所选券，让用户重新选（提示由 request 层 toast）
+				if (e && e.code === 'COUPON_STORE_NOT_MATCH') {
+					if (this.selectedCoupon) {
+						this.unavailableCouponIds.push(this.selectedCoupon.id)
+						this.selectedCoupon = null
+					}
+				}
+				// 菜品不存在/跨店下单等错误 → 用本地计算兜底，避免 UI 卡在"加载中"
+				const code = e && (e.code || e.bizCode)
+				if (code === 'MENU_ITEM_NOT_FOUND') {
+					// 设置一个最小 previewData，让优惠券行不再显示"加载中"
+					this.previewData = {
+						subtotal: this.productTotal,
+						campaign_discount: 0,
+						coupon_discount: 0,
+						coin_deduct: 0,
+						total_amount: this.productTotal,
+						discount_eligible: true
+					}
+					// 提示用户菜品不存在
+					showToast(i18n.t('checkout.itemNotFound') || '部分商品不存在或已下架')
+				}
 			}
+		},
+
+		// 拉取金币档位列表（新方案：按档位抵扣）
+		// 入参用 preview 接口返回的权威 subtotal/campaign_discount/coupon_discount
+		async loadCoinTiers() {
+			if (this.tierLoading) return
+			this.tierLoading = true
+			try {
+				const subtotal = (this.previewData && this.previewData.subtotal) || this.productTotal
+				const campaignDiscount = (this.previewData && Number(this.previewData.campaign_discount)) || 0
+				const couponDiscount = (this.previewData && Number(this.previewData.coupon_discount)) || 0
+				const res = await getCoinTiers({
+					subtotal,
+					campaign_discount: campaignDiscount,
+					coupon_discount: couponDiscount
+				})
+				if (res && res.code === 0 && res.data) {
+					this.coinTiers = res.data.tiers || []
+					if (res.data.coin_balance !== undefined) {
+						this.coinBalance = res.data.coin_balance
+					}
+					if (res.data.max_deduct_percent) {
+						this.coinConfig.maxDeductPercent = res.data.max_deduct_percent
+					}
+					// 校验当前选中档位是否仍可用
+					if (this.selectedCoinTierId !== null) {
+						const sel = this.coinTiers.find(t => t.id === this.selectedCoinTierId)
+						if (!sel || !sel.usable) {
+							this.selectedCoinTierId = null
+						}
+					}
+				} else {
+					this.coinTiers = []
+				}
+			} catch (e) {
+				console.warn('[checkout] loadCoinTiers failed:', e)
+				this.coinTiers = []
+			} finally {
+				this.tierLoading = false
+			}
+		},
+
+		// 用户点击某个档位
+		selectCoinTier(tier) {
+			if (!tier || !tier.usable) {
+				// 不可用：toast 显示对应语言的不可用原因
+				const reason = this.getTierReasonText(tier)
+				if (reason) showToast(reason)
+				return
+			}
+			if (this.selectedCoinTierId === tier.id) {
+				// 再次点击同一个 → 取消选择
+				this.selectedCoinTierId = null
+			} else {
+				this.selectedCoinTierId = tier.id
+			}
+			// 触发 preview 更新金额（后端会按档位重算）
+			this.loadPreview()
 		},
 
 			async handleCoinToggle(e) {
 				this.useCoins = e.detail.value
-				// 如果开启金币,确保 calculateCoinDeduct 已返回 usedCoins,再调 preview
-				if (this.useCoins && this.coinConfig.usedCoins === 0 && this.coinBalance > 0) {
-					// calculateCoinDeduct 还没跑过,先跑一次
-					await this.recalculateCoins()
+				// 关闭：清空档位 + 不传 coin_tier_id
+				if (!this.useCoins) {
+					this.selectedCoinTierId = null
+					await this.loadPreview()
+					return
 				}
-				this.loadPreview()
-				if (this.useCoins && !this.coinDeductAvailable) {
+				// 开启：先校验门槛 + 拉档位
+				if (!this.coinDeductAvailable) {
 					this.useCoins = false
 					uni.showModal({
 						title: '',
@@ -836,98 +1151,25 @@ export default {
 					})
 					return
 				}
-				if (this.useCoins && this.coinBalance > 0) {
-				try {
-					// 后端按 rate DESC 算最优解，返回 best + alternative 两个方案
-					// 前端直接传用户全部余额，让后端算实际使用金币数（used_coins）和实际抵扣额（deduct_amount）
-					const coinsToSend = this.coinBalance
-					const res = await calculateCoinDeduct(this.productTotal, coinsToSend)
-					if (res.code === 0 && res.data) {
-						if (res.data.max_coins) this.maxCoinUsage = res.data.max_coins
-						// 保存后端配置（来自 coin_deduction_configs 表）
-						if (res.data.max_deduct_percent) this.coinConfig.maxDeductPercent = res.data.max_deduct_percent
-						if (res.data.max_deduct_amount) this.coinConfig.maxDeductAmount = res.data.max_deduct_amount
-
-						// 双方案预览
-						const best = res.data.best || null
-						const alternative = res.data.alternative || null
-						this.coinPreview = {
-							best,
-							alternative,
-							tierUnavailable: !best
-						}
-						// 默认选 best；best 不存在时回退 alternative（理论上 alternative 也会 null）
-						this.selectedPlan = best ? 'best' : 'alternative'
-						// coinConfig.usedCoins 用选中方案的 used_coins（用于下单时回显）
-						const plan = this.selectedCoinPlan || best
-						if (plan && plan.used_coins !== undefined) {
-							this.coinConfig.usedCoins = plan.used_coins
-						} else if (res.data.used_coins !== undefined) {
-							this.coinConfig.usedCoins = res.data.used_coins
-						}
-
-						if (!best) {
-							// 无可用档位：禁用金币 + 三语提示
-							this.useCoins = false
-							this.coinDeductAmount = 0
-							uni.showModal({
-								title: '',
-								content: this.i18n.t('checkout.coinTierUnavailable'),
-								showCancel: false,
-								confirmText: this.i18n.t('common.confirm')
-							})
-						} else {
-							// 优先用选中方案的 deduct_amount；兜底用旧字段
-							let deduct = (this.selectedCoinPlan && this.selectedCoinPlan.deduct_amount)
-								|| res.data.deduct_amount || 0
-							if (deduct > this.maxDeductAmount) deduct = this.maxDeductAmount
-							this.coinDeductAmount = deduct
-						}
-					}
-				} catch (e) {
+				// 先 preview 一次（不传 tier_id），拿 subtotal/campaign/coupon 权威值
+				await this.loadPreview()
+				// 再拉档位
+				await this.loadCoinTiers()
+				// 档位为空或全部不可用时提示
+				const hasUsable = this.coinTiers.some(t => t.usable)
+				if (this.coinTiers.length === 0 || !hasUsable) {
 					this.useCoins = false
-					this.coinDeductAmount = 0
+					uni.showModal({
+						title: '',
+						content: this.i18n.t('checkout.coinTierUnavailable'),
+						showCancel: false,
+						confirmText: this.i18n.t('common.confirm')
+					})
 				}
-			} else {
-				this.coinDeductAmount = 0
-			}
 			},
 
-		// 切换金币方案（best / alternative）
-		selectCoinPlan(plan) {
-			if (plan === this.selectedPlan) return
-			this.selectedPlan = plan
-			const p = this.selectedCoinPlan
-			if (p && p.used_coins !== undefined) {
-				this.coinConfig.usedCoins = p.used_coins
-			}
-			let deduct = (p && p.deduct_amount) || 0
-			if (deduct > this.maxDeductAmount) deduct = this.maxDeductAmount
-			this.coinDeductAmount = deduct
-			this.loadPreview()
-		},
-
-		// 格式化档位明细行（多档累加时逐行展示）
-		formatTierLine(tier) {
-			return this.i18n.t('checkout.coinPlanTierLine', { coins: tier.coin_amount, packs: tier.packs })
-		},
-
-		// 重新计算金币抵扣(给 preview 用)
-		async recalculateCoins() {
-			if (this.coinBalance <= 0 || this.productTotal <= 0) return
-			try {
-				const res = await calculateCoinDeduct(this.productTotal, this.coinBalance)
-				if (res.code === 0 && res.data) {
-					if (res.data.used_coins !== undefined) this.coinConfig.usedCoins = res.data.used_coins
-					if (res.data.deduct_amount) this.coinDeductAmount = res.data.deduct_amount
-				}
-			} catch (e) {
-				console.warn('[checkout] recalculateCoins failed:', e)
-			}
-		},
-
 		async handleSubmit() {
-			if (this.submitting) return
+			if (this.submitting || this.orderingDisabled) return
 
 			if (this.deliveryType === 'delivery' && !this.addressInfo) {
 				showToast(i18n.t('checkout.pleaseSelectAddress'))
@@ -957,14 +1199,23 @@ export default {
 						store_id: this.shopInfo.id,
 					order_type: this.shopInfo.business_types?.[0] || 'SEAFOOD_NOODLE',
 						order_source: ORDER_SOURCE_MAP[this.orderType] || ORDER_SOURCE_MAP[this.deliveryType],
-						items: this.cartItems.map(item => ({
-							menu_item_id: item.id,
-							item_name: item.name || '',
-							quantity: item.quantity,
-							unit_price: item.price,
-							specs: item.specs || {},
-							remark: ''
-						})),
+						items: this.cartItems.map(item => {
+							const mapped = {
+								menu_item_id: item.id,
+								item_name: item.name || '',
+								item_name_en: item.name_en || null,
+								item_name_th: item.name_th || null,
+								quantity: item.quantity,
+								unit_price: item.price,
+								specs: item.specs || {},
+								remark: ''
+							}
+							// 复购场景：后端 reorder 接口返回的 selection 是扁平结构化数据，可直接提交
+							if (item.selection && typeof item.selection === 'object' && Object.keys(item.selection).length > 0) {
+								Object.assign(mapped, item.selection)
+							}
+							return mapped
+						}),
 						remark: this.remark,
 						table_number: this.orderType === 'dinein' ? (this.cartItems[0]?.table_number || '') : '',
 						extra_data: {
@@ -983,19 +1234,8 @@ export default {
 						orderData.coupon_id = this.selectedCoupon.id
 					}
 
-					if (this.useCoins && this.coinDeductAmount > 0) {
-						orderData.use_coins = true
-						// 直接用后端 calculateCoinDeduct 接口返回的 used_coins
-						// （rate DESC 算法算出的实际使用金币数，已包含余额/上限/比例约束）
-						// 兜底：如果接口没返回 used_coins，用 coinConfig 保存的值；再没有就用 coinDeductAmount（隐含 1:1）
-						const usedCoins = this.coinConfig.usedCoins
-							|| Math.ceil(this.coinDeductAmount)
-						// 双重保险：不超过用户余额
-						orderData.coins_to_use = Math.min(usedCoins, this.coinBalance)
-						// 新增：告诉后端用 best 还是 alternative 方案（缺省 best）
-						if (this.selectedPlan) {
-							orderData.coin_plan = this.selectedPlan
-						}
+					if (this.useCoins && this.selectedCoinTierId) {
+						orderData.coin_tier_id = this.selectedCoinTierId
 					}
 
 					if (this.deliveryType === 'delivery' && this.addressInfo) {
@@ -1019,7 +1259,13 @@ export default {
 				}
 			} catch (e) {
 				console.error('提交订单失败:', e)
-				showToast(i18n.t('checkout.submitFailed'))
+				// 门店 C 端点餐开关中途被关闭：展示三语提示并禁用提交按钮，防止反复提交
+				if (e?.code === 'ORDERING_DISABLED') {
+					this.orderingDisabled = true
+					showToast(getErrorMessage(e) || i18n.t('error.orderingDisabled'))
+				} else {
+					showToast(i18n.t('checkout.submitFailed'))
+				}
 			} finally {
 				this.submitting = false
 			}
@@ -1300,6 +1546,17 @@ export default {
 	justify-content: space-between;
 }
 
+/* 酒水/排除分类提示行 */
+.excluded-hint-row {
+	padding: 12px 0;
+	text-align: center;
+}
+.excluded-hint-text {
+	font-size: 12px;
+	color: #999;
+	line-height: 1.5;
+}
+
 .coupon-row .coupon-left {
 	display: flex;
 	align-items: center;
@@ -1370,10 +1627,13 @@ export default {
 
 .coupon-picker {
 	width: 100%;
+	height: 70vh;
 	background-color: #FFFFFF;
 	border-radius: 16px 16px 0 0;
 	padding: 16px;
-	max-height: 50vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 .coupon-picker .picker-header {
@@ -1383,6 +1643,7 @@ export default {
 	padding-bottom: 12px;
 	border-bottom: 1px solid #F3F3F3;
 	margin-bottom: 8px;
+	flex-shrink: 0;
 }
 
 .coupon-picker .picker-title {
@@ -1397,7 +1658,10 @@ export default {
 	padding: 4px 8px;
 }
 
+/* scroll-view 必须给定高度才能内部滚动；用 flex: 1 + min-height: 0 占满剩余空间 */
 .coupon-picker .picker-list {
+	flex: 1;
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
@@ -1414,6 +1678,17 @@ export default {
 .coupon-picker .picker-item-active {
 	border-color: #F2B131;
 	background-color: #FFF8E8;
+}
+
+.coupon-picker .picker-item-disabled {
+	opacity: 0.45;
+}
+.coupon-picker .picker-item-disabled .picker-coupon-name {
+	color: #999;
+}
+.coupon-picker .picker-item-disabled .picker-coupon-desc {
+	color: #DA3300;
+	font-size: 11px;
 }
 
 .picker-coupon-amount {
@@ -1465,6 +1740,15 @@ export default {
 	justify-content: center;
 }
 
+.picker-more {
+	padding: 12px 0;
+	text-align: center;
+}
+.picker-more-text {
+	font-size: 11px;
+	color: #999;
+}
+
 /* 金币抵扣 */
 .coin-row {
 	display: flex;
@@ -1488,69 +1772,71 @@ export default {
 }
 
 /* 双方案选择卡片 */
-.coin-plan-group {
+/* 金币档位列表（按档位抵扣） */
+.coin-tier-group {
 	margin-top: 12px;
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
 }
 
-.coin-plan-card {
-	padding: 10px 12px;
+.coin-tier-card {
+	padding: 12px 14px;
 	border-radius: 10px;
 	background-color: #FAFAFA;
 	border: 1.5px solid #E5E5E5;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	transition: border-color 0.15s, background-color 0.15s;
 }
 
-.coin-plan-card.coin-plan-active {
+.coin-tier-card.coin-tier-active {
 	border-color: #F2B131;
 	background-color: #FFF8E1;
 }
 
-.coin-plan-header {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
+.coin-tier-card.coin-tier-disabled {
+	opacity: 0.55;
 }
 
-.coin-plan-tag {
-	font-size: 11px;
-	font-weight: 600;
-	color: #B5750C;
-	background-color: #FFE4A8;
-	padding: 2px 8px;
-	border-radius: 8px;
-	flex-shrink: 0;
+.coin-tier-main {
+	flex: 1;
+	min-width: 0;
 }
 
-.coin-plan-card.coin-plan-active .coin-plan-tag {
-	background-color: #F2B131;
-	color: #FFFFFF;
-}
-
-.coin-plan-summary {
+.coin-tier-summary {
 	font-size: 13px;
 	font-weight: 600;
 	color: #1A1A1A;
-	flex: 1;
+}
+
+.coin-tier-check {
+	font-size: 16px;
+	font-weight: 700;
+	color: #F2B131;
+	margin-left: 8px;
+	flex-shrink: 0;
+}
+
+.coin-tier-reason {
+	font-size: 11px;
+	color: #999;
+	margin-left: 8px;
+	flex-shrink: 0;
+	max-width: 50%;
 	text-align: right;
 }
 
-.coin-plan-tiers {
-	margin-top: 6px;
-	display: flex;
-	flex-wrap: wrap;
-	gap: 6px;
+.coin-tier-loading {
+	margin-top: 12px;
+	padding: 16px;
+	text-align: center;
 }
 
-.coin-plan-tier {
-	font-size: 11px;
-	color: #6B6B6B;
-	background-color: rgba(0,0,0,0.04);
-	padding: 2px 6px;
-	border-radius: 4px;
+.coin-tier-loading-text {
+	font-size: 12px;
+	color: #999;
 }
 
 .coin-left {
@@ -1696,6 +1982,26 @@ export default {
 	font-size: 14px;
 	font-weight: 500;
 	color: #000000CC;
+}
+
+/* 预计获得金币/积分 */
+.reward-row {
+	display: flex;
+	gap: 16px;
+	padding: 8px 12px 0;
+}
+.reward-item {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+.reward-icon {
+	font-size: 14px;
+}
+.reward-text {
+	font-size: 12px;
+	color: #F2B131;
+	font-weight: 600;
 }
 
 .remark-row {
