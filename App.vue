@@ -229,6 +229,23 @@ export default {
 
 <style>
 /* 全局样式 */
+
+/*
+ * 系统弹窗置顶：uni.showModal / showToast 固定 z-index 999，
+ * 会被业务弹窗（优惠券核销 9998 / 活动详情 9998 / 生日 9999 等）盖住。
+ * 金币使用确认等系统级弹窗必须盖过所有业务弹窗，否则轮询弹出的确认框用户不可见。
+ */
+uni-modal,
+uni-modal .uni-modal {
+	z-index: 10999 !important;
+}
+
+uni-toast,
+uni-toast .uni-toast,
+uni-toast .uni-sample-toast {
+	z-index: 10999 !important;
+}
+
 page {
 	background-color: #FFFFFF;
 	font-family: 'PingFang SC', 'Helvetica Neue', Helvetica, Arial, sans-serif;

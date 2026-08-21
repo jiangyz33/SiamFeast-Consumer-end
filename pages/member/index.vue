@@ -125,7 +125,8 @@
 						<text class="section-title">{{ t('mine.myFeatures') }}</text>
 					</view>
 					<view class="feature-tabs">
-						<view class="feature-tab" @click="handleFeature('footprint')">
+						<!-- 足迹入口临时下线（随点餐入口隐藏，ORDERING_ENABLED=true 恢复） -->
+						<view class="feature-tab" v-if="ORDERING_ENABLED" @click="handleFeature('footprint')">
 							<image class="feature-icon" src="/static/icons/clock.svg" mode="aspectFit"></image>
 							<text class="feature-text">{{ t('mine.footprint') }}</text>
 						</view>
