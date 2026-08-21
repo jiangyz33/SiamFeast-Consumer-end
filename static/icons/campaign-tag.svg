@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- 折扣标签 DISCOUNT -->
+  <path d="M6 21.5V10C6 7.8 7.8 6 10 6H21.5C22.6 6 23.6 6.4 24.4 7.2L40 22.8C41.6 24.4 41.6 27 40 28.6L28.6 40C27 41.6 24.4 41.6 22.8 40L7.2 24.4C6.4 23.6 6 22.6 6 21.5Z" stroke="#E09A1B" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M15 15H15.02" stroke="#E09A1B" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M20 27L28 19" stroke="#E09A1B" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M20.5 20.5H20.52" stroke="#E09A1B" stroke-width="3.2" stroke-linecap="round"/>
+  <path d="M26.5 26.5H26.52" stroke="#E09A1B" stroke-width="3.2" stroke-linecap="round"/>
+</svg>

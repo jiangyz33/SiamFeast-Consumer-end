@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="coinMain" x1="8" y1="12" x2="34" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD65C"/>
+      <stop offset="0.55" stop-color="#F5B92F"/>
+      <stop offset="1" stop-color="#DE9312"/>
+    </linearGradient>
+    <linearGradient id="coinBack" x1="26" y1="6" x2="40" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFDF80"/>
+      <stop offset="1" stop-color="#EFA91E"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 小金币（右上，后层） -->
+  <circle cx="33.5" cy="14.5" r="8.5" fill="url(#coinBack)"/>
+  <circle cx="33.5" cy="14.5" r="5.8" fill="none" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="1.4"/>
+
+  <!-- 大金币（前层） -->
+  <circle cx="21" cy="27" r="14.5" fill="url(#coinMain)"/>
+  <!-- 顶部高光 -->
+  <path d="M12.5 21.5C14.5 17 18.5 14 23 13.2" stroke="#FFF3C4" stroke-opacity="0.85" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  <!-- 内圈描边 -->
+  <circle cx="21" cy="27" r="11" fill="none" stroke="#FFFFFF" stroke-opacity="0.95" stroke-width="1.6"/>
+
+  <!-- 钻石（兑换好礼） -->
+  <path d="M17.2 24.2H24.8L28 28.2L21 35.2L14 28.2L17.2 24.2Z" fill="#FFFFFF"/>
+  <path d="M17.2 24.2L19 28.2H23L24.8 24.2" fill="#FFF3C4"/>
+  <!-- 切面线 -->
+  <path d="M19 28.2L21 35.2L23 28.2" stroke="#F5B92F" stroke-opacity="0.55" stroke-width="1" fill="none"/>
+</svg>

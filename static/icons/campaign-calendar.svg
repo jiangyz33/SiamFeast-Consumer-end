@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- 特别日期日历 SPECIAL_DATE -->
+  <rect x="7" y="10" width="34" height="31" rx="3.5" stroke="#E09A1B" stroke-width="2.6"/>
+  <path d="M7 19H41" stroke="#E09A1B" stroke-width="2.6"/>
+  <path d="M16 6V13M32 6V13" stroke="#E09A1B" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M17 27L22 32L31 23" stroke="#E09A1B" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

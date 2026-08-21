@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <!-- 开业门店 STORE_OPENING -->
+  <path d="M8 20L11 10H37L40 20" stroke="#E09A1B" stroke-width="2.6" stroke-linejoin="round"/>
+  <path d="M8 20C8 22.8 10.2 25 13 25C15.8 25 18 22.8 18 20C18 22.8 20.2 25 23 25C25.8 25 28 22.8 28 20C28 22.8 30.2 25 33 25C35.8 25 38 22.8 38 20" stroke="#E09A1B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10 25V40H38V25" stroke="#E09A1B" stroke-width="2.6" stroke-linejoin="round"/>
+  <rect x="19" y="31" width="10" height="9" stroke="#E09A1B" stroke-width="2.4" stroke-linejoin="round"/>
+  <path d="M19 16H29" stroke="#E09A1B" stroke-width="2.4" stroke-linecap="round"/>
+</svg>
