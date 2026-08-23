@@ -24,6 +24,7 @@
             "android" : {
                 "minSdkVersion" : 21,
                 "targetSdkVersion" : 35,
+                "abiFilters" : [ "arm64-v8a", "armeabi-v7a" ],
                 "permissions" : [
                     "<uses-permission android:name=\"android.permission.INTERNET\"/>",
                     "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\"/>",
@@ -167,7 +168,7 @@
             }
         },
         "devServer" : {
-            "https" : true,
+            "https" : false,
             "port" : 80
         },
         "unipush" : {

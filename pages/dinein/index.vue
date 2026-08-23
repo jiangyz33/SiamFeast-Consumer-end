@@ -22,7 +22,7 @@
 			<!-- 店铺详细信息 -->
 			<view class="shop-info-card">
 				<view class="shop-info-left">
-					<text class="shop-full-name" @click="onShopNameClick">{{ shopInfo["name_" + currentLang()] || shopInfo.fullName }}</text>
+					<text class="shop-full-name">{{ shopInfo["name_" + currentLang()] || shopInfo.fullName }}</text>
 					<view class="shop-rating">
 						<text class="rating-text" v-if="shopInfo.phone">{{ shopInfo.phone }}</text>
 					</view>
@@ -46,7 +46,7 @@
 			</view>
 
 			<!-- 新店开业横幅 -->
-			<view class="opening-banner" v-if="openingInfo.is_opening_active || testOpeningMode">
+			<view class="opening-banner" v-if="openingInfo.is_opening_active">
 				<view class="opening-banner-header">
 					<text class="opening-emoji">🎉</text>
 					<text class="opening-title">{{ t('opening.active') }}</text>
@@ -402,8 +402,6 @@ export default {
 			openingClaimed: false,
 			// C 端点餐开关（后端 ordering_enabled，默认 false=未开通）：false 时菜单可浏览但禁止加购/下单
 			orderingEnabled: true,
-			testOpeningMode: false,
-			_nameClickCount: 0,
 			shopInfo: {
 				id: null,
 				name: '',
@@ -562,29 +560,7 @@ export default {
 			this.langVersion++
 		},
 
-		// 测试:连点店名 5 次激活开业横幅(上线前删)
-		onShopNameClick() {
-			this._nameClickCount = (this._nameClickCount || 0) + 1
-			if (this._nameClickCount >= 5) {
-				this.testOpeningMode = !this.testOpeningMode
-				if (this.testOpeningMode) {
-					this.openingInfo = {
-						is_opening_active: true,
-						days_left: 5,
-						extra_points: 50,
-						extra_coins: 10,
-						discount_percent: 10,
-						coupon_ids: [],
-						has_coupon: false
-					}
-					this.openingClaimed = false
-					uni.showToast({ title: '开业横幅测试模式 ON', icon: 'none' })
-				} else {
-					uni.showToast({ title: '开业横幅测试模式 OFF', icon: 'none' })
-				}
-				this._nameClickCount = 0
-			}
-		},
+
 
 		// ============ 新店开业 ============
 		// 格式化开业券面额展示
