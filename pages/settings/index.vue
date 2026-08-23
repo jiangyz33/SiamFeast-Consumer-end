@@ -139,6 +139,10 @@
 				<view class="logout-btn" @click="handleLogout">
 					<text class="logout-text">{{ t('settings.logout') }}</text>
 				</view>
+				<!-- 删除账号（Google Play 合规：应用内账号删除入口，红色警示 + 两步确认） -->
+				<view class="delete-account-btn" @click="handleDeleteAccount">
+					<text class="delete-account-text">{{ t('settings.deleteAccount') }}</text>
+				</view>
 			</view>
 
 			<!-- 底部占位 -->
@@ -250,7 +254,7 @@
 import store from '@/store/index.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
-import { getUserInfo, updateUserInfo, uploadAvatar } from '@/api/services/auth.js'
+import { getUserInfo, updateUserInfo, uploadAvatar, deleteAccount } from '@/api/services/auth.js'
 import { getMembershipTiers } from '@/api/services/member.js'
 import { unregisterPush } from '@/utils/push.js'
 import BirthdayModal from '@/components/birthday-modal.vue'
@@ -790,6 +794,73 @@ export default {
 					}
 				}
 			})
+		},
+
+		/**
+		 * 删除账号（Google Play 合规）：两步确认防误触
+		 * 弹窗1 说明后果 → 弹窗2 最终确认 → 调接口 → 清本地 → 跳登录页
+		 */
+		handleDeleteAccount() {
+			uni.showModal({
+				title: this.i18n.t('settings.deleteAccount'),
+				content: this.i18n.t('settings.deleteAccountWarning'),
+				confirmText: this.i18n.t('settings.deleteAccountContinue'),
+				cancelText: this.i18n.t('common.cancel'),
+				confirmColor: '#D9534F',
+				success: (res) => {
+					if (!res.confirm) return
+					// 第二步：最终确认
+					uni.showModal({
+						title: this.i18n.t('settings.deleteAccountFinalTitle'),
+						content: this.i18n.t('settings.deleteAccountFinalConfirm'),
+						confirmText: this.i18n.t('settings.deleteAccountConfirmBtn'),
+						cancelText: this.i18n.t('common.cancel'),
+						confirmColor: '#D9534F',
+						success: (res2) => {
+							if (res2.confirm) this.doDeleteAccount()
+						}
+					})
+				}
+			})
+		},
+
+		async doDeleteAccount() {
+			this._deleting = true
+			uni.showLoading({ title: this.i18n.t('common.loading'), mask: true })
+			try {
+				const res = await deleteAccount()
+				uni.hideLoading()
+				if (res && res.code === 0) {
+					uni.showToast({ title: this.i18n.t('settings.deleteAccountDone'), icon: 'none' })
+					// 清推送关联（后端删账号时也会清设备，双保险）
+					try { await unregisterPush() } catch (e) {}
+					// 清本地登录态（store.logout 同时发 logoutSuccess 停轮询）
+					store.logout()
+					setTimeout(() => {
+						uni.reLaunch({ url: '/pages/login/index' })
+					}, 800)
+				}
+			} catch (e) {
+				uni.hideLoading()
+				const code = e && (e.code || e.bizCode)
+				if (code === 'ACCOUNT_DELETE_ACTIVE_ORDERS') {
+					// 有未完成订单：提示并可跳订单列表处理
+					uni.showModal({
+						title: this.i18n.t('settings.deleteAccountBlockedTitle'),
+						content: this.i18n.t('settings.deleteAccountBlockedOrders'),
+						confirmText: this.i18n.t('settings.goOrders'),
+						cancelText: this.i18n.t('common.cancel'),
+						success: (r) => {
+							if (r.confirm) uni.navigateTo({ url: '/pages/order/index' })
+						}
+					})
+				} else {
+					const msg = (e && e.message) || this.i18n.t('settings.deleteAccountFailed')
+					uni.showToast({ title: msg, icon: 'none' })
+				}
+			} finally {
+				this._deleting = false
+			}
 		}
 	}
 }
@@ -920,10 +991,31 @@ export default {
 .logout-btn {
 	height: 48px;
 	background-color: #FFFFFF;
-	border-radius: 24px;
+	border-radius:  24px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+
+/* 删除账号（红色警示描边，弱于退出但足够醒目） */
+.delete-account-btn {
+	height: 44px;
+	margin-top: 12px;
+	background-color: transparent;
+	border: 1px solid #F0C8C8;
+	border-radius: 22px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.delete-account-btn:active {
+	opacity: 0.7;
+}
+
+.delete-account-text {
+	font-size: 14px;
+	color: #D9534F;
 }
 
 .logout-btn:active {

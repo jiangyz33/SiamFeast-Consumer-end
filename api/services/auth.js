@@ -236,6 +236,17 @@ export function changePhone(oldPhone, oldCode, newPhone, newCode) {
 	})
 }
 
+
+/**
+ * 删除账号（Google Play 合规：应用内账号删除入口）
+ * POST /user/account/delete  body 必须显式 confirm:true 防误触
+ * 成功返回 { deleted:true, message }；
+ * 422 ACCOUNT_DELETE_ACTIVE_ORDERS = 有未完成订单，需先处理
+ */
+export function deleteAccount() {
+	return post('/user/account/delete', { confirm: true })
+}
+
 // 导出模块对象
 export const authApi = {
 	sendEmailCode,
@@ -249,7 +260,8 @@ export const authApi = {
 	logout,
 	refreshToken,
 	sendChangePhoneSMS,
-	changePhone
+	changePhone,
+	deleteAccount
 }
 
 export default authApi
