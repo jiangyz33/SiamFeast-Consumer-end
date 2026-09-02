@@ -1,0 +1,3462 @@
+[
+ {
+  "text": "全部",
+  "count": 8,
+  "where": [
+   "pages/dinein/index.vue:468",
+   "pages/dinein/index.vue:469",
+   "pages/dinein-stores/index.vue:45"
+  ]
+ },
+ {
+  "text": "更多",
+  "count": 4,
+  "where": [
+   "pages/mall/index.vue:85",
+   "pages/mall/index.vue:111",
+   "pages/mall/index.vue:342"
+  ]
+ },
+ {
+  "text": "领取失败",
+  "count": 4,
+  "where": [
+   "pages/newbie-gift/index.vue:182",
+   "pages/newbie-gift/index.vue:187",
+   "pages/newbie-gift/index.vue:208"
+  ]
+ },
+ {
+  "text": "海鲜面",
+  "count": 4,
+  "where": [
+   "pages/products/index.vue:372",
+   "pages/products/index.vue:373",
+   "pages/products/index.vue:374"
+  ]
+ },
+ {
+  "text": "${(10 - v / 10).toFixed(1).replace('.0', '')}折",
+  "count": 3,
+  "where": [
+   "pages/checkout/index.vue:896",
+   "pages/coupons/index.vue:334",
+   "components/coupon-redeem-modal.vue:84"
+  ]
+ },
+ {
+  "text": "入住",
+  "count": 3,
+  "where": [
+   "pages/hostel/index.vue:49",
+   "pages/hostel/index.vue:201",
+   "pages/hostel/index.vue:240"
+  ]
+ },
+ {
+  "text": "退房",
+  "count": 3,
+  "where": [
+   "pages/hostel/index.vue:64",
+   "pages/hostel/index.vue:211",
+   "pages/hostel/index.vue:241"
+  ]
+ },
+ {
+  "text": "普通会员",
+  "count": 3,
+  "where": [
+   "pages/index/index.vue:488",
+   "pages/member-code/index.vue:118",
+   "pages/member-code/index.vue:122"
+  ]
+ },
+ {
+  "text": "泰国",
+  "count": 3,
+  "where": [
+   "pages/login/index.vue:121",
+   "pages/login/password.vue:92",
+   "pages/login/register.vue:202"
+  ]
+ },
+ {
+  "text": "VIP 会员",
+  "count": 3,
+  "where": [
+   "pages/member-code/index.vue:120",
+   "pages/member-code/index.vue:121",
+   "pages/member-code/index.vue:123"
+  ]
+ },
+ {
+  "text": "加载中...",
+  "count": 3,
+  "where": [
+   "pages/newbie-gift/index.vue:17",
+   "pages/settings/index.vue:332",
+   "utils/index.js:141"
+  ]
+ },
+ {
+  "text": "积分",
+  "count": 3,
+  "where": [
+   "pages/tasks/index.vue:111",
+   "components/birthday-modal.vue:105",
+   "components/task-card.vue:122"
+  ]
+ },
+ {
+  "text": "金币",
+  "count": 3,
+  "where": [
+   "pages/tasks/index.vue:112",
+   "components/birthday-modal.vue:104",
+   "components/task-card.vue:123"
+  ]
+ },
+ {
+  "text": "抢券失败",
+  "count": 3,
+  "where": [
+   "utils/campaign.js:142",
+   "utils/campaign.js:165",
+   "utils/campaign.js:167"
+  ]
+ },
+ {
+  "text": "操作失败",
+  "count": 3,
+  "where": [
+   "utils/sms.js:242",
+   "utils/sms.js:242",
+   "utils/sms.js:250"
+  ]
+ },
+ {
+  "text": "曼谷",
+  "count": 2,
+  "where": [
+   "pages/address/index.vue:239",
+   "pages/address/index.vue:244"
+  ]
+ },
+ {
+  "text": "清迈",
+  "count": 2,
+  "where": [
+   "pages/address/index.vue:416",
+   "pages/address/index.vue:421"
+  ]
+ },
+ {
+  "text": "普吉",
+  "count": 2,
+  "where": [
+   "pages/address/index.vue:460",
+   "pages/address/index.vue:465"
+  ]
+ },
+ {
+  "text": "北榄",
+  "count": 2,
+  "where": [
+   "pages/address/index.vue:504",
+   "pages/address/index.vue:509"
+  ]
+ },
+ {
+  "text": "暖武里",
+  "count": 2,
+  "where": [
+   "pages/address/index.vue:548",
+   "pages/address/index.vue:553"
+  ]
+ },
+ {
+  "text": "清莱",
+  "count": 2,
+  "where": [
+   "pages/address/index.vue:587",
+   "pages/address/index.vue:592"
+  ]
+ },
+ {
+  "text": "更新日期：2024年1月1日",
+  "count": 2,
+  "where": [
+   "pages/agreement/index.vue:24",
+   "pages/agreement/index.vue:279"
+  ]
+ },
+ {
+  "text": "生效日期：2024年1月1日",
+  "count": 2,
+  "where": [
+   "pages/agreement/index.vue:25",
+   "pages/agreement/index.vue:280"
+  ]
+ },
+ {
+  "text": ">1.1 SiamFeast（以下简称",
+  "count": 2,
+  "where": [
+   "pages/agreement/index.vue:29",
+   "pages/agreement/index.vue:284"
+  ]
+ },
+ {
+  "text": "满${r.threshold}减${r.reduction}",
+  "count": 2,
+  "where": [
+   "pages/campaign/index.vue:241",
+   "pages/index/index.vue:892"
+  ]
+ },
+ {
+  "text": "全场${r.discount_percent}% off",
+  "count": 2,
+  "where": [
+   "pages/campaign/index.vue:246",
+   "pages/index/index.vue:898"
+  ]
+ },
+ {
+  "text": "? `${n}张券可领` : (lang ===",
+  "count": 2,
+  "where": [
+   "pages/campaign/index.vue:252",
+   "pages/index/index.vue:905"
+  ]
+ },
+ {
+  "text": "+${r.extra_points}积分",
+  "count": 2,
+  "where": [
+   "pages/campaign/index.vue:257",
+   "pages/index/index.vue:911"
+  ]
+ },
+ {
+  "text": "+${r.extra_coins}金币",
+  "count": 2,
+  "where": [
+   "pages/campaign/index.vue:258",
+   "pages/index/index.vue:912"
+  ]
+ },
+ {
+  "text": "请选择门店",
+  "count": 2,
+  "where": [
+   "pages/checkout/index.vue:622",
+   "pages/dinein/index.vue:717"
+  ]
+ },
+ {
+  "text": "其他",
+  "count": 2,
+  "where": [
+   "pages/dinein/index.vue:852",
+   "pages/dinein/index.vue:853"
+  ]
+ },
+ {
+  "text": "招牌菜品",
+  "count": 2,
+  "where": [
+   "pages/dinein-stores/index.vue:92",
+   "pages/products/index.vue:76"
+  ]
+ },
+ {
+  "text": "{{ t('products.hotItems') || '招牌菜品' }}",
+  "count": 2,
+  "where": [
+   "pages/dinein-stores/index.vue:92",
+   "pages/products/index.vue:76"
+  ]
+ },
+ {
+  "text": "款",
+  "count": 2,
+  "where": [
+   "pages/dinein-stores/index.vue:93",
+   "pages/products/index.vue:77"
+  ]
+ },
+ {
+  "text": "{{ store._items.length }} {{ t('products.items') || '款' }}",
+  "count": 2,
+  "where": [
+   "pages/dinein-stores/index.vue:93",
+   "pages/products/index.vue:77"
+  ]
+ },
+ {
+  "text": "加载分类失败:",
+  "count": 2,
+  "where": [
+   "pages/discount/index.vue:209",
+   "pages/hot-products/index.vue:224"
+  ]
+ },
+ {
+  "text": "民宿",
+  "count": 2,
+  "where": [
+   "pages/hostel/index.vue:22",
+   "pages/products/index.vue:377"
+  ]
+ },
+ {
+  "text": "请选择",
+  "count": 2,
+  "where": [
+   "pages/hostel/index.vue:51",
+   "pages/hostel/index.vue:66"
+  ]
+ },
+ {
+  "text": "已满",
+  "count": 2,
+  "where": [
+   "pages/hostel/index.vue:97",
+   "pages/hostel/index.vue:130"
+  ]
+ },
+ {
+  "text": "待选择",
+  "count": 2,
+  "where": [
+   "pages/hostel/index.vue:203",
+   "pages/hostel/index.vue:213"
+  ]
+ },
+ {
+  "text": "客房",
+  "count": 2,
+  "where": [
+   "pages/hostel/index.vue:288",
+   "pages/hostel/index.vue:544"
+  ]
+ },
+ {
+  "text": "独立卫浴",
+  "count": 2,
+  "where": [
+   "pages/hostel/index.vue:609",
+   "pages/hostel/index.vue:611"
+  ]
+ },
+ {
+  "text": "已领取",
+  "count": 2,
+  "where": [
+   "pages/index/index.vue:811",
+   "pages/newbie-gift/index.vue:60"
+  ]
+ },
+ {
+  "text": "活动",
+  "count": 2,
+  "where": [
+   "pages/index/index.vue:875",
+   "pages/index/index.vue:876"
+  ]
+ },
+ {
+  "text": "检测到分享链接:",
+  "count": 2,
+  "where": [
+   "pages/index/index.vue:1048",
+   "App.vue:135"
+  ]
+ },
+ {
+  "text": "或",
+  "count": 2,
+  "where": [
+   "pages/login/sms.vue:173",
+   "pages/login/sms.vue:180"
+  ]
+ },
+ {
+  "text": "{{ t(\"common.more\") || \"更多\" }}",
+  "count": 2,
+  "where": [
+   "pages/mall/index.vue:85",
+   "pages/mall/index.vue:111"
+  ]
+ },
+ {
+  "text": "新人专享福利",
+  "count": 2,
+  "where": [
+   "pages/newbie-gift/index.vue:29",
+   "pages/newbie-gift/index.vue:142"
+  ]
+ },
+ {
+  "text": "领取成功",
+  "count": 2,
+  "where": [
+   "pages/newbie-gift/index.vue:174",
+   "pages/newbie-gift/index.vue:180"
+  ]
+ },
+ {
+  "text": "全部领取成功",
+  "count": 2,
+  "where": [
+   "pages/newbie-gift/index.vue:206",
+   "pages/newbie-gift/index.vue:221"
+  ]
+ },
+ {
+  "text": "烧烤",
+  "count": 2,
+  "where": [
+   "pages/products/index.vue:367",
+   "pages/products/index.vue:368"
+  ]
+ },
+ {
+  "text": "麻辣烫",
+  "count": 2,
+  "where": [
+   "pages/products/index.vue:369",
+   "pages/products/index.vue:370"
+  ]
+ },
+ {
+  "text": "已定位",
+  "count": 2,
+  "where": [
+   "pages/store-select/index.vue:269",
+   "pages/store-select/index.vue:272"
+  ]
+ },
+ {
+  "text": "券",
+  "count": 2,
+  "where": [
+   "pages/tasks/index.vue:113",
+   "components/task-card.vue:124"
+  ]
+ },
+ {
+  "text": "当前环境不支持 Firebase 短信验证",
+  "count": 2,
+  "where": [
+   "utils/firebase.js:169",
+   "utils/firebase.js:176"
+  ]
+ },
+ {
+  "text": "手机号格式不正确",
+  "count": 2,
+  "where": [
+   "utils/sms.js:141",
+   "utils/sms.js:198"
+  ]
+ },
+ {
+  "text": "验证码必须是 4-8 位数字",
+  "count": 2,
+  "where": [
+   "utils/sms.js:147",
+   "utils/sms.js:204"
+  ]
+ },
+ {
+  "text": "瓦塔纳",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:249"
+  ]
+ },
+ {
+  "text": "空讪温",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:254"
+  ]
+ },
+ {
+  "text": "素坤威提",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:259"
+  ]
+ },
+ {
+  "text": "是隆",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:264"
+  ]
+ },
+ {
+  "text": "沙吞",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:269"
+  ]
+ },
+ {
+  "text": "通罗",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:274"
+  ]
+ },
+ {
+  "text": "伊卡迈",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:279"
+  ]
+ },
+ {
+  "text": "帕卡侬",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:284"
+  ]
+ },
+ {
+  "text": "拌讦",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:289"
+  ]
+ },
+ {
+  "text": "达拍白",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:294"
+  ]
+ },
+ {
+  "text": "汇权",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:299"
+  ]
+ },
+ {
+  "text": "拉恰达",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:304"
+  ]
+ },
+ {
+  "text": "丁丹",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:309"
+  ]
+ },
+ {
+  "text": "帕亚泰",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:314"
+  ]
+ },
+ {
+  "text": "巴吞宛",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:319"
+  ]
+ },
+ {
+  "text": "挽拉",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:324"
+  ]
+ },
+ {
+  "text": "三攀他翁",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:329"
+  ]
+ },
+ {
+  "text": "空山",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:334"
+  ]
+ },
+ {
+  "text": "春武里",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:343"
+  ]
+ },
+ {
+  "text": "芭提雅",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:348"
+  ]
+ },
+ {
+  "text": "芭提雅市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:353"
+  ]
+ },
+ {
+  "text": "那歌",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:358"
+  ]
+ },
+ {
+  "text": "农普如",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:363"
+  ]
+ },
+ {
+  "text": "是拉差",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:370"
+  ]
+ },
+ {
+  "text": "是拉差市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:375"
+  ]
+ },
+ {
+  "text": "廉差邦",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:380"
+  ]
+ },
+ {
+  "text": "邦拉蒙",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:385"
+  ]
+ },
+ {
+  "text": "春武里市",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:392"
+  ]
+ },
+ {
+  "text": "春武里市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:397"
+  ]
+ },
+ {
+  "text": "万本",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:402"
+  ]
+ },
+ {
+  "text": "帕那尼空",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:407"
+  ]
+ },
+ {
+  "text": "清迈市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:426"
+  ]
+ },
+ {
+  "text": "航栋",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:431"
+  ]
+ },
+ {
+  "text": "三赛",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:436"
+  ]
+ },
+ {
+  "text": "萨披",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:441"
+  ]
+ },
+ {
+  "text": "得定",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:446"
+  ]
+ },
+ {
+  "text": "梅林",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:451"
+  ]
+ },
+ {
+  "text": "普吉市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:470"
+  ]
+ },
+ {
+  "text": "卡图",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:475"
+  ]
+ },
+ {
+  "text": "他兰",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:480"
+  ]
+ },
+ {
+  "text": "威奇提",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:485"
+  ]
+ },
+ {
+  "text": "拉威艾",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:490"
+  ]
+ },
+ {
+  "text": "芭东海滩",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:495"
+  ]
+ },
+ {
+  "text": "北榄市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:514"
+  ]
+ },
+ {
+  "text": "邦区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:519"
+  ]
+ },
+ {
+  "text": "挽薄",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:524"
+  ]
+ },
+ {
+  "text": "帕台",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:529"
+  ]
+ },
+ {
+  "text": "帕赞府",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:534"
+  ]
+ },
+ {
+  "text": "万锦",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:539"
+  ]
+ },
+ {
+  "text": "暖武里市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:558"
+  ]
+ },
+ {
+  "text": "帕克雷",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:563"
+  ]
+ },
+ {
+  "text": "邦瑞",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:568"
+  ]
+ },
+ {
+  "text": "万赞",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:573"
+  ]
+ },
+ {
+  "text": "赛瑞奈",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:578"
+  ]
+ },
+ {
+  "text": "清莱市区",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:597"
+  ]
+ },
+ {
+  "text": "美塘",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:602"
+  ]
+ },
+ {
+  "text": "景坎",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:607"
+  ]
+ },
+ {
+  "text": "瑞莱",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:612"
+  ]
+ },
+ {
+  "text": "帕南",
+  "count": 1,
+  "where": [
+   "pages/address/index.vue:617"
+  ]
+ },
+ {
+  "text": "服务条例",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:23"
+  ]
+ },
+ {
+  "text": "一、服务条款的确认和接纳",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:28"
+  ]
+ },
+ {
+  "text": "1.1 SiamFeast（以下简称\"本平台\"）的各项服务的所有权和运营权归本平台所有。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:29"
+  ]
+ },
+ {
+  "text": "1.2 用户在使用本平台提供的各项服务之前，应仔细阅读本服务条例。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:30"
+  ]
+ },
+ {
+  "text": "1.3 用户一旦注册使用本平台的服务，即视为用户已了解并完全同意本服务条例各项内容。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:31"
+  ]
+ },
+ {
+  "text": "二、服务简介",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:34"
+  ]
+ },
+ {
+  "text": "2.1 本平台是一个餐饮服务平台，为用户提供在线点餐、外卖配送、堂食预订等服务。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:35"
+  ]
+ },
+ {
+  "text": "2.2 本平台提供的服务包括但不限于：浏览菜品、在线下单、在线支付、订单追踪、会员积分、优惠券领取与使用等。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:36"
+  ]
+ },
+ {
+  "text": "2.3 用户须通过注册账号使用本平台服务，注册时请提供真实、准确、完整的个人资料。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:37"
+  ]
+ },
+ {
+  "text": "三、用户账号",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:40"
+  ]
+ },
+ {
+  "text": "3.1 用户注册成功后，将获得一个本平台账号，该账号由用户自行负责管理。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:41"
+  ]
+ },
+ {
+  "text": "3.2 用户对以其用户账号进行的所有活动和事件负法律责任。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:42"
+  ]
+ },
+ {
+  "text": "3.3 用户若发现任何非法使用账号或存在安全漏洞的情况，请立即通知本平台。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:43"
+  ]
+ },
+ {
+  "text": "3.4 本平台有权对用户账号进行冻结、封禁等处理，包括但不限于以下情况：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:44"
+  ]
+ },
+ {
+  "text": "（1）发布违法、违规信息；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:45"
+  ]
+ },
+ {
+  "text": "（2）恶意刷单、套利等行为；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:46"
+  ]
+ },
+ {
+  "text": "（3）冒用他人身份或信息；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:47"
+  ]
+ },
+ {
+  "text": "（4）其他违反本条例或法律法规的行为。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:48"
+  ]
+ },
+ {
+  "text": "四、用户行为规范",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:51"
+  ]
+ },
+ {
+  "text": "4.1 用户在使用本平台服务时，必须遵守以下原则：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:52"
+  ]
+ },
+ {
+  "text": "（1）遵守泰国相关法律法规；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:53"
+  ]
+ },
+ {
+  "text": "（2）不得为任何非法目的而使用网络服务系统；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:54"
+  ]
+ },
+ {
+  "text": "（3）遵守所有与网络服务有关的网络协议、规定和程序；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:55"
+  ]
+ },
+ {
+  "text": "（4）不得利用本平台服务进行任何可能对互联网正常运转造成不利影响的行为；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:56"
+  ]
+ },
+ {
+  "text": "（5）不得利用本平台服务传输任何骚扰性的、中伤他人的、辱骂性的、恐吓性的、庸俗淫秽的或其他任何非法的信息资料。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:57"
+  ]
+ },
+ {
+  "text": "五、订单与支付",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:60"
+  ]
+ },
+ {
+  "text": "5.1 用户在本平台下单即表示接受商品/服务的价格、规格、配送方式等信息。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:61"
+  ]
+ },
+ {
+  "text": "5.2 订单提交后，用户可在商家未接单前取消订单；商家接单后，取消订单需与商家协商。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:62"
+  ]
+ },
+ {
+  "text": "5.3 本平台支持多种支付方式，包括在线支付、到店支付等。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:63"
+  ]
+ },
+ {
+  "text": "5.4 如遇支付异常，请及时联系客服处理。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:64"
+  ]
+ },
+ {
+  "text": "六、配送服务",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:67"
+  ]
+ },
+ {
+  "text": "6.1 外卖配送服务由本平台或合作配送方提供。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:68"
+  ]
+ },
+ {
+  "text": "6.2 配送时间仅供参考，实际配送时间可能因天气、交通等原因有所延迟。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:69"
+  ]
+ },
+ {
+  "text": "6.3 用户应确保收货地址准确、有人签收，因地址错误或无人签收导致的损失由用户自行承担。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:70"
+  ]
+ },
+ {
+  "text": "七、退换货与退款",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:73"
+  ]
+ },
+ {
+  "text": "7.1 食品属于特殊商品，非质量问题一般不支持退换。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:74"
+  ]
+ },
+ {
+  "text": "7.2 如遇食品安全问题，请在收到商品后2小时内联系客服，提供相关凭证，我们将协助处理。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:75"
+  ]
+ },
+ {
+  "text": "7.3 退款将原路返回至用户支付账户，具体到账时间以银行处理时间为准。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:76"
+  ]
+ },
+ {
+  "text": "八、会员与积分",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:79"
+  ]
+ },
+ {
+  "text": "8.1 本平台提供会员服务，用户可通过消费累积积分。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:80"
+  ]
+ },
+ {
+  "text": "8.2 积分可在积分商城兑换商品或优惠券，具体兑换规则以商城页面显示为准。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:81"
+  ]
+ },
+ {
+  "text": "8.3 积分不可转让、不可提现，有效期以具体活动规则为准。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:82"
+  ]
+ },
+ {
+  "text": "8.4 本平台有权根据运营需要调整会员等级规则和积分规则。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:83"
+  ]
+ },
+ {
+  "text": "九、知识产权",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:86"
+  ]
+ },
+ {
+  "text": "9.1 本平台的所有内容，包括但不限于文字、图片、音频、视频、软件、程序、版面设计等的知识产权归本平台所有。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:87"
+  ]
+ },
+ {
+  "text": "9.2 未经本平台书面许可，用户不得复制、转载、链接、传播或用于其他商业目的。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:88"
+  ]
+ },
+ {
+  "text": "十、免责声明",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:91"
+  ]
+ },
+ {
+  "text": "10.1 本平台不保证网络服务一定能满足用户的要求，也不保证网络服务不会中断。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:92"
+  ]
+ },
+ {
+  "text": "10.2 因不可抗力或第三方原因导致的服务中断或损失，本平台不承担责任。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:93"
+  ]
+ },
+ {
+  "text": "10.3 用户因违反本条例或相关法律法规而导致的任何后果，由用户自行承担。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:94"
+  ]
+ },
+ {
+  "text": "十一、条例修改",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:97"
+  ]
+ },
+ {
+  "text": "11.1 本平台有权随时修改本条例的任何条款。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:98"
+  ]
+ },
+ {
+  "text": "11.2 修改后的条例一经在本平台公布即生效，用户继续使用本平台服务即视为接受修改后的条例。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:99"
+  ]
+ },
+ {
+  "text": "11.3 如用户不同意修改后的条例，可选择停止使用本平台服务。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:100"
+  ]
+ },
+ {
+  "text": "隐私条例",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:278"
+  ]
+ },
+ {
+  "text": "一、引言",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:283"
+  ]
+ },
+ {
+  "text": "1.1 SiamFeast（以下简称\"本平台\"）非常重视用户的隐私保护。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:284"
+  ]
+ },
+ {
+  "text": "1.2 本隐私条例旨在向您说明我们如何收集、使用、存储和保护您的个人信息。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:285"
+  ]
+ },
+ {
+  "text": "1.3 在使用本平台服务前，请仔细阅读并理解本隐私条例。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:286"
+  ]
+ },
+ {
+  "text": "二、信息收集",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:289"
+  ]
+ },
+ {
+  "text": "2.1 我们收集的信息包括：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:290"
+  ]
+ },
+ {
+  "text": "（1）注册信息：手机号码、昵称、头像等；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:291"
+  ]
+ },
+ {
+  "text": "（2）订单信息：收货地址、联系方式、订单记录等；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:292"
+  ]
+ },
+ {
+  "text": "（3）支付信息：支付方式、支付记录等；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:293"
+  ]
+ },
+ {
+  "text": "（4）设备信息：设备型号、操作系统、唯一设备标识符等；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:294"
+  ]
+ },
+ {
+  "text": "（5）位置信息：用于提供附近门店、配送服务等；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:295"
+  ]
+ },
+ {
+  "text": "（6）日志信息：访问时间、浏览记录、操作记录等。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:296"
+  ]
+ },
+ {
+  "text": "2.2 我们仅在您授权同意的情况下收集上述信息。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:297"
+  ]
+ },
+ {
+  "text": "三、信息使用",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:300"
+  ]
+ },
+ {
+  "text": "3.1 我们使用收集的信息用于：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:301"
+  ]
+ },
+ {
+  "text": "（1）为您提供、维护、改进我们的服务；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:302"
+  ]
+ },
+ {
+  "text": "（2）处理您的订单和支付请求；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:303"
+  ]
+ },
+ {
+  "text": "（3）向您发送服务通知、营销信息（经您同意）；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:304"
+  ]
+ },
+ {
+  "text": "（4）进行数据分析以改善用户体验；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:305"
+  ]
+ },
+ {
+  "text": "（5）保障交易安全，预防欺诈；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:306"
+  ]
+ },
+ {
+  "text": "（6）遵守法律法规的要求。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:307"
+  ]
+ },
+ {
+  "text": "四、信息共享",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:310"
+  ]
+ },
+ {
+  "text": "4.1 我们不会向第三方出售您的个人信息。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:311"
+  ]
+ },
+ {
+  "text": "4.2 在以下情况下，我们可能会与第三方共享您的信息：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:312"
+  ]
+ },
+ {
+  "text": "（1）获得您的明确同意；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:313"
+  ]
+ },
+ {
+  "text": "（2）与提供服务的合作伙伴共享（如配送服务商、支付服务商），但仅限于提供服务所需的信息；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:314"
+  ]
+ },
+ {
+  "text": "（3）法律法规要求或政府部门依法要求；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:315"
+  ]
+ },
+ {
+  "text": "（4）保护本平台、用户或公众的权益、财产或安全。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:316"
+  ]
+ },
+ {
+  "text": "五、信息存储与保护",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:319"
+  ]
+ },
+ {
+  "text": "5.1 我们采用行业标准的安全措施保护您的个人信息，包括但不限于：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:320"
+  ]
+ },
+ {
+  "text": "（1）数据加密存储和传输；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:321"
+  ]
+ },
+ {
+  "text": "（2）访问控制和权限管理；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:322"
+  ]
+ },
+ {
+  "text": "（3）安全审计和监控；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:323"
+  ]
+ },
+ {
+  "text": "（4）定期安全评估和漏洞修复。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:324"
+  ]
+ },
+ {
+  "text": "5.2 您的信息存储在位于中国的服务器上。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:325"
+  ]
+ },
+ {
+  "text": "5.3 我们保留信息的时间不超过实现本条例所述目的所需的期限。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:326"
+  ]
+ },
+ {
+  "text": "六、您的权利",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:329"
+  ]
+ },
+ {
+  "text": "6.1 您对自己的个人信息享有以下权利：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:330"
+  ]
+ },
+ {
+  "text": "（1）访问权：您有权访问我们持有的您的个人信息；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:331"
+  ]
+ },
+ {
+  "text": "（2）更正权：您有权更正不准确或不完整的个人信息；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:332"
+  ]
+ },
+ {
+  "text": "（3）删除权：在特定情况下，您有权要求删除您的个人信息；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:333"
+  ]
+ },
+ {
+  "text": "（4）撤回同意权：您有权撤回之前给予我们的同意；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:334"
+  ]
+ },
+ {
+  "text": "（5）注销账号：您有权注销您的账号。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:335"
+  ]
+ },
+ {
+  "text": "6.2 如需行使上述权利，请联系我们的客服。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:336"
+  ]
+ },
+ {
+  "text": "七、Cookie和类似技术",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:339"
+  ]
+ },
+ {
+  "text": "7.1 我们使用Cookie和类似技术来：",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:340"
+  ]
+ },
+ {
+  "text": "（1）记住您的登录状态和偏好设置；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:341"
+  ]
+ },
+ {
+  "text": "（2）分析您如何使用我们的服务；",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:342"
+  ]
+ },
+ {
+  "text": "（3）个性化您的使用体验。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:343"
+  ]
+ },
+ {
+  "text": "7.2 您可以通过浏览器设置管理Cookie，但这可能影响某些功能的使用。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:344"
+  ]
+ },
+ {
+  "text": "八、第三方链接",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:347"
+  ]
+ },
+ {
+  "text": "8.1 我们的服务可能包含指向第三方网站或服务的链接。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:348"
+  ]
+ },
+ {
+  "text": "8.2 我们不对第三方的隐私做法负责，建议您阅读第三方的隐私政策。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:349"
+  ]
+ },
+ {
+  "text": "九、未成年人保护",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:352"
+  ]
+ },
+ {
+  "text": "9.1 我们的服务不面向14周岁以下的未成年人。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:353"
+  ]
+ },
+ {
+  "text": "9.2 如果您是14-18周岁的未成年人，请在监护人指导下使用我们的服务。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:354"
+  ]
+ },
+ {
+  "text": "9.3 如果我们发现在未获得可证实的父母同意的情况下收集了未成年人的个人信息，我们会尽快删除相关信息。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:355"
+  ]
+ },
+ {
+  "text": "十、隐私条例的更新",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:358"
+  ]
+ },
+ {
+  "text": "10.1 我们可能会不时更新本隐私条例。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:359"
+  ]
+ },
+ {
+  "text": "10.2 更新后的条例将在本平台公布，建议您定期查阅。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:360"
+  ]
+ },
+ {
+  "text": "10.3 如果您在条例变更后继续使用我们的服务，即表示您接受修订后的条例。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:361"
+  ]
+ },
+ {
+  "text": "关于我们",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:551"
+  ]
+ },
+ {
+  "text": "品味泰式美食，享受品质生活",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:556"
+  ]
+ },
+ {
+  "text": "品牌介绍",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:559"
+  ]
+ },
+ {
+  "text": "SiamFeast是一家专注于泰式美食的餐饮品牌，致力于为顾客提供正宗、健康、美味的泰式料理体验。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:560"
+  ]
+ },
+ {
+  "text": "我们精选优质食材，由资深泰式料理主厨精心烹制，为您呈现地道的泰国风味。",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:561"
+  ]
+ },
+ {
+  "text": "我们的特色",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:564"
+  ]
+ },
+ {
+  "text": "• 正宗泰式风味，原汁原味",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:565"
+  ]
+ },
+ {
+  "text": "• 新鲜食材，健康美味",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:566"
+  ]
+ },
+ {
+  "text": "• 多种业态，满足不同需求",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:567"
+  ]
+ },
+ {
+  "text": "• 便捷服务，品质保障",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:568"
+  ]
+ },
+ {
+  "text": "服务内容",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:571"
+  ]
+ },
+ {
+  "text": "• 堂食服务：舒适的就餐环境，优质的服务体验",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:572"
+  ]
+ },
+ {
+  "text": "• 外卖配送：快速送达，美味到家",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:573"
+  ]
+ },
+ {
+  "text": "• 自取服务：线上点单，到店自取",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:574"
+  ]
+ },
+ {
+  "text": "• 会员服务：积分奖励，专属优惠",
+  "count": 1,
+  "where": [
+   "pages/agreement/index.vue:575"
+  ]
+ },
+ {
+  "text": "可用",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:131"
+  ]
+ },
+ {
+  "text": "不可用",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:131"
+  ]
+ },
+ {
+  "text": "芭堤雅泰式火锅",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:423"
+  ]
+ },
+ {
+  "text": "四惠·远洋天地二期",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:424"
+  ]
+ },
+ {
+  "text": "立即配送",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:429"
+  ]
+ },
+ {
+  "text": "30分钟后",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:430"
+  ]
+ },
+ {
+  "text": "1小时后",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:431"
+  ]
+ },
+ {
+  "text": "1.5小时后",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:432"
+  ]
+ },
+ {
+  "text": "收银台支付",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:436"
+  ]
+ },
+ {
+  "text": "解析购物车数据失败",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:607"
+  ]
+ },
+ {
+  "text": "加载门店详情失败:",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:712"
+  ]
+ },
+ {
+  "text": "加载结算数据失败:",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:817"
+  ]
+ },
+ {
+  "text": "部分商品不存在或已下架",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:1072"
+  ]
+ },
+ {
+  "text": "提交订单失败:",
+  "count": 1,
+  "where": [
+   "pages/checkout/index.vue:1261"
+  ]
+ },
+ {
+  "text": "${10 - value / 10}折",
+  "count": 1,
+  "where": [
+   "pages/dinein/index.vue:573"
+  ]
+ },
+ {
+  "text": "请先选择一个门店再开始点餐",
+  "count": 1,
+  "where": [
+   "pages/dinein/index.vue:718"
+  ]
+ },
+ {
+  "text": "{{ t('products.all') || '全部' }}",
+  "count": 1,
+  "where": [
+   "pages/dinein-stores/index.vue:45"
+  ]
+ },
+ {
+  "text": "立即下单",
+  "count": 1,
+  "where": [
+   "pages/dinein-stores/index.vue:155"
+  ]
+ },
+ {
+  "text": "i18n.t('discount.searchPlaceholder') || '搜索优惠菜品'",
+  "count": 1,
+  "where": [
+   "pages/discount/index.vue:20"
+  ]
+ },
+ {
+  "text": "加载优惠商品失败:",
+  "count": 1,
+  "where": [
+   "pages/discount/index.vue:264"
+  ]
+ },
+ {
+  "text": "{{ t('groupBuy.remainCount') }}{{ remainCount }}份",
+  "count": 1,
+  "where": [
+   "pages/group-detail/index.vue:46"
+  ]
+ },
+ {
+  "text": "{{ t('groupBuy.limitPerUser') }}{{ product.max_per_user }}份",
+  "count": 1,
+  "where": [
+   "pages/group-detail/index.vue:52"
+  ]
+ },
+ {
+  "text": "预订失败:",
+  "count": 1,
+  "where": [
+   "pages/hostel/booking.vue:323"
+  ]
+ },
+ {
+  "text": "· 128条评价",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:35"
+  ]
+ },
+ {
+  "text": "共{{ nights }}晚",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:57"
+  ]
+ },
+ {
+  "text": "--晚",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:60"
+  ]
+ },
+ {
+  "text": "{{ room.capacity }}人",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:105"
+  ]
+ },
+ {
+  "text": "{{ room.bed_count }}床",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:110"
+  ]
+ },
+ {
+  "text": "/晚",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:121"
+  ]
+ },
+ {
+  "text": "{{ nights }}晚 ฿{{ room.base_price * nights }}",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:122"
+  ]
+ },
+ {
+  "text": "选日期",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:130"
+  ]
+ },
+ {
+  "text": "预订",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:130"
+  ]
+ },
+ {
+  "text": "暂无商品",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:162"
+  ]
+ },
+ {
+  "text": "去结算",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:184"
+  ]
+ },
+ {
+  "text": "选择入住日期",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:193"
+  ]
+ },
+ {
+  "text": "{{ nights }}晚",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:208"
+  ]
+ },
+ {
+  "text": "今天",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:242"
+  ]
+ },
+ {
+  "text": "确认 · {{ nights }}晚",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:249"
+  ]
+ },
+ {
+  "text": "暹罗民宿",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:279"
+  ]
+ },
+ {
+  "text": "暹罗民宿·曼谷店",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:280"
+  ]
+ },
+ {
+  "text": "24小时",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:283"
+  ]
+ },
+ {
+  "text": "日",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:303"
+  ]
+ },
+ {
+  "text": "一",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:303"
+  ]
+ },
+ {
+  "text": "二",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:303"
+  ]
+ },
+ {
+  "text": "三",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:303"
+  ]
+ },
+ {
+  "text": "四",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:303"
+  ]
+ },
+ {
+  "text": "五",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:303"
+  ]
+ },
+ {
+  "text": "六",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:303"
+  ]
+ },
+ {
+  "text": "${d.getMonth() + 1}月${d.getDate()}日",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:363"
+  ]
+ },
+ {
+  "text": "周日",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:367"
+  ]
+ },
+ {
+  "text": "周一",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:367"
+  ]
+ },
+ {
+  "text": "周二",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:367"
+  ]
+ },
+ {
+  "text": "周三",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:367"
+  ]
+ },
+ {
+  "text": "周四",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:367"
+  ]
+ },
+ {
+  "text": "周五",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:367"
+  ]
+ },
+ {
+  "text": "周六",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:367"
+  ]
+ },
+ {
+  "text": "${y}年${mo + 1}月",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:402"
+  ]
+ },
+ {
+  "text": "加载客房失败，使用Demo:",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:481"
+  ]
+ },
+ {
+  "text": "豪华大床房",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:609"
+  ]
+ },
+ {
+  "text": "舒适宽敞，配备独立卫浴，城市景观",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:609"
+  ]
+ },
+ {
+  "text": "城景",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:609"
+  ]
+ },
+ {
+  "text": "标准双床房",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:610"
+  ]
+ },
+ {
+  "text": "两张单人床，适合朋友出行",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:610"
+  ]
+ },
+ {
+  "text": "双床",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:610"
+  ]
+ },
+ {
+  "text": "家庭套房",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:611"
+  ]
+ },
+ {
+  "text": "宽敞舒适，独立客厅，适合家庭",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:611"
+  ]
+ },
+ {
+  "text": "客厅",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:611"
+  ]
+ },
+ {
+  "text": "家庭",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:611"
+  ]
+ },
+ {
+  "text": "开发中",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:619"
+  ]
+ },
+ {
+  "text": "该房间已满",
+  "count": 1,
+  "where": [
+   "pages/hostel/index.vue:641"
+  ]
+ },
+ {
+  "text": "加载热销商品失败:",
+  "count": 1,
+  "where": [
+   "pages/hot-products/index.vue:240"
+  ]
+ },
+ {
+  "text": "该商品没有门店信息，无法下单",
+  "count": 1,
+  "where": [
+   "pages/hot-products/index.vue:327"
+  ]
+ },
+ {
+  "text": "加载会员数据失败:",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:757"
+  ]
+ },
+ {
+  "text": "未解锁",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:809"
+  ]
+ },
+ {
+  "text": "可领取",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:812"
+  ]
+ },
+ {
+  "text": "折扣",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:872"
+  ]
+ },
+ {
+  "text": "满减",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:873"
+  ]
+ },
+ {
+  "text": "领券",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:874"
+  ]
+ },
+ {
+  "text": "${couponN}张券",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:914"
+  ]
+ },
+ {
+  "text": "加载首页数据失败:",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:980"
+  ]
+ },
+ {
+  "text": "获取未读消息数失败:",
+  "count": 1,
+  "where": [
+   "pages/index/index.vue:1179"
+  ]
+ },
+ {
+  "text": "中文",
+  "count": 1,
+  "where": [
+   "pages/login/index.vue:147"
+  ]
+ },
+ {
+  "text": "登录失败:",
+  "count": 1,
+  "where": [
+   "pages/login/index.vue:263"
+  ]
+ },
+ {
+  "text": "密码",
+  "count": 1,
+  "where": [
+   "pages/login/index.vue:275"
+  ]
+ },
+ {
+  "text": "无效",
+  "count": 1,
+  "where": [
+   "pages/login/index.vue:275"
+  ]
+ },
+ {
+  "text": "错误",
+  "count": 1,
+  "where": [
+   "pages/login/index.vue:275"
+  ]
+ },
+ {
+  "text": "登录失败,请稍后重试",
+  "count": 1,
+  "where": [
+   "pages/login/index.vue:376"
+  ]
+ },
+ {
+  "text": "手机号或密码错误",
+  "count": 1,
+  "where": [
+   "pages/login/password.vue:199"
+  ]
+ },
+ {
+  "text": "操作过于频繁,请稍后再试",
+  "count": 1,
+  "where": [
+   "pages/login/password.vue:201"
+  ]
+ },
+ {
+  "text": "用户不存在,请先注册",
+  "count": 1,
+  "where": [
+   "pages/login/password.vue:203"
+  ]
+ },
+ {
+  "text": ",      // 如",
+  "count": 1,
+  "where": [
+   "pages/member/index.vue:262"
+  ]
+ },
+ {
+  "text": "金卡会员",
+  "count": 1,
+  "where": [
+   "pages/member-code/index.vue:119"
+  ]
+ },
+ {
+  "text": "刷新失败，请重试",
+  "count": 1,
+  "where": [
+   "pages/member-code/index.vue:202"
+  ]
+ },
+ {
+  "text": "新品上市",
+  "count": 1,
+  "where": [
+   "pages/new-products/index.vue:11"
+  ]
+ },
+ {
+  "text": "{{ t('newProducts.title') || '新品上市' }}",
+  "count": 1,
+  "where": [
+   "pages/new-products/index.vue:11"
+  ]
+ },
+ {
+  "text": "无法获取位置",
+  "count": 1,
+  "where": [
+   "pages/new-products/index.vue:186"
+  ]
+ },
+ {
+  "text": "新人礼包",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:11"
+  ]
+ },
+ {
+  "text": "{{ packInfo.pack_name || '新人专享福利' }}",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:29"
+  ]
+ },
+ {
+  "text": "注册即享多重好礼，超值优惠券等你来领",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:30"
+  ]
+ },
+ {
+  "text": "{{ packInfo.pack_description || '注册即享多重好礼，超值优惠券等你来领' }}",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:30"
+  ]
+ },
+ {
+  "text": "礼包已全部领取",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:35"
+  ]
+ },
+ {
+  "text": "满{{ item.min_spend }}可用",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:51"
+  ]
+ },
+ {
+  "text": "有效期{{ item.validity_days }}天",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:57"
+  ]
+ },
+ {
+  "text": "立即领取",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:60"
+  ]
+ },
+ {
+  "text": "{{ item.claimed ? '已领取' : '立即领取' }}",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:60"
+  ]
+ },
+ {
+  "text": "一键领取全部",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:69"
+  ]
+ },
+ {
+  "text": "使用规则",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:76"
+  ]
+ },
+ {
+  "text": "1. 新用户注册后即可领取新人礼包优惠券；",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:79"
+  ]
+ },
+ {
+  "text": "2. 每张优惠券仅限使用一次，不可叠加使用；",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:80"
+  ]
+ },
+ {
+  "text": "3. 优惠券自领取之日起30天内有效；",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:81"
+  ]
+ },
+ {
+  "text": "4. 优惠券仅限堂食和外卖订单使用；",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:82"
+  ]
+ },
+ {
+  "text": "5. 本活动最终解释权归SiamFeast所有。",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:83"
+  ]
+ },
+ {
+  "text": "加载新人礼包失败:",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:156"
+  ]
+ },
+ {
+  "text": "加载失败",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:157"
+  ]
+ },
+ {
+  "text": "该优惠券已领取",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:165"
+  ]
+ },
+ {
+  "text": "领取优惠券失败:",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:186"
+  ]
+ },
+ {
+  "text": "已全部领取",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:194"
+  ]
+ },
+ {
+  "text": "一键领取失败:",
+  "count": 1,
+  "where": [
+   "pages/newbie-gift/index.vue:211"
+  ]
+ },
+ {
+  "text": "进店",
+  "count": 1,
+  "where": [
+   "pages/payment-success/index.vue:72"
+  ]
+ },
+ {
+  "text": "取消",
+  "count": 1,
+  "where": [
+   "pages/points-mall/index.vue:294"
+  ]
+ },
+ {
+  "text": "{{ t('common.cancel') || '取消' }}",
+  "count": 1,
+  "where": [
+   "pages/points-mall/index.vue:294"
+  ]
+ },
+ {
+  "text": "回头客",
+  "count": 1,
+  "where": [
+   "pages/product-detail/index.vue:70"
+  ]
+ },
+ {
+  "text": "周售",
+  "count": 1,
+  "where": [
+   "pages/product-detail/index.vue:75"
+  ]
+ },
+ {
+  "text": "已取消收藏",
+  "count": 1,
+  "where": [
+   "pages/product-detail/index.vue:464"
+  ]
+ },
+ {
+  "text": "收藏成功",
+  "count": 1,
+  "where": [
+   "pages/product-detail/index.vue:476"
+  ]
+ },
+ {
+  "text": "商品已售罄",
+  "count": 1,
+  "where": [
+   "pages/product-detail/index.vue:611"
+  ]
+ },
+ {
+  "text": "分享失败:",
+  "count": 1,
+  "where": [
+   "pages/product-detail/index.vue:675"
+  ]
+ },
+ {
+  "text": "欢迎光临！",
+  "count": 1,
+  "where": [
+   "pages/product-detail/index.vue:686"
+  ]
+ },
+ {
+  "text": "热销",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:213"
+  ]
+ },
+ {
+  "text": "新品",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:214"
+  ]
+ },
+ {
+  "text": "优惠",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:215"
+  ]
+ },
+ {
+  "text": "加载门店失败:",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:342"
+  ]
+ },
+ {
+  "text": "火锅",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:364"
+  ]
+ },
+ {
+  "text": "火锅自助",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:365"
+  ]
+ },
+ {
+  "text": "火锅计件",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:366"
+  ]
+ },
+ {
+  "text": "饮品",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:371"
+  ]
+ },
+ {
+  "text": "标准餐饮",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:376"
+  ]
+ },
+ {
+  "text": "民宿火锅",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:378"
+  ]
+ },
+ {
+  "text": "民宿咖啡",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:379"
+  ]
+ },
+ {
+  "text": "加载商品失败:",
+  "count": 1,
+  "where": [
+   "pages/products/index.vue:458"
+  ]
+ },
+ {
+  "text": "档位配置加载中，请稍候",
+  "count": 1,
+  "where": [
+   "pages/settings/index.vue:746"
+  ]
+ },
+ {
+  "text": "已切换到",
+  "count": 1,
+  "where": [
+   "pages/settings/index.vue:767"
+  ]
+ },
+ {
+  "text": "定位失败，使用默认位置:",
+  "count": 1,
+  "where": [
+   "pages/store-select/index.vue:276"
+  ]
+ },
+ {
+  "text": "加载附近门店失败:",
+  "count": 1,
+  "where": [
+   "pages/store-select/index.vue:402"
+  ]
+ },
+ {
+  "text": "加载门店失败",
+  "count": 1,
+  "where": [
+   "pages/store-select/index.vue:403"
+  ]
+ },
+ {
+  "text": "张券",
+  "count": 1,
+  "where": [
+   "components/birthday-modal.vue:106"
+  ]
+ },
+ {
+  "text": "仅限特定日期可领",
+  "count": 1,
+  "where": [
+   "components/campaign-detail-modal.vue:90"
+  ]
+ },
+ {
+  "text": "${m}月${d}日",
+  "count": 1,
+  "where": [
+   "components/campaign-detail-modal.vue:330"
+  ]
+ },
+ {
+  "text": "${discount}折",
+  "count": 1,
+  "where": [
+   "components/campaign-detail-modal.vue:462"
+  ]
+ },
+ {
+  "text": "|| /已经|already|claimed|领过/i.test(msg ||",
+  "count": 1,
+  "where": [
+   "components/campaign-detail-modal.vue:601"
+  ]
+ },
+ {
+  "text": "继续",
+  "count": 1,
+  "where": [
+   "components/CButton.vue:22"
+  ]
+ },
+ {
+  "text": "隐藏",
+  "count": 1,
+  "where": [
+   "components/CInput.vue:16"
+  ]
+ },
+ {
+  "text": "显示",
+  "count": 1,
+  "where": [
+   "components/CInput.vue:16"
+  ]
+ },
+ {
+  "text": "{{ showPassword ? '隐藏' : '显示' }}",
+  "count": 1,
+  "where": [
+   "components/CInput.vue:16"
+  ]
+ },
+ {
+  "text": "请输入",
+  "count": 1,
+  "where": [
+   "components/CInput.vue:34"
+  ]
+ },
+ {
+  "text": "邀请",
+  "count": 1,
+  "where": [
+   "components/task-card.vue:108"
+  ]
+ },
+ {
+  "text": "消费",
+  "count": 1,
+  "where": [
+   "components/task-card.vue:109"
+  ]
+ },
+ {
+  "text": "签到",
+  "count": 1,
+  "where": [
+   "components/task-card.vue:110"
+  ]
+ },
+ {
+  "text": "任务",
+  "count": 1,
+  "where": [
+   "components/task-card.vue:111"
+  ]
+ },
+ {
+  "text": "折扣活动",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:106"
+  ]
+ },
+ {
+  "text": "满减活动",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:107"
+  ]
+ },
+ {
+  "text": "领券活动",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:108"
+  ]
+ },
+ {
+  "text": "特别日期活动",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:109"
+  ]
+ },
+ {
+  "text": "开业活动",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:110"
+  ]
+ },
+ {
+  "text": "专题活动",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:111"
+  ]
+ },
+ {
+  "text": "日期",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:160"
+  ]
+ },
+ {
+  "text": "指定日期",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:160"
+  ]
+ },
+ {
+  "text": "仅限活动指定日期可领",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:161"
+  ]
+ },
+ {
+  "text": "满 200 减 30",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:185"
+  ]
+ },
+ {
+  "text": "满 500 减 100",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:200"
+  ]
+ },
+ {
+  "text": "海鲜火锅 5 折券",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:215"
+  ]
+ },
+ {
+  "text": "已抢光",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:240"
+  ]
+ },
+ {
+  "text": "Mock 券",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:245"
+  ]
+ },
+ {
+  "text": "海鲜火锅 8 折",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:259"
+  ]
+ },
+ {
+  "text": "全场海鲜火锅享 8 折优惠",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:268"
+  ]
+ },
+ {
+  "text": "满 200 减 20",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:278"
+  ]
+ },
+ {
+  "text": "消费满 200 元立减 20",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:287"
+  ]
+ },
+ {
+  "text": "国庆抢券节",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:297"
+  ]
+ },
+ {
+  "text": "活动期间可领取多张优惠券",
+  "count": 1,
+  "where": [
+   "utils/campaign.js:304"
+  ]
+ },
+ {
+  "text": "Firebase 登录失败",
+  "count": 1,
+  "where": [
+   "utils/firebase.js:60"
+  ]
+ },
+ {
+  "text": "当前环境不支持 Firebase 登录",
+  "count": 1,
+  "where": [
+   "utils/firebase.js:71"
+  ]
+ },
+ {
+  "text": "加载足迹数据失败:",
+  "count": 1,
+  "where": [
+   "utils/footprint.js:80"
+  ]
+ },
+ {
+  "text": "保存足迹数据失败:",
+  "count": 1,
+  "where": [
+   "utils/footprint.js:92"
+  ]
+ },
+ {
+  "text": "新密码不能与旧密码相同",
+  "count": 1,
+  "where": [
+   "utils/index.js:364"
+  ]
+ },
+ {
+  "text": "密码长度",
+  "count": 1,
+  "where": [
+   "utils/index.js:365"
+  ]
+ },
+ {
+  "text": "密码太短",
+  "count": 1,
+  "where": [
+   "utils/index.js:366"
+  ]
+ },
+ {
+  "text": "旧密码",
+  "count": 1,
+  "where": [
+   "utils/index.js:367"
+  ]
+ },
+ {
+  "text": "验证码",
+  "count": 1,
+  "where": [
+   "utils/index.js:368"
+  ]
+ },
+ {
+  "text": "账号或密码",
+  "count": 1,
+  "where": [
+   "utils/index.js:369"
+  ]
+ },
+ {
+  "text": "密码错误",
+  "count": 1,
+  "where": [
+   "utils/index.js:370"
+  ]
+ },
+ {
+  "text": "用户不存在",
+  "count": 1,
+  "where": [
+   "utils/index.js:371"
+  ]
+ },
+ {
+  "text": "频繁",
+  "count": 1,
+  "where": [
+   "utils/index.js:372"
+  ]
+ },
+ {
+  "text": "金币余额不足",
+  "count": 1,
+  "where": [
+   "utils/index.js:373"
+  ]
+ },
+ {
+  "text": "积分余额不足",
+  "count": 1,
+  "where": [
+   "utils/index.js:374"
+  ]
+ },
+ {
+  "text": "暂未开通线上点餐",
+  "count": 1,
+  "where": [
+   "utils/index.js:375"
+  ]
+ },
+ {
+  "text": "不属于本门店",
+  "count": 1,
+  "where": [
+   "utils/index.js:376"
+  ]
+ },
+ {
+  "text": "开业券配置有误",
+  "count": 1,
+  "where": [
+   "utils/index.js:377"
+  ]
+ },
+ {
+  "text": "请求失败",
+  "count": 1,
+  "where": [
+   "utils/index.js:441"
+  ]
+ },
+ {
+  "text": "定位失败:",
+  "count": 1,
+  "where": [
+   "utils/location.js:68"
+  ]
+ },
+ {
+  "text": "定位权限",
+  "count": 1,
+  "where": [
+   "utils/location.js:126"
+  ]
+ },
+ {
+  "text": "需要定位权限以获取附近门店，是否前往设置开启？",
+  "count": 1,
+  "where": [
+   "utils/location.js:127"
+  ]
+ },
+ {
+  "text": "去设置",
+  "count": 1,
+  "where": [
+   "utils/location.js:128"
+  ]
+ },
+ {
+  "text": "暂不",
+  "count": 1,
+  "where": [
+   "utils/location.js:129"
+  ]
+ },
+ {
+  "text": "请在系统设置中开启定位权限",
+  "count": 1,
+  "where": [
+   "utils/location.js:156"
+  ]
+ },
+ {
+  "text": "请在浏览器地址栏允许定位权限",
+  "count": 1,
+  "where": [
+   "utils/location.js:161"
+  ]
+ },
+ {
+  "text": "位置监听错误:",
+  "count": 1,
+  "where": [
+   "utils/location.js:182"
+  ]
+ },
+ {
+  "text": "${provider} 登录失败",
+  "count": 1,
+  "where": [
+   "utils/oauth.js:36"
+  ]
+ },
+ {
+  "text": "当前环境不支持 OAuth 登录",
+  "count": 1,
+  "where": [
+   "utils/oauth.js:41"
+  ]
+ },
+ {
+  "text": "Google 授权未返回有效 token",
+  "count": 1,
+  "where": [
+   "utils/oauth.js:87"
+  ]
+ },
+ {
+  "text": "Google 登录失败",
+  "count": 1,
+  "where": [
+   "utils/oauth.js:98"
+  ]
+ },
+ {
+  "text": "Facebook 授权未返回有效 token",
+  "count": 1,
+  "where": [
+   "utils/oauth.js:118"
+  ]
+ },
+ {
+  "text": "Facebook 登录失败",
+  "count": 1,
+  "where": [
+   "utils/oauth.js:127"
+  ]
+ },
+ {
+  "text": "[push] 用户未登录,延迟上报 cid(等登录后再报)",
+  "count": 1,
+  "where": [
+   "utils/push.js:80"
+  ]
+ },
+ {
+  "text": "[push] cid 上报成功 locale=",
+  "count": 1,
+  "where": [
+   "utils/push.js:113"
+  ]
+ },
+ {
+  "text": "[push] cid 上报失败:",
+  "count": 1,
+  "where": [
+   "utils/push.js:115"
+  ]
+ },
+ {
+  "text": "您在【${storeName}】使用了 ${payload.coins} 金币，如非本人操作请立即联系客服",
+  "count": 1,
+  "where": [
+   "utils/push.js:274"
+  ]
+ },
+ {
+  "text": "您使用了 ${payload.coins} 金币，如非本人操作请立即联系客服",
+  "count": 1,
+  "where": [
+   "utils/push.js:275"
+  ]
+ },
+ {
+  "text": "收银员正在【${storeName}】为您下单，如非本人操作请联系客服",
+  "count": 1,
+  "where": [
+   "utils/push.js:278"
+  ]
+ },
+ {
+  "text": "收银员正在为您下单，如非本人操作请联系客服",
+  "count": 1,
+  "where": [
+   "utils/push.js:279"
+  ]
+ },
+ {
+  "text": "操作提醒",
+  "count": 1,
+  "where": [
+   "utils/push.js:285"
+  ]
+ },
+ {
+  "text": "我知道了",
+  "count": 1,
+  "where": [
+   "utils/push.js:288"
+  ]
+ },
+ {
+  "text": "[push] 通知权限已授权:",
+  "count": 1,
+  "where": [
+   "utils/push.js:338"
+  ]
+ },
+ {
+  "text": "[push] 通知权限被拒绝:",
+  "count": 1,
+  "where": [
+   "utils/push.js:341"
+  ]
+ },
+ {
+  "text": "分享链接生成失败：缺少ID参数",
+  "count": 1,
+  "where": [
+   "utils/share.js:74"
+  ]
+ },
+ {
+  "text": "分享菜品链接生成失败：缺少门店ID参数",
+  "count": 1,
+  "where": [
+   "utils/share.js:80"
+  ]
+ },
+ {
+  "text": "分享链接类型无效",
+  "count": 1,
+  "where": [
+   "utils/share.js:157"
+  ]
+ },
+ {
+  "text": "分享链接缺少ID参数",
+  "count": 1,
+  "where": [
+   "utils/share.js:164"
+  ]
+ },
+ {
+  "text": "分享菜品链接缺少门店ID参数",
+  "count": 1,
+  "where": [
+   "utils/share.js:182"
+  ]
+ },
+ {
+  "text": "解析分享链接失败:",
+  "count": 1,
+  "where": [
+   "utils/share.js:188"
+  ]
+ },
+ {
+  "text": "清除分享参数失败:",
+  "count": 1,
+  "where": [
+   "utils/share.js:215"
+  ]
+ },
+ {
+  "text": "分享门店失败：缺少门店ID",
+  "count": 1,
+  "where": [
+   "utils/share.js:246"
+  ]
+ },
+ {
+  "text": "分享菜品失败：缺少菜品ID",
+  "count": 1,
+  "where": [
+   "utils/share.js:279"
+  ]
+ },
+ {
+  "text": "分享菜品失败：缺少门店ID",
+  "count": 1,
+  "where": [
+   "utils/share.js:284"
+  ]
+ },
+ {
+  "text": "无法跳转：缺少门店ID",
+  "count": 1,
+  "where": [
+   "utils/share.js:322"
+  ]
+ },
+ {
+  "text": "手机号格式不正确,必须是 E.164 格式(+66812345678)",
+  "count": 1,
+  "where": [
+   "utils/sms.js:109"
+  ]
+ },
+ {
+  "text": "登录失败",
+  "count": 1,
+  "where": [
+   "utils/sms.js:227"
+  ]
+ },
+ {
+  "text": "[App] 捕获到邀请码:",
+  "count": 1,
+  "where": [
+   "App.vue:152"
+  ]
+ }
+]

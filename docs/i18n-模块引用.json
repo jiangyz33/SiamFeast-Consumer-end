@@ -1,0 +1,227 @@
+[
+ {
+  "module": "cart",
+  "keys": 6,
+  "refs": 0
+ },
+ {
+  "module": "points",
+  "keys": 6,
+  "refs": 0
+ },
+ {
+  "module": "language",
+  "keys": 5,
+  "refs": 3
+ },
+ {
+  "module": "nav",
+  "keys": 3,
+  "refs": 4
+ },
+ {
+  "module": "discount",
+  "keys": 4,
+  "refs": 4
+ },
+ {
+  "module": "newProducts",
+  "keys": 5,
+  "refs": 5
+ },
+ {
+  "module": "hotProducts",
+  "keys": 4,
+  "refs": 5
+ },
+ {
+  "module": "agreement",
+  "keys": 3,
+  "refs": 5
+ },
+ {
+  "module": "campaignCenter",
+  "keys": 5,
+  "refs": 7
+ },
+ {
+  "module": "invite",
+  "keys": 7,
+  "refs": 8
+ },
+ {
+  "module": "memberCode",
+  "keys": 7,
+  "refs": 9
+ },
+ {
+  "module": "products",
+  "keys": 7,
+  "refs": 10
+ },
+ {
+  "module": "vending",
+  "keys": 11,
+  "refs": 11
+ },
+ {
+  "module": "share",
+  "keys": 11,
+  "refs": 11
+ },
+ {
+  "module": "pointsMall",
+  "keys": 12,
+  "refs": 11
+ },
+ {
+  "module": "upgrade",
+  "keys": 12,
+  "refs": 11
+ },
+ {
+  "module": "birthday",
+  "keys": 12,
+  "refs": 11
+ },
+ {
+  "module": "footprint",
+  "keys": 15,
+  "refs": 12
+ },
+ {
+  "module": "payment",
+  "keys": 21,
+  "refs": 14
+ },
+ {
+  "module": "exchangeResult",
+  "keys": 12,
+  "refs": 14
+ },
+ {
+  "module": "tasks",
+  "keys": 14,
+  "refs": 14
+ },
+ {
+  "module": "message",
+  "keys": 8,
+  "refs": 15
+ },
+ {
+  "module": "mall",
+  "keys": 5,
+  "refs": 16
+ },
+ {
+  "module": "exchange",
+  "keys": 24,
+  "refs": 17
+ },
+ {
+  "module": "groupBuy",
+  "keys": 18,
+  "refs": 18
+ },
+ {
+  "module": "index",
+  "keys": 20,
+  "refs": 21
+ },
+ {
+  "module": "opening",
+  "keys": 17,
+  "refs": 23
+ },
+ {
+  "module": "coinConfirm",
+  "keys": 20,
+  "refs": 26
+ },
+ {
+  "module": "productDetail",
+  "keys": 41,
+  "refs": 27
+ },
+ {
+  "module": "hostel",
+  "keys": 44,
+  "refs": 32
+ },
+ {
+  "module": "member",
+  "keys": 22,
+  "refs": 32
+ },
+ {
+  "module": "changePhone",
+  "keys": 29,
+  "refs": 34
+ },
+ {
+  "module": "dinein",
+  "keys": 26,
+  "refs": 36
+ },
+ {
+  "module": "storeSelect",
+  "keys": 29,
+  "refs": 38
+ },
+ {
+  "module": "checkout",
+  "keys": 53,
+  "refs": 43
+ },
+ {
+  "module": "address",
+  "keys": 45,
+  "refs": 43
+ },
+ {
+  "module": "campaign",
+  "keys": 32,
+  "refs": 48
+ },
+ {
+  "module": "orderDetail",
+  "keys": 56,
+  "refs": 52
+ },
+ {
+  "module": "settings",
+  "keys": 49,
+  "refs": 52
+ },
+ {
+  "module": "coupons",
+  "keys": 33,
+  "refs": 52
+ },
+ {
+  "module": "order",
+  "keys": 48,
+  "refs": 55
+ },
+ {
+  "module": "error",
+  "keys": 44,
+  "refs": 55
+ },
+ {
+  "module": "mine",
+  "keys": 81,
+  "refs": 69
+ },
+ {
+  "module": "login",
+  "keys": 82,
+  "refs": 102
+ },
+ {
+  "module": "common",
+  "keys": 41,
+  "refs": 173
+ }
+]

@@ -359,24 +359,26 @@ export default {
 			return '/static/images/banner-placeholder.svg'
 		},
 
-		getBusinessTypeName(code) {
+getBusinessTypeName(code) {
+			// 分类文案统一走 storeSelect.businessTypes（语义正确的归属节点；mall.* 为历史错位 key 已废弃）
+			const bt = (k) => i18n.t('storeSelect.businessTypes.' + k)
 			const map = {
-				'HOTPOT': i18n.t('mall.hotpot') || '火锅',
-				'HOTPOT_BUFFET': i18n.t('mall.hotpot') || '火锅自助',
-				'HOTPOT_PER_ITEM': i18n.t('mall.hotpotPerItem') || '火锅计件',
-				'BBQ': i18n.t('mall.barbecue') || i18n.t('storeSelect.businessTypes.barbecue') || '烧烤',
-				'BARBECUE': i18n.t('mall.barbecue') || i18n.t('storeSelect.businessTypes.barbecue') || '烧烤',
-				'MALA_TANG': i18n.t('mall.malatang') || '麻辣烫',
-				'MALATANG': i18n.t('mall.malatang') || '麻辣烫',
-				'BEVERAGE': i18n.t('storeSelect.businessTypes.beverage') || '饮品',
-				'SEAFOOD_NOODLES': i18n.t('mall.seafoodNoodle') || '海鲜面',
-				'SEAFOOD_NOODLE': i18n.t('mall.seafoodNoodle') || '海鲜面',
-				'SINEFOOD_NOODLE': i18n.t('mall.seafoodNoodle') || '海鲜面',
-				'SINEFOOD_NOODLES': i18n.t('mall.seafoodNoodle') || '海鲜面',
-				'STANDARD_FOOD': i18n.t('mall.standardFood') || '标准餐饮',
-				'HOSTEL_ROOM': i18n.t('mall.hostel') || '民宿',
-				'HOSTEL_HOTPOT': i18n.t('mall.hostelHotpot') || '民宿火锅',
-				'HOSTEL_COFFEE': i18n.t('mall.hostelCoffee') || '民宿咖啡'
+				'HOTPOT': bt('hotpot'),
+				'HOTPOT_BUFFET': bt('hotpot'),
+				'HOTPOT_PER_ITEM': bt('hotpotPerItem'),
+				'BBQ': bt('barbecue'),
+				'BARBECUE': bt('barbecue'),
+				'MALA_TANG': bt('malaTang'),
+				'MALATANG': bt('malaTang'),
+				'BEVERAGE': bt('beverage'),
+				'SEAFOOD_NOODLES': bt('seafoodNoodle'),
+				'SEAFOOD_NOODLE': bt('seafoodNoodle'),
+				'SINEFOOD_NOODLE': bt('seafoodNoodle'),
+				'SINEFOOD_NOODLES': bt('seafoodNoodle'),
+				'STANDARD_FOOD': bt('standardFood'),
+				'HOSTEL_ROOM': bt('hostel'),
+				'HOSTEL_HOTPOT': bt('hostelHotpot'),
+				'HOSTEL_COFFEE': bt('hostelCoffee')
 			}
 			return map[code] || ''
 		},
@@ -498,7 +500,7 @@ export default {
 
 		handleBuyNow(item) {
 			if (item.is_sold_out) {
-				showToast(i18n.t('index.soldOut'))
+				showToast(i18n.t('campaign.soldOut'))
 				return
 			}
 			const productData = {

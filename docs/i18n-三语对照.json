@@ -1,0 +1,7401 @@
+[
+ {
+  "module": "common",
+  "key": "confirm",
+  "zh": "确认",
+  "en": "Confirm",
+  "th": "ยืนยัน"
+ },
+ {
+  "module": "common",
+  "key": "cancel",
+  "zh": "取消",
+  "en": "Cancel",
+  "th": "ยกเลิก"
+ },
+ {
+  "module": "common",
+  "key": "back",
+  "zh": "返回",
+  "en": "Back",
+  "th": "กลับ"
+ },
+ {
+  "module": "common",
+  "key": "loading",
+  "zh": "加载中...",
+  "en": "Loading...",
+  "th": "กำลังโหลด..."
+ },
+ {
+  "module": "common",
+  "key": "success",
+  "zh": "成功",
+  "en": "Success",
+  "th": "สำเร็จ"
+ },
+ {
+  "module": "common",
+  "key": "fail",
+  "zh": "失败",
+  "en": "Failed",
+  "th": "ล้มเหลว"
+ },
+ {
+  "module": "common",
+  "key": "pleaseSelect",
+  "zh": "请选择",
+  "en": "Please select",
+  "th": "กรุณาเลือก"
+ },
+ {
+  "module": "common",
+  "key": "noData",
+  "zh": "暂无数据",
+  "en": "No data",
+  "th": "ไม่มีข้อมูล"
+ },
+ {
+  "module": "common",
+  "key": "noMore",
+  "zh": "没有更多了",
+  "en": "No more",
+  "th": "ไม่มีเพิ่มเติม"
+ },
+ {
+  "module": "common",
+  "key": "networkError",
+  "zh": "网络错误，请稍后重试",
+  "en": "Network error, please try again",
+  "th": "ข้อผิดพลาดของเครือข่าย กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "common",
+  "key": "loginExpired",
+  "zh": "登录已过期，请重新登录",
+  "en": "Login expired, please login again",
+  "th": "การเข้าสู่ระบบหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง"
+ },
+ {
+  "module": "common",
+  "key": "kicked",
+  "zh": "您的账号已在其他设备登录",
+  "en": "Account is logged in on another device",
+  "th": "บัญชีถูกเข้าสู่ระบบจากอุปกรณ์อื่น"
+ },
+ {
+  "module": "common",
+  "key": "clear",
+  "zh": "清空",
+  "en": "Clear",
+  "th": "ล้าง"
+ },
+ {
+  "module": "common",
+  "key": "more",
+  "zh": "更多",
+  "en": "More",
+  "th": "เพิ่มเติม"
+ },
+ {
+  "module": "common",
+  "key": "weekDays.0",
+  "zh": "日",
+  "en": "Sun",
+  "th": "อา"
+ },
+ {
+  "module": "common",
+  "key": "weekDays.1",
+  "zh": "一",
+  "en": "Mon",
+  "th": "จ"
+ },
+ {
+  "module": "common",
+  "key": "weekDays.2",
+  "zh": "二",
+  "en": "Tue",
+  "th": "อ"
+ },
+ {
+  "module": "common",
+  "key": "weekDays.3",
+  "zh": "三",
+  "en": "Wed",
+  "th": "พ"
+ },
+ {
+  "module": "common",
+  "key": "weekDays.4",
+  "zh": "四",
+  "en": "Thu",
+  "th": "พฤ"
+ },
+ {
+  "module": "common",
+  "key": "weekDays.5",
+  "zh": "五",
+  "en": "Fri",
+  "th": "ศ"
+ },
+ {
+  "module": "common",
+  "key": "weekDays.6",
+  "zh": "六",
+  "en": "Sat",
+  "th": "ส"
+ },
+ {
+  "module": "common",
+  "key": "empty.order",
+  "zh": "暂无订单",
+  "en": "No Orders",
+  "th": "ไม่มีคำสั่งซื้อ"
+ },
+ {
+  "module": "common",
+  "key": "empty.orderDesc",
+  "zh": "快去品尝美食吧",
+  "en": "Go explore delicious food",
+  "th": "ไปสั่งอาหารอร่อยกันเถอะ"
+ },
+ {
+  "module": "common",
+  "key": "empty.address",
+  "zh": "暂无收货地址",
+  "en": "No Address",
+  "th": "ไม่มีที่อยู่"
+ },
+ {
+  "module": "common",
+  "key": "empty.addressDesc",
+  "zh": "添加一个收货地址吧",
+  "en": "Add a delivery address",
+  "th": "เพิ่มที่อยู่จัดส่ง"
+ },
+ {
+  "module": "common",
+  "key": "empty.message",
+  "zh": "暂无消息",
+  "en": "No Messages",
+  "th": "ไม่มีข้อความ"
+ },
+ {
+  "module": "common",
+  "key": "empty.messageDesc",
+  "zh": "有新消息时我们会通知你",
+  "en": "We will notify you of new messages",
+  "th": "เราจะแจ้งเตือนเมื่อมีข้อความใหม่"
+ },
+ {
+  "module": "common",
+  "key": "empty.product",
+  "zh": "暂无商品",
+  "en": "No Products",
+  "th": "ไม่มีสินค้า"
+ },
+ {
+  "module": "common",
+  "key": "empty.productDesc",
+  "zh": "敬请期待更多美味",
+  "en": "More items coming soon",
+  "th": "สินค้าเพิ่มเติมเร็วๆ นี้"
+ },
+ {
+  "module": "common",
+  "key": "empty.room",
+  "zh": "暂无可用客房",
+  "en": "No Rooms Available",
+  "th": "ไม่มีห้องว่าง"
+ },
+ {
+  "module": "common",
+  "key": "empty.roomDesc",
+  "zh": "换个日期看看吧",
+  "en": "Try a different date",
+  "th": "ลองเปลี่ยนวันดู"
+ },
+ {
+  "module": "common",
+  "key": "empty.coupon",
+  "zh": "暂无优惠券",
+  "en": "No Coupons",
+  "th": "ไม่มีคูปอง"
+ },
+ {
+  "module": "common",
+  "key": "empty.couponDesc",
+  "zh": "去领券中心看看吧",
+  "en": "Check the coupon center",
+  "th": "ดูที่ศูนย์คูปอง"
+ },
+ {
+  "module": "common",
+  "key": "empty.store",
+  "zh": "暂无附近门店",
+  "en": "No Nearby Stores",
+  "th": "ไม่มีร้านใกล้เคียง"
+ },
+ {
+  "module": "common",
+  "key": "empty.storeDesc",
+  "zh": "换一个位置试试",
+  "en": "Try a different location",
+  "th": "ลองเปลี่ยนตำแหน่ง"
+ },
+ {
+  "module": "common",
+  "key": "empty.footprint",
+  "zh": "暂无浏览记录",
+  "en": "No Browsing History",
+  "th": "ไม่มีประวัติการเข้าชม"
+ },
+ {
+  "module": "common",
+  "key": "empty.footprintDesc",
+  "zh": "去逛逛看看有什么好物",
+  "en": "Browse and discover great items",
+  "th": "เข้าชมและค้นพบสิ่งดีๆ"
+ },
+ {
+  "module": "common",
+  "key": "empty.paymentSuccess",
+  "zh": "支付成功",
+  "en": "Payment Successful",
+  "th": "ชำระเงินสำเร็จ"
+ },
+ {
+  "module": "common",
+  "key": "empty.paymentSuccessDesc",
+  "zh": "感谢您的消费",
+  "en": "Thank you for your purchase",
+  "th": "ขอบคุณที่ใช้บริการ"
+ },
+ {
+  "module": "common",
+  "key": "empty.noData",
+  "zh": "暂无内容",
+  "en": "No Content",
+  "th": "ไม่มีเนื้อหา"
+ },
+ {
+  "module": "common",
+  "key": "empty.noDataDesc",
+  "zh": "空空如也",
+  "en": "Nothing here yet",
+  "th": "ยังไม่มีอะไรที่นี่"
+ },
+ {
+  "module": "nav",
+  "key": "home",
+  "zh": "首页",
+  "en": "Home",
+  "th": "หน้าแรก"
+ },
+ {
+  "module": "nav",
+  "key": "order",
+  "zh": "订单",
+  "en": "Orders",
+  "th": "คำสั่งซื้อ"
+ },
+ {
+  "module": "nav",
+  "key": "mine",
+  "zh": "我的",
+  "en": "Me",
+  "th": "ของฉัน"
+ },
+ {
+  "module": "index",
+  "key": "storeLocation",
+  "zh": "门店位置",
+  "en": "Store Location",
+  "th": "ที่ตั้งร้าน"
+ },
+ {
+  "module": "index",
+  "key": "notLocated",
+  "zh": "未定位",
+  "en": "Not Located",
+  "th": "ยังไม่ระบุตำแหน่ง"
+ },
+ {
+  "module": "index",
+  "key": "switchStore",
+  "zh": "切换门店",
+  "en": "Switch Store",
+  "th": "เปลี่ยนร้าน"
+ },
+ {
+  "module": "index",
+  "key": "dineIn",
+  "zh": "堂食",
+  "en": "Dine In",
+  "th": "ทานที่ร้าน"
+ },
+ {
+  "module": "index",
+  "key": "dineInDesc",
+  "zh": "到店扫码下单",
+  "en": "Scan QR to order",
+  "th": "สแกนสั่งที่ร้าน"
+ },
+ {
+  "module": "index",
+  "key": "mall",
+  "zh": "外卖",
+  "en": "Takeaway",
+  "th": "กลับบ้าน"
+ },
+ {
+  "module": "index",
+  "key": "mallDesc",
+  "zh": "外卖送到家",
+  "en": "Delivery to your door",
+  "th": "ส่งถึงบ้าน"
+ },
+ {
+  "module": "index",
+  "key": "memberLevel",
+  "zh": "普通会员",
+  "en": "Member",
+  "th": "สมาชิก"
+ },
+ {
+  "module": "index",
+  "key": "coupons",
+  "zh": "优惠券",
+  "en": "Coupons",
+  "th": "คูปอง"
+ },
+ {
+  "module": "index",
+  "key": "coins",
+  "zh": "金币",
+  "en": "Coins",
+  "th": "เหรียญ"
+ },
+ {
+  "module": "index",
+  "key": "points",
+  "zh": "积分",
+  "en": "Points",
+  "th": "คะแนน"
+ },
+ {
+  "module": "index",
+  "key": "newProducts",
+  "zh": "新品上市",
+  "en": "New Arrivals",
+  "th": "สินค้าใหม่"
+ },
+ {
+  "module": "index",
+  "key": "newProductsDesc",
+  "zh": "限时上新",
+  "en": "Fresh arrivals",
+  "th": "สินค้ามาใหม่"
+ },
+ {
+  "module": "index",
+  "key": "hotList",
+  "zh": "热销榜单",
+  "en": "Best Sellers",
+  "th": "ขายดี"
+ },
+ {
+  "module": "index",
+  "key": "hotListDesc",
+  "zh": "人气必吃榜",
+  "en": "Popular picks",
+  "th": "ยอดนิยม"
+ },
+ {
+  "module": "index",
+  "key": "pointsMall",
+  "zh": "兑换商城",
+  "en": "Redeem Mall",
+  "th": "ร้านแลกของ"
+ },
+ {
+  "module": "index",
+  "key": "coinMall",
+  "zh": "兑换商城",
+  "en": "Redeem Mall",
+  "th": "ร้านแลกของ"
+ },
+ {
+  "module": "index",
+  "key": "vending",
+  "zh": "自助售卖机",
+  "en": "Vending Machine",
+  "th": "ตู้ขายอัตโนมัติ"
+ },
+ {
+  "module": "index",
+  "key": "vendingDesc",
+  "zh": "扫码兑换取货",
+  "en": "Scan to redeem",
+  "th": "สแกนแลกสินค้า"
+ },
+ {
+  "module": "index",
+  "key": "pointsMallDesc",
+  "zh": "积分金币都能兑",
+  "en": "Points & Coins",
+  "th": "แลกคะแนนและเหรียญ"
+ },
+ {
+  "module": "vending",
+  "key": "title",
+  "zh": "自助售卖机",
+  "en": "Vending Machine",
+  "th": "ตู้ขายอัตโนมัติ"
+ },
+ {
+  "module": "vending",
+  "key": "myCoins",
+  "zh": "我的金币",
+  "en": "My Coins",
+  "th": "เหรียญของฉัน"
+ },
+ {
+  "module": "vending",
+  "key": "nearby",
+  "zh": "附近售卖机",
+  "en": "Nearby Machines",
+  "th": "ตู้ใกล้เคียง"
+ },
+ {
+  "module": "vending",
+  "key": "exchangeProducts",
+  "zh": "可兑换商品",
+  "en": "Redeemable Items",
+  "th": "สินค้าแลกได้"
+ },
+ {
+  "module": "vending",
+  "key": "exchange",
+  "zh": "兑换",
+  "en": "Redeem",
+  "th": "แลก"
+ },
+ {
+  "module": "vending",
+  "key": "noProducts",
+  "zh": "暂无可兑换商品",
+  "en": "No items available",
+  "th": "ไม่มีสินค้า"
+ },
+ {
+  "module": "vending",
+  "key": "confirmExchange",
+  "zh": "确认兑换",
+  "en": "Confirm Redemption",
+  "th": "ยืนยันการแลก"
+ },
+ {
+  "module": "vending",
+  "key": "coins",
+  "zh": "金币",
+  "en": "Coins",
+  "th": "เหรียญ"
+ },
+ {
+  "module": "vending",
+  "key": "confirm",
+  "zh": "确认",
+  "en": "Confirm",
+  "th": "ยืนยัน"
+ },
+ {
+  "module": "vending",
+  "key": "insufficientCoins",
+  "zh": "金币不足",
+  "en": "Insufficient coins",
+  "th": "เหรียญไม่พอ"
+ },
+ {
+  "module": "vending",
+  "key": "exchangeSuccess",
+  "zh": "兑换成功",
+  "en": "Redeemed successfully",
+  "th": "แลกสำเร็จ"
+ },
+ {
+  "module": "opening",
+  "key": "active",
+  "zh": "开业活动进行中",
+  "en": "Opening Celebration",
+  "th": "ฉลองเปิดร้านใหม่"
+ },
+ {
+  "module": "opening",
+  "key": "daysLeft",
+  "zh": "剩 {n} 天",
+  "en": "{n} days left",
+  "th": "เหลือ {n} วัน"
+ },
+ {
+  "module": "opening",
+  "key": "extraPoints",
+  "zh": "额外 +{n} 积分",
+  "en": "+{n} bonus points",
+  "th": "+{n} แต้มพิเศษ"
+ },
+ {
+  "module": "opening",
+  "key": "extraCoins",
+  "zh": "额外 +{n} 金币",
+  "en": "+{n} bonus coins",
+  "th": "+{n} เหรียญพิเศษ"
+ },
+ {
+  "module": "opening",
+  "key": "discount",
+  "zh": "全场 {n}% off",
+  "en": "{n}% off everything",
+  "th": "ลด {n}% ทุกรายการ"
+ },
+ {
+  "module": "opening",
+  "key": "claimCoupon",
+  "zh": "领取开业券",
+  "en": "Claim Opening Coupon",
+  "th": "รับคูปองเปิดร้าน"
+ },
+ {
+  "module": "opening",
+  "key": "claimed",
+  "zh": "已领取",
+  "en": "Claimed",
+  "th": "รับแล้ว"
+ },
+ {
+  "module": "opening",
+  "key": "claimSuccess",
+  "zh": "领取成功",
+  "en": "Claimed successfully",
+  "th": "รับคูปองสำเร็จ"
+ },
+ {
+  "module": "opening",
+  "key": "locked",
+  "zh": "未解锁",
+  "en": "Locked",
+  "th": "ยังไม่ปลดล็อก"
+ },
+ {
+  "module": "opening",
+  "key": "claimable",
+  "zh": "可领取",
+  "en": "Claimable",
+  "th": "รับได้"
+ },
+ {
+  "module": "opening",
+  "key": "validUntil",
+  "zh": "有效期至",
+  "en": "【缺失】",
+  "th": "【缺失】"
+ },
+ {
+  "module": "opening",
+  "key": "firstOrderOnly",
+  "zh": "限首单享",
+  "en": "First order only",
+  "th": "สำหรับออเดอร์แรกเท่านั้น"
+ },
+ {
+  "module": "opening",
+  "key": "alreadyEnjoyed",
+  "zh": "已享",
+  "en": "Enjoyed",
+  "th": "รับแล้ว"
+ },
+ {
+  "module": "opening",
+  "key": "errors.unavailable",
+  "zh": "开业券已领完",
+  "en": "Opening coupons sold out",
+  "th": "คูปองเปิดร้านหมดแล้ว"
+ },
+ {
+  "module": "opening",
+  "key": "errors.ended",
+  "zh": "开业活动已结束",
+  "en": "Opening activity has ended",
+  "th": "กิจกรรมเปิดร้านสิ้นสุดแล้ว"
+ },
+ {
+  "module": "opening",
+  "key": "errors.alreadyClaimed",
+  "zh": "您已领取过该店的开业券",
+  "en": "Already claimed this store coupon",
+  "th": "คุณรับคูปองร้านนี้แล้ว"
+ },
+ {
+  "module": "opening",
+  "key": "errors.default",
+  "zh": "领取失败,请稍后重试",
+  "en": "Failed, please try again",
+  "th": "รับไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "storeSelect",
+  "key": "title",
+  "zh": "选择门店",
+  "en": "Select Store",
+  "th": "เลือกร้าน"
+ },
+ {
+  "module": "storeSelect",
+  "key": "currentLocation",
+  "zh": "当前位置",
+  "en": "Current Location",
+  "th": "ตำแหน่งปัจจุบัน"
+ },
+ {
+  "module": "storeSelect",
+  "key": "locating",
+  "zh": "正在定位...",
+  "en": "Locating...",
+  "th": "กำลังระบุตำแหน่ง..."
+ },
+ {
+  "module": "storeSelect",
+  "key": "locationDenied",
+  "zh": "定位权限未开启",
+  "en": "Location permission denied",
+  "th": "ไม่ได้รับอนุญาตตำแหน่ง"
+ },
+ {
+  "module": "storeSelect",
+  "key": "enableLocation",
+  "zh": "开启定位",
+  "en": "Enable Location",
+  "th": "เปิดตำแหน่ง"
+ },
+ {
+  "module": "storeSelect",
+  "key": "locationReady",
+  "zh": "已定位",
+  "en": "Located",
+  "th": "ระบุตำแหน่งแล้ว"
+ },
+ {
+  "module": "storeSelect",
+  "key": "refresh",
+  "zh": "刷新",
+  "en": "Refresh",
+  "th": "รีเฟรช"
+ },
+ {
+  "module": "storeSelect",
+  "key": "nearbyStores",
+  "zh": "附近门店",
+  "en": "Nearby Stores",
+  "th": "ร้านใกล้เคียง"
+ },
+ {
+  "module": "storeSelect",
+  "key": "storeCount",
+  "zh": "共{count}家",
+  "en": "{count} stores",
+  "th": "{count} ร้าน"
+ },
+ {
+  "module": "storeSelect",
+  "key": "open",
+  "zh": "营业中",
+  "en": "Open",
+  "th": "เปิด"
+ },
+ {
+  "module": "storeSelect",
+  "key": "closed",
+  "zh": "休息中",
+  "en": "Closed",
+  "th": "ปิด"
+ },
+ {
+  "module": "storeSelect",
+  "key": "confirmSelect",
+  "zh": "确认选择",
+  "en": "Confirm",
+  "th": "ยืนยัน"
+ },
+ {
+  "module": "storeSelect",
+  "key": "pleaseSelectStore",
+  "zh": "请先选择门店",
+  "en": "Please select a store",
+  "th": "กรุณาเลือกร้าน"
+ },
+ {
+  "module": "storeSelect",
+  "key": "selected",
+  "zh": "已选择",
+  "en": "Selected",
+  "th": "เลือกแล้ว"
+ },
+ {
+  "module": "storeSelect",
+  "key": "noStores",
+  "zh": "暂无附近门店",
+  "en": "No nearby stores",
+  "th": "ไม่มีร้านใกล้เคียง"
+ },
+ {
+  "module": "storeSelect",
+  "key": "noCoords",
+  "zh": "该门店暂无位置信息",
+  "en": "Store location not available",
+  "th": "ไม่มีพิกัดร้านนี้"
+ },
+ {
+  "module": "storeSelect",
+  "key": "dblclickHint",
+  "zh": "双击可在地图上定位",
+  "en": "Double-click to locate on map",
+  "th": "ดับเบิลคลิกเพื่อดูบนแผนที่"
+ },
+ {
+  "module": "storeSelect",
+  "key": "loadFailed",
+  "zh": "加载门店失败",
+  "en": "Failed to load stores",
+  "th": "โหลดร้านไม่สำเร็จ"
+ },
+ {
+  "module": "storeSelect",
+  "key": "searchPlaceholder",
+  "zh": "搜索地址",
+  "en": "Search address",
+  "th": "ค้นหาที่อยู่"
+ },
+ {
+  "module": "storeSelect",
+  "key": "gpsMode",
+  "zh": "GPS定位",
+  "en": "GPS",
+  "th": "GPS"
+ },
+ {
+  "module": "storeSelect",
+  "key": "pickMode",
+  "zh": "地图选点",
+  "en": "Pick on Map",
+  "th": "เลือกจากแผนที่"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.hotpot",
+  "zh": "火锅",
+  "en": "Hotpot",
+  "th": "หม้อไฟ"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.malaTang",
+  "zh": "麻辣烫",
+  "en": "Malatang",
+  "th": "มาลาทั่ง"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.beverage",
+  "zh": "饮品",
+  "en": "Beverage",
+  "th": "เครื่องดื่ม"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.barbecue",
+  "zh": "烧烤",
+  "en": "Barbecue",
+  "th": "บาร์บีคิว"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.seafoodNoodle",
+  "zh": "海鲜面",
+  "en": "Seafood Noodles",
+  "th": "ก๊วยเตี๋ยวทะเล"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.hostel",
+  "zh": "民宿",
+  "en": "Hostel",
+  "th": "ที่พัก"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.hostelHotpot",
+  "zh": "民宿火锅",
+  "en": "Hostel Hotpot",
+  "th": "หม้อไฟที่พัก"
+ },
+ {
+  "module": "storeSelect",
+  "key": "businessTypes.hostelCoffee",
+  "zh": "民宿咖啡",
+  "en": "Hostel Coffee",
+  "th": "กาแฟที่พัก"
+ },
+ {
+  "module": "hostel",
+  "key": "rooms",
+  "zh": "客房",
+  "en": "Rooms",
+  "th": "ห้องพัก"
+ },
+ {
+  "module": "hostel",
+  "key": "checkIn",
+  "zh": "入住",
+  "en": "Check-in",
+  "th": "เช็คอิน"
+ },
+ {
+  "module": "hostel",
+  "key": "checkOut",
+  "zh": "退房",
+  "en": "Check-out",
+  "th": "เช็คเอาท์"
+ },
+ {
+  "module": "hostel",
+  "key": "selectDate",
+  "zh": "请选择",
+  "en": "Select",
+  "th": "เลือก"
+ },
+ {
+  "module": "hostel",
+  "key": "nights",
+  "zh": "晚",
+  "en": " nights",
+  "th": " คืน"
+ },
+ {
+  "module": "hostel",
+  "key": "noRooms",
+  "zh": "暂无可用客房",
+  "en": "No rooms available",
+  "th": "ไม่มีห้องว่าง"
+ },
+ {
+  "module": "hostel",
+  "key": "full",
+  "zh": "已满",
+  "en": "Full",
+  "th": "เต็ม"
+ },
+ {
+  "module": "hostel",
+  "key": "person",
+  "zh": "人",
+  "en": " guests",
+  "th": " คน"
+ },
+ {
+  "module": "hostel",
+  "key": "beds",
+  "zh": "床",
+  "en": " beds",
+  "th": " เตียง"
+ },
+ {
+  "module": "hostel",
+  "key": "perNight",
+  "zh": "晚",
+  "en": " night",
+  "th": " คืน"
+ },
+ {
+  "module": "hostel",
+  "key": "book",
+  "zh": "预订",
+  "en": "Book",
+  "th": "จอง"
+ },
+ {
+  "module": "hostel",
+  "key": "roomFull",
+  "zh": "该房间已满",
+  "en": "Room is full",
+  "th": "ห้องเต็ม"
+ },
+ {
+  "module": "hostel",
+  "key": "bookingConfirm",
+  "zh": "预订确认",
+  "en": "【缺失】",
+  "th": "ยืนยันการจอง"
+ },
+ {
+  "module": "hostel",
+  "key": "stayInfo",
+  "zh": "入住信息",
+  "en": "【缺失】",
+  "th": "ข้อมูลการเข้าพัก"
+ },
+ {
+  "module": "hostel",
+  "key": "checkInDate",
+  "zh": "入住日期",
+  "en": "【缺失】",
+  "th": "วันเช็คอิน"
+ },
+ {
+  "module": "hostel",
+  "key": "checkOutDate",
+  "zh": "退房日期",
+  "en": "【缺失】",
+  "th": "วันเช็คเอาท์"
+ },
+ {
+  "module": "hostel",
+  "key": "maxGuests",
+  "zh": "最大入住",
+  "en": "【缺失】",
+  "th": "รับสูงสุด"
+ },
+ {
+  "module": "hostel",
+  "key": "guestInfo",
+  "zh": "入住人信息",
+  "en": "【缺失】",
+  "th": "ข้อมูลผู้เข้าพัก"
+ },
+ {
+  "module": "hostel",
+  "key": "guestName",
+  "zh": "姓名",
+  "en": "【缺失】",
+  "th": "ชื่อ"
+ },
+ {
+  "module": "hostel",
+  "key": "guestNamePlaceholder",
+  "zh": "请输入入住人姓名",
+  "en": "【缺失】",
+  "th": "กรอกชื่อผู้เข้าพัก"
+ },
+ {
+  "module": "hostel",
+  "key": "guestPhone",
+  "zh": "手机号",
+  "en": "【缺失】",
+  "th": "เบอร์โทร"
+ },
+ {
+  "module": "hostel",
+  "key": "guestPhonePlaceholder",
+  "zh": "请输入手机号",
+  "en": "【缺失】",
+  "th": "กรอกเบอร์โทร"
+ },
+ {
+  "module": "hostel",
+  "key": "guestIdNumber",
+  "zh": "身份证/护照号",
+  "en": "【缺失】",
+  "th": "บัตรประชาชน/พาสปอร์ต"
+ },
+ {
+  "module": "hostel",
+  "key": "guestIdPlaceholder",
+  "zh": "请输入证件号（选填）",
+  "en": "【缺失】",
+  "th": "กรอกเลขบัตร (ไม่จำเป็น)"
+ },
+ {
+  "module": "hostel",
+  "key": "guestCount",
+  "zh": "入住人数",
+  "en": "【缺失】",
+  "th": "จำนวนผู้เข้าพัก"
+ },
+ {
+  "module": "hostel",
+  "key": "remark",
+  "zh": "备注",
+  "en": "【缺失】",
+  "th": "หมายเหตุ"
+ },
+ {
+  "module": "hostel",
+  "key": "remarkPlaceholder",
+  "zh": "特殊需求、预计到店时间等（选填）",
+  "en": "【缺失】",
+  "th": "ความต้องการพิเศษ เวลาเข้าพัก (ไม่จำเป็น)"
+ },
+ {
+  "module": "hostel",
+  "key": "feeDetail",
+  "zh": "费用明细",
+  "en": "【缺失】",
+  "th": "รายละเอียดค่าใช้จ่าย"
+ },
+ {
+  "module": "hostel",
+  "key": "roomFee",
+  "zh": "房费",
+  "en": "【缺失】",
+  "th": "ค่าห้อง"
+ },
+ {
+  "module": "hostel",
+  "key": "deposit",
+  "zh": "押金",
+  "en": "【缺失】",
+  "th": "มัดจำ"
+ },
+ {
+  "module": "hostel",
+  "key": "total",
+  "zh": "合计",
+  "en": "【缺失】",
+  "th": "รวม"
+ },
+ {
+  "module": "hostel",
+  "key": "totalLabel",
+  "zh": "总计",
+  "en": "【缺失】",
+  "th": "รวมทั้งหมด"
+ },
+ {
+  "module": "hostel",
+  "key": "confirmBooking",
+  "zh": "确认预订",
+  "en": "【缺失】",
+  "th": "ยืนยันการจอง"
+ },
+ {
+  "module": "hostel",
+  "key": "submitting",
+  "zh": "提交中...",
+  "en": "【缺失】",
+  "th": "กำลังส่ง..."
+ },
+ {
+  "module": "hostel",
+  "key": "defaultRoomName",
+  "zh": "客房",
+  "en": "【缺失】",
+  "th": "ห้องพัก"
+ },
+ {
+  "module": "hostel",
+  "key": "perNightUnit",
+  "zh": "/晚",
+  "en": "【缺失】",
+  "th": "/คืน"
+ },
+ {
+  "module": "hostel",
+  "key": "checkOutAfterCheckIn",
+  "zh": "退房日期必须晚于入住日期",
+  "en": "【缺失】",
+  "th": "วันเช็คเอาท์ต้องหลังวันเช็คอิน"
+ },
+ {
+  "module": "hostel",
+  "key": "maxGuestsLimit",
+  "zh": "最多入住{count}人",
+  "en": "【缺失】",
+  "th": "รับสูงสุด {count} คน"
+ },
+ {
+  "module": "hostel",
+  "key": "enterGuestName",
+  "zh": "请输入入住人姓名",
+  "en": "【缺失】",
+  "th": "กรุณากรอกชื่อผู้เข้าพัก"
+ },
+ {
+  "module": "hostel",
+  "key": "enterGuestPhone",
+  "zh": "请输入手机号",
+  "en": "【缺失】",
+  "th": "กรุณากรอกเบอร์โทร"
+ },
+ {
+  "module": "hostel",
+  "key": "selectDates",
+  "zh": "请选择入住和退房日期",
+  "en": "【缺失】",
+  "th": "กรุณาเลือกวันเช็คอินและเช็คเอาท์"
+ },
+ {
+  "module": "hostel",
+  "key": "roomInfoError",
+  "zh": "客房信息异常",
+  "en": "【缺失】",
+  "th": "ข้อมูลห้องผิดพลาด"
+ },
+ {
+  "module": "hostel",
+  "key": "bookingSuccess",
+  "zh": "预订成功",
+  "en": "【缺失】",
+  "th": "จองสำเร็จ"
+ },
+ {
+  "module": "hostel",
+  "key": "bookingFailed",
+  "zh": "预订失败",
+  "en": "【缺失】",
+  "th": "จองไม่สำเร็จ"
+ },
+ {
+  "module": "dinein",
+  "key": "newCustomerOffer",
+  "zh": "新客专享优惠",
+  "en": "New Customer Offer",
+  "th": "โปรโมชั่นลูกค้าใหม่"
+ },
+ {
+  "module": "dinein",
+  "key": "newCustomerDesc",
+  "zh": "满50减10·仅限堂食",
+  "en": "$10 off $50 · Dine in only",
+  "th": "ลด 10 บาท เมื่อซื้อครบ 50 · ทานที่ร้านเท่านั้น"
+ },
+ {
+  "module": "dinein",
+  "key": "addToCart",
+  "zh": "已加入购物车",
+  "en": "Added to cart",
+  "th": "เพิ่มลงตะกร้าแล้ว"
+ },
+ {
+  "module": "dinein",
+  "key": "checkout",
+  "zh": "去结算",
+  "en": "Checkout",
+  "th": "ชำระเงิน"
+ },
+ {
+  "module": "dinein",
+  "key": "total",
+  "zh": "合计",
+  "en": "Total",
+  "th": "รวม"
+ },
+ {
+  "module": "dinein",
+  "key": "shareSuccess",
+  "zh": "链接已复制",
+  "en": "Link copied",
+  "th": "คัดลอกลิงก์แล้ว"
+ },
+ {
+  "module": "dinein",
+  "key": "shareFail",
+  "zh": "复制失败，请重试",
+  "en": "Copy failed, please try again",
+  "th": "คัดลอกไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "dinein",
+  "key": "shareFailed",
+  "zh": "分享失败，请重试",
+  "en": "Share failed, please try again",
+  "th": "แชร์ไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "dinein",
+  "key": "welcome",
+  "zh": "欢迎光临！",
+  "en": "Welcome!",
+  "th": "ยินดีต้อนรับ!"
+ },
+ {
+  "module": "dinein",
+  "key": "deliverySupported",
+  "zh": "支持外送",
+  "en": "Delivery Available",
+  "th": "รับจัดส่ง"
+ },
+ {
+  "module": "dinein",
+  "key": "businessHours",
+  "zh": "营业时间",
+  "en": "Hours",
+  "th": "เวลาทำการ"
+ },
+ {
+  "module": "dinein",
+  "key": "distance",
+  "zh": "距离",
+  "en": "Distance",
+  "th": "ระยะทาง"
+ },
+ {
+  "module": "dinein",
+  "key": "bikeTime",
+  "zh": "骑行",
+  "en": "Bike",
+  "th": "จักรยาน"
+ },
+ {
+  "module": "dinein",
+  "key": "walkTime",
+  "zh": "步行",
+  "en": "Walk",
+  "th": "เดิน"
+ },
+ {
+  "module": "dinein",
+  "key": "soldOut",
+  "zh": "商品已售罄",
+  "en": "Item sold out",
+  "th": "สินค้าหมดแล้ว"
+ },
+ {
+  "module": "dinein",
+  "key": "storeClosedTitle",
+  "zh": "商家已关业",
+  "en": "Store Closed",
+  "th": "ร้านปิดแล้ว"
+ },
+ {
+  "module": "dinein",
+  "key": "storeClosedContent",
+  "zh": "该门店当前非营业时间，确定要下单吗？",
+  "en": "This store is currently closed. Are you sure you want to place an order?",
+  "th": "ร้านนี้ปิดให้บริการในขณะนี้ คุณแน่ใจหรือไม่ว่าต้องการสั่งซื้อ?"
+ },
+ {
+  "module": "dinein",
+  "key": "storeClosedConfirm",
+  "zh": "继续下单",
+  "en": "Continue",
+  "th": "สั่งต่อ"
+ },
+ {
+  "module": "dinein",
+  "key": "storeClosedCancel",
+  "zh": "再想想",
+  "en": "Maybe later",
+  "th": "ขอคิดดูอีกครั้ง"
+ },
+ {
+  "module": "dinein",
+  "key": "cartTitle",
+  "zh": "购物车",
+  "en": "Cart",
+  "th": "ตะกร้า"
+ },
+ {
+  "module": "dinein",
+  "key": "clearCart",
+  "zh": "清空",
+  "en": "Clear",
+  "th": "ล้าง"
+ },
+ {
+  "module": "dinein",
+  "key": "cartEmpty",
+  "zh": "购物车是空的",
+  "en": "Cart is empty",
+  "th": "ตะกร้าว่างเปล่า"
+ },
+ {
+  "module": "dinein",
+  "key": "categories.discount",
+  "zh": "优惠专区",
+  "en": "Discounts",
+  "th": "ส่วนลด"
+ },
+ {
+  "module": "dinein",
+  "key": "categories.group",
+  "zh": "拼单专区",
+  "en": "Group Buy",
+  "th": "รวม order"
+ },
+ {
+  "module": "dinein",
+  "key": "selectStoreTitle",
+  "zh": "请选择门店",
+  "en": "【缺失】",
+  "th": "เลือกสาขา"
+ },
+ {
+  "module": "dinein",
+  "key": "selectStoreMsg",
+  "zh": "请先选择一个门店再开始点餐",
+  "en": "【缺失】",
+  "th": "กรุณาเลือกสาขาก่อน"
+ },
+ {
+  "module": "productDetail",
+  "key": "specs",
+  "zh": "规格",
+  "en": "Options",
+  "th": "ตัวเลือก"
+ },
+ {
+  "module": "productDetail",
+  "key": "specSize",
+  "zh": "规格",
+  "en": "Size",
+  "th": "ขนาด"
+ },
+ {
+  "module": "productDetail",
+  "key": "specFlavor",
+  "zh": "口味",
+  "en": "Flavor",
+  "th": "รสชาติ"
+ },
+ {
+  "module": "productDetail",
+  "key": "specTopping",
+  "zh": "加料",
+  "en": "Extra",
+  "th": "เพิ่มเติม"
+ },
+ {
+  "module": "productDetail",
+  "key": "quantity",
+  "zh": "数量",
+  "en": "Qty",
+  "th": "จำนวน"
+ },
+ {
+  "module": "productDetail",
+  "key": "addToCart",
+  "zh": "加入购物车",
+  "en": "Add to Cart",
+  "th": "เพิ่มลงตะกร้า"
+ },
+ {
+  "module": "productDetail",
+  "key": "buyNow",
+  "zh": "立即购买",
+  "en": "Buy Now",
+  "th": "ซื้อเลย"
+ },
+ {
+  "module": "productDetail",
+  "key": "hot",
+  "zh": "热销",
+  "en": "Hot",
+  "th": "ขายดี"
+ },
+ {
+  "module": "productDetail",
+  "key": "new",
+  "zh": "新品",
+  "en": "New",
+  "th": "ใหม่"
+ },
+ {
+  "module": "productDetail",
+  "key": "recommend",
+  "zh": "推荐",
+  "en": "Recommended",
+  "th": "แนะนำ"
+ },
+ {
+  "module": "productDetail",
+  "key": "selectSpecs",
+  "zh": "选择规格",
+  "en": "Select Options",
+  "th": "เลือกตัวเลือก"
+ },
+ {
+  "module": "productDetail",
+  "key": "confirm",
+  "zh": "确认",
+  "en": "Confirm",
+  "th": "ยืนยัน"
+ },
+ {
+  "module": "productDetail",
+  "key": "detailTitle",
+  "zh": "商品详情",
+  "en": "Product Details",
+  "th": "รายละเอียดสินค้า"
+ },
+ {
+  "module": "productDetail",
+  "key": "purchaseNotice",
+  "zh": "购买须知",
+  "en": "Purchase Notice",
+  "th": "ข้อควรทราบ"
+ },
+ {
+  "module": "productDetail",
+  "key": "noticeImage",
+  "zh": "商品以实物为准，图片仅供参考",
+  "en": "Actual product may vary from images",
+  "th": "สินค้าจริงอาจแตกต่างจากในภาพ"
+ },
+ {
+  "module": "productDetail",
+  "key": "noticeAllergy",
+  "zh": "如有过敏食材请提前告知店员",
+  "en": "Please inform our staff of any food allergies",
+  "th": "หากแพ้อาหารโปรดแจ้งพนักงาน"
+ },
+ {
+  "module": "productDetail",
+  "key": "share",
+  "zh": "分享",
+  "en": "Share",
+  "th": "แชร์"
+ },
+ {
+  "module": "productDetail",
+  "key": "shareFailed",
+  "zh": "分享失败，请重试",
+  "en": "Share failed, please try again",
+  "th": "แชร์ไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "productDetail",
+  "key": "linkCopied",
+  "zh": "链接已复制",
+  "en": "Link copied",
+  "th": "คัดลอกลิงก์แล้ว"
+ },
+ {
+  "module": "productDetail",
+  "key": "copyFailed",
+  "zh": "复制失败，请重试",
+  "en": "Copy failed, please try again",
+  "th": "คัดลอกไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.temperature",
+  "zh": "温度",
+  "en": "Temperature",
+  "th": "อุณหภูมิ"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.sugar",
+  "zh": "糖度",
+  "en": "Sugar",
+  "th": "ระดับความหวาน"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.size",
+  "zh": "杯型",
+  "en": "Size",
+  "th": "ขนาด"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.spice_level",
+  "zh": "辣度",
+  "en": "Spice Level",
+  "th": "ระดับความเผ็ด"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.spec",
+  "zh": "规格",
+  "en": "Size/Spec",
+  "th": "ขนาด/สเปค"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.combo",
+  "zh": "套餐",
+  "en": "Combo",
+  "th": "เซ็ตอาหาร"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.flavor",
+  "zh": "口味",
+  "en": "Flavor",
+  "th": "รสชาติ"
+ },
+ {
+  "module": "productDetail",
+  "key": "specLabels.toppings",
+  "zh": "加料",
+  "en": "Toppings",
+  "th": "เครื่องเทหล่า"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.hot",
+  "zh": "热",
+  "en": "Hot",
+  "th": "ร้อน"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.ice",
+  "zh": "冷",
+  "en": "Ice",
+  "th": "เย็น"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.full",
+  "zh": "全糖",
+  "en": "Full",
+  "th": "หวานปกติ"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.half",
+  "zh": "半糖",
+  "en": "Half",
+  "th": "หวานครึ่ง"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.little",
+  "zh": "少糖",
+  "en": "Less",
+  "th": "หวานน้อย"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.none",
+  "zh": "无糖",
+  "en": "None",
+  "th": "ไม่หวาน"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.small",
+  "zh": "小杯",
+  "en": "Small",
+  "th": "เล็ก"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.medium",
+  "zh": "中杯",
+  "en": "Medium",
+  "th": "กลาง"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.large",
+  "zh": "大杯",
+  "en": "Large",
+  "th": "ใหญ่"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.mild",
+  "zh": "微辣",
+  "en": "Mild",
+  "th": "เผ็ดน้อย"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.medium_spice",
+  "zh": "中辣",
+  "en": "Medium",
+  "th": "เผ็ดปานกลาง"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.hot_spice",
+  "zh": "辣",
+  "en": "Hot",
+  "th": "เผ็ด"
+ },
+ {
+  "module": "productDetail",
+  "key": "specOptions.extra_hot",
+  "zh": "特辣",
+  "en": "Extra Hot",
+  "th": "เผ็ดมาก"
+ },
+ {
+  "module": "share",
+  "key": "shopRecommend",
+  "zh": "好店推荐",
+  "en": "Recommended Shop",
+  "th": "ร้านแนะนำ"
+ },
+ {
+  "module": "share",
+  "key": "shopDefaultName",
+  "zh": "门店",
+  "en": "Shop",
+  "th": "ร้าน"
+ },
+ {
+  "module": "share",
+  "key": "shopDesc",
+  "zh": "发现一家不错的店铺，快来看看吧！",
+  "en": "Found a great shop, come check it out!",
+  "th": "เจอร้านดี ๆ มาดูกันเลย!"
+ },
+ {
+  "module": "share",
+  "key": "productRecommend",
+  "zh": "美食推荐",
+  "en": "Recommended Dish",
+  "th": "เมนูแนะนำ"
+ },
+ {
+  "module": "share",
+  "key": "productDefaultName",
+  "zh": "菜品",
+  "en": "Dish",
+  "th": "เมนู"
+ },
+ {
+  "module": "share",
+  "key": "productIdLabel",
+  "zh": "菜品ID",
+  "en": "Product ID",
+  "th": "รหัสสินค้า"
+ },
+ {
+  "module": "share",
+  "key": "shopIdLabel",
+  "zh": "门店ID",
+  "en": "Shop ID",
+  "th": "รหัสร้าน"
+ },
+ {
+  "module": "share",
+  "key": "productDesc",
+  "zh": "发现一道美食，快来看看吧！",
+  "en": "Found a delicious dish, come check it out!",
+  "th": "เจอเมนูอร่อย มาดูกันเลย!"
+ },
+ {
+  "module": "share",
+  "key": "viewNow",
+  "zh": "立即查看",
+  "en": "View Now",
+  "th": "ดูเลย"
+ },
+ {
+  "module": "share",
+  "key": "cancel",
+  "zh": "取消",
+  "en": "Cancel",
+  "th": "ยกเลิก"
+ },
+ {
+  "module": "share",
+  "key": "linkCopied",
+  "zh": "链接已复制，可直接分享给好友",
+  "en": "Link copied, ready to share with friends",
+  "th": "คัดลอกลิงก์แล้ว พร้อมแชร์ให้เพื่อน"
+ },
+ {
+  "module": "cart",
+  "key": "title",
+  "zh": "购物车",
+  "en": "Cart",
+  "th": "ตะกร้า"
+ },
+ {
+  "module": "cart",
+  "key": "empty",
+  "zh": "购物车是空的",
+  "en": "Your cart is empty",
+  "th": "ตะกร้าว่างเปล่า"
+ },
+ {
+  "module": "cart",
+  "key": "goShopping",
+  "zh": "去逛逛",
+  "en": "Shop Now",
+  "th": "เลือกซื้อสินค้า"
+ },
+ {
+  "module": "cart",
+  "key": "total",
+  "zh": "合计",
+  "en": "Total",
+  "th": "รวม"
+ },
+ {
+  "module": "cart",
+  "key": "settle",
+  "zh": "结算",
+  "en": "Checkout",
+  "th": "ชำระเงิน"
+ },
+ {
+  "module": "cart",
+  "key": "selected",
+  "zh": "已选",
+  "en": "Selected",
+  "th": "เลือกแล้ว"
+ },
+ {
+  "module": "checkout",
+  "key": "title",
+  "zh": "确认订单",
+  "en": "Checkout",
+  "th": "ยืนยันคำสั่งซื้อ"
+ },
+ {
+  "module": "checkout",
+  "key": "dineIn",
+  "zh": "堂食",
+  "en": "Dine In",
+  "th": "ทานที่ร้าน"
+ },
+ {
+  "module": "checkout",
+  "key": "takeaway",
+  "zh": "外卖",
+  "en": "Takeaway",
+  "th": "กลับบ้าน"
+ },
+ {
+  "module": "checkout",
+  "key": "subtotal",
+  "zh": "商品小计",
+  "en": "Subtotal",
+  "th": "ราคาสินค้า"
+ },
+ {
+  "module": "checkout",
+  "key": "deliveryFee",
+  "zh": "配送费",
+  "en": "Delivery Fee",
+  "th": "ค่าจัดส่ง"
+ },
+ {
+  "module": "checkout",
+  "key": "packFee",
+  "zh": "包装费",
+  "en": "Packing Fee",
+  "th": "ค่าบรรจุภัณฑ์"
+ },
+ {
+  "module": "checkout",
+  "key": "discount",
+  "zh": "优惠",
+  "en": "Discount",
+  "th": "ส่วนลด"
+ },
+ {
+  "module": "checkout",
+  "key": "total",
+  "zh": "实付",
+  "en": "Total",
+  "th": "ยอดรวม"
+ },
+ {
+  "module": "checkout",
+  "key": "submitOrder",
+  "zh": "提交订单",
+  "en": "Place Order",
+  "th": "สั่งซื้อ"
+ },
+ {
+  "module": "checkout",
+  "key": "selectCoupon",
+  "zh": "选择优惠券",
+  "en": "Select Coupon",
+  "th": "เลือกคูปอง"
+ },
+ {
+  "module": "checkout",
+  "key": "noCoupon",
+  "zh": "暂无可用优惠券",
+  "en": "No coupons available",
+  "th": "ไม่มีคูปอง"
+ },
+ {
+  "module": "checkout",
+  "key": "remark",
+  "zh": "备注",
+  "en": "Note",
+  "th": "หมายเหตุ"
+ },
+ {
+  "module": "checkout",
+  "key": "remarkPlaceholder",
+  "zh": "请输入备注信息",
+  "en": "Add a note",
+  "th": "เพิ่มหมายเหตุ"
+ },
+ {
+  "module": "checkout",
+  "key": "tableNumber",
+  "zh": "桌号",
+  "en": "Table",
+  "th": "หมายเลขโต๊ะ"
+ },
+ {
+  "module": "checkout",
+  "key": "pleaseSelectTable",
+  "zh": "请选择桌号",
+  "en": "Select table",
+  "th": "เลือกโต๊ะ"
+ },
+ {
+  "module": "checkout",
+  "key": "coinLimit",
+  "zh": "每单最多使用{max}金币",
+  "en": "【缺失】",
+  "th": "สูงสุด {max} เหรียญต่อออเดอร์"
+ },
+ {
+  "module": "checkout",
+  "key": "coinDeductUnavailable",
+  "zh": "金币暂时无法抵扣",
+  "en": "Coins cannot be used for deduction at this time",
+  "th": "ไม่สามารถใช้เหรียญเพื่อหักได้ในขณะนี้"
+ },
+ {
+  "module": "checkout",
+  "key": "coinMaxDeduct",
+  "zh": "本单最多抵扣 ฿{amount}（用 {coins} 金币）",
+  "en": "Max deduction ฿{amount} ({coins} coins)",
+  "th": "หักสูงสุด ฿{amount} ({coins} เหรียญ)"
+ },
+ {
+  "module": "checkout",
+  "key": "coinMaxDeductAmount",
+  "zh": "本单最多可抵扣 ฿{amount}",
+  "en": "Max deductible for this order: ฿{amount}",
+  "th": "หักได้สูงสุดสำหรับคำสั่งนี้: ฿{amount}"
+ },
+ {
+  "module": "checkout",
+  "key": "coinThresholdNotMet",
+  "zh": "订单金额未达到金币使用门槛",
+  "en": "Order amount below coin usage threshold",
+  "th": "ยอดคำสั่งซื้อไม่ถึงขั้นต่ำการใช้เหรียญ"
+ },
+ {
+  "module": "checkout",
+  "key": "excludedFromDiscount",
+  "zh": "该订单不参与优惠（酒水/特定分类）",
+  "en": "This order is not eligible for discounts",
+  "th": "คำสั่งซื้อนี้ไม่ร่วมส่วนลด"
+ },
+ {
+  "module": "checkout",
+  "key": "coinPlanRecommended",
+  "zh": "推荐方案",
+  "en": "Recommended",
+  "th": "แผนแนะนำ"
+ },
+ {
+  "module": "checkout",
+  "key": "coinPlanAlternative",
+  "zh": "备选方案",
+  "en": "Alternative",
+  "th": "แผนสำรอง"
+ },
+ {
+  "module": "checkout",
+  "key": "coinPlanSummary",
+  "zh": "用 {coins} 金币抵 ฿{amount}",
+  "en": "Use {coins} coins to deduct ฿{amount}",
+  "th": "ใช้ {coins} เหรียญ หัก ฿{amount}"
+ },
+ {
+  "module": "checkout",
+  "key": "coinPlanTierLine",
+  "zh": "{coins} 金币档 × {packs}",
+  "en": "{coins}-coin tier × {packs}",
+  "th": "เหรียญ {coins} × {packs}"
+ },
+ {
+  "module": "checkout",
+  "key": "coinTierUnavailable",
+  "zh": "订单金额未达到抵扣标准",
+  "en": "Order amount does not meet the coin usage threshold",
+  "th": "ยอดคำสั่งซื้อไม่ถึงเกณฑ์การใช้เหรียญ"
+ },
+ {
+  "module": "checkout",
+  "key": "submitting",
+  "zh": "提交中...",
+  "en": "Submitting...",
+  "th": "กำลังส่ง..."
+ },
+ {
+  "module": "checkout",
+  "key": "orderInfo",
+  "zh": "订单信息",
+  "en": "Order Info",
+  "th": "ข้อมูลคำสั่งซื้อ"
+ },
+ {
+  "module": "checkout",
+  "key": "productCost",
+  "zh": "商品费用",
+  "en": "Item Total",
+  "th": "ยอดสินค้า"
+ },
+ {
+  "module": "checkout",
+  "key": "totalAmount",
+  "zh": "合计",
+  "en": "Total",
+  "th": "รวม"
+ },
+ {
+  "module": "checkout",
+  "key": "totalColon",
+  "zh": "合计：",
+  "en": "Total: ",
+  "th": "รวม: "
+ },
+ {
+  "module": "checkout",
+  "key": "expectedCoins",
+  "zh": "预计获得 {n} 金币",
+  "en": "Earn {n} coins",
+  "th": "รับ {n} เหรียญ"
+ },
+ {
+  "module": "checkout",
+  "key": "expectedPoints",
+  "zh": "预计获得 {n} 积分",
+  "en": "Earn {n} points",
+  "th": "รับ {n} คะแนน"
+ },
+ {
+  "module": "checkout",
+  "key": "coupon",
+  "zh": "优惠券",
+  "en": "Coupon",
+  "th": "คูปอง"
+ },
+ {
+  "module": "checkout",
+  "key": "couponAvailable",
+  "zh": "{n}张可用",
+  "en": "{n} available",
+  "th": "ใช้ได้ {n} ใบ"
+ },
+ {
+  "module": "checkout",
+  "key": "couponNone",
+  "zh": "暂无可用",
+  "en": "None available",
+  "th": "ไม่มีที่ใช้ได้"
+ },
+ {
+  "module": "checkout",
+  "key": "couponNoAvailable",
+  "zh": "无可用券",
+  "en": "No coupon available",
+  "th": "ไม่มีคูปอง"
+ },
+ {
+  "module": "checkout",
+  "key": "couponNotUse",
+  "zh": "不使用优惠券",
+  "en": "Do not use coupon",
+  "th": "ไม่ใช้คูปอง"
+ },
+ {
+  "module": "checkout",
+  "key": "couponNotApplicable",
+  "zh": "(本单不可用)",
+  "en": "(Not applicable)",
+  "th": "(ใช้ไม่ได้)"
+ },
+ {
+  "module": "checkout",
+  "key": "couponNotStackable",
+  "zh": "(与活动折扣冲突，不可叠加)",
+  "en": "(Conflicts with active campaign)",
+  "th": "(ใช้ซ้อนกับโปรไม่ได้)"
+ },
+ {
+  "module": "checkout",
+  "key": "itemNotFound",
+  "zh": "部分商品不存在或已下架",
+  "en": "Some items are unavailable or removed",
+  "th": "บางรายการไม่มีหรือถูกลบแล้ว"
+ },
+ {
+  "module": "checkout",
+  "key": "pleaseSelect",
+  "zh": "请选择",
+  "en": "Select",
+  "th": "เลือก"
+ },
+ {
+  "module": "checkout",
+  "key": "remarkOptional",
+  "zh": "选填，请输入备注信息",
+  "en": "Optional, add a note",
+  "th": "ไม่บังคับ กรอกหมายเหตุ"
+ },
+ {
+  "module": "checkout",
+  "key": "pleaseSelectAddress",
+  "zh": "请选择收货地址",
+  "en": "Please select address",
+  "th": "กรุณาเลือกที่อยู่"
+ },
+ {
+  "module": "checkout",
+  "key": "pickupTime",
+  "zh": "取餐时间",
+  "en": "Pickup Time",
+  "th": "เวลารับอาหาร"
+ },
+ {
+  "module": "checkout",
+  "key": "paymentMethod",
+  "zh": "支付方式",
+  "en": "Payment Method",
+  "th": "วิธีชำระเงิน"
+ },
+ {
+  "module": "checkout",
+  "key": "selectPaymentMethod",
+  "zh": "选择支付方式",
+  "en": "Select Payment Method",
+  "th": "เลือกวิธีชำระเงิน"
+ },
+ {
+  "module": "checkout",
+  "key": "selectPickupTime",
+  "zh": "选择取餐时间",
+  "en": "Select Pickup Time",
+  "th": "เลือกเวลารับอาหาร"
+ },
+ {
+  "module": "checkout",
+  "key": "deliveryBadge",
+  "zh": "外卖配送",
+  "en": "Delivery",
+  "th": "จัดส่ง"
+ },
+ {
+  "module": "checkout",
+  "key": "loadFailed",
+  "zh": "加载失败",
+  "en": "Load failed",
+  "th": "โหลดไม่สำเร็จ"
+ },
+ {
+  "module": "checkout",
+  "key": "paymentNone",
+  "zh": "暂无可用支付方式",
+  "en": "No payment methods available",
+  "th": "ไม่มีวิธีชำระเงินที่ใช้ได้"
+ },
+ {
+  "module": "checkout",
+  "key": "createOrderFailed",
+  "zh": "创建订单失败",
+  "en": "Failed to create order",
+  "th": "สร้างคำสั่งซื้อไม่สำเร็จ"
+ },
+ {
+  "module": "checkout",
+  "key": "submitFailed",
+  "zh": "提交失败",
+  "en": "Submit failed",
+  "th": "ส่งไม่สำเร็จ"
+ },
+ {
+  "module": "payment",
+  "key": "title",
+  "zh": "支付",
+  "en": "Payment",
+  "th": "ชำระเงิน"
+ },
+ {
+  "module": "payment",
+  "key": "waiting",
+  "zh": "等待支付",
+  "en": "Waiting for payment",
+  "th": "รอชำระเงิน"
+ },
+ {
+  "module": "payment",
+  "key": "success",
+  "zh": "支付成功",
+  "en": "Payment Successful",
+  "th": "ชำระเงินสำเร็จ"
+ },
+ {
+  "module": "payment",
+  "key": "failed",
+  "zh": "支付失败",
+  "en": "Payment Failed",
+  "th": "ชำระเงินไม่สำเร็จ"
+ },
+ {
+  "module": "payment",
+  "key": "orderTotal",
+  "zh": "订单金额",
+  "en": "Order Total",
+  "th": "ยอดรวม"
+ },
+ {
+  "module": "payment",
+  "key": "payNow",
+  "zh": "立即支付",
+  "en": "Pay Now",
+  "th": "ชำระเลย"
+ },
+ {
+  "module": "payment",
+  "key": "payAgain",
+  "zh": "重新支付",
+  "en": "Try Again",
+  "th": "ลองอีกครั้ง"
+ },
+ {
+  "module": "payment",
+  "key": "viewOrder",
+  "zh": "查看订单",
+  "en": "View Order",
+  "th": "ดูคำสั่งซื้อ"
+ },
+ {
+  "module": "payment",
+  "key": "backHome",
+  "zh": "返回首页",
+  "en": "Back to Home",
+  "th": "กลับหน้าแรก"
+ },
+ {
+  "module": "payment",
+  "key": "payMethods.wechat",
+  "zh": "微信支付",
+  "en": "WeChat Pay",
+  "th": "WeChat Pay"
+ },
+ {
+  "module": "payment",
+  "key": "payMethods.alipay",
+  "zh": "支付宝",
+  "en": "Alipay",
+  "th": "Alipay"
+ },
+ {
+  "module": "payment",
+  "key": "payMethods.cash",
+  "zh": "现金支付",
+  "en": "Cash",
+  "th": "เงินสด"
+ },
+ {
+  "module": "payment",
+  "key": "waitingPay",
+  "zh": "等待支付",
+  "en": "Waiting for Payment",
+  "th": "รอชำระเงิน"
+ },
+ {
+  "module": "payment",
+  "key": "paidSuccess",
+  "zh": "支付完成",
+  "en": "Payment Complete",
+  "th": "ชำระเงินสำเร็จ"
+ },
+ {
+  "module": "payment",
+  "key": "showQR",
+  "zh": "请将二维码出示给收银员",
+  "en": "Show QR code to cashier",
+  "th": "แสดง QR ให้พนักงานสแกน"
+ },
+ {
+  "module": "payment",
+  "key": "orderNo",
+  "zh": "订单号",
+  "en": "Order No.",
+  "th": "หมายเลขคำสั่ง"
+ },
+ {
+  "module": "payment",
+  "key": "amount",
+  "zh": "金额",
+  "en": "Amount",
+  "th": "จำนวนเงิน"
+ },
+ {
+  "module": "payment",
+  "key": "scanning",
+  "zh": "收银员扫码后自动确认",
+  "en": "Auto-confirmed after scan",
+  "th": "ยืนยันอัตโนมัติหลังสแกน"
+ },
+ {
+  "module": "payment",
+  "key": "orderInfo",
+  "zh": "订单信息",
+  "en": "Order Info",
+  "th": "ข้อมูลคำสั่ง"
+ },
+ {
+  "module": "payment",
+  "key": "paid",
+  "zh": "已支付",
+  "en": "Paid",
+  "th": "ชำระแล้ว"
+ },
+ {
+  "module": "payment",
+  "key": "continueShopping",
+  "zh": "继续购物",
+  "en": "Continue Shopping",
+  "th": "เลือกซื้อต่อ"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "title",
+  "zh": "兑换结果",
+  "en": "Exchange Result",
+  "th": "ผลการแลก"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "waitingRedeem",
+  "zh": "等待核销",
+  "en": "Waiting for Verification",
+  "th": "รอยืนยัน"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "redeemed",
+  "zh": "核销完成",
+  "en": "Verification Complete",
+  "th": "ยืนยันสำเร็จ"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "showQR",
+  "zh": "请将二维码出示给收银员核销",
+  "en": "Show QR code to cashier for verification",
+  "th": "แสดง QR ให้พนักงานสแกนเพื่อยืนยัน"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "scanning",
+  "zh": "收银员扫码后自动确认",
+  "en": "Auto-confirmed after scan",
+  "th": "ยืนยันอัตโนมัติหลังสแกน"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "product",
+  "zh": "兑换商品",
+  "en": "Product",
+  "th": "สินค้า"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "pickupStore",
+  "zh": "提货门店",
+  "en": "Pickup Store",
+  "th": "สาขารับสินค้า"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "pickupTime",
+  "zh": "提货时间",
+  "en": "Pickup Time",
+  "th": "เวลารับสินค้า"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "quantity",
+  "zh": "兑换数量",
+  "en": "Quantity",
+  "th": "จำนวน"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "exchangeId",
+  "zh": "兑换单号",
+  "en": "Exchange ID",
+  "th": "หมายเลขคำสั่ง"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "status",
+  "zh": "状态",
+  "en": "Status",
+  "th": "สถานะ"
+ },
+ {
+  "module": "exchangeResult",
+  "key": "viewOrders",
+  "zh": "查看订单",
+  "en": "View Orders",
+  "th": "ดูคำสั่งซื้อ"
+ },
+ {
+  "module": "memberCode",
+  "key": "title",
+  "zh": "会员码",
+  "en": "Member Code",
+  "th": "รหัสสมาชิก"
+ },
+ {
+  "module": "memberCode",
+  "key": "memberCode",
+  "zh": "会员码",
+  "en": "Member Code",
+  "th": "รหัสสมาชิก"
+ },
+ {
+  "module": "memberCode",
+  "key": "hint",
+  "zh": "出示此码给收银员可识别会员身份",
+  "en": "Show this code to cashier for member identification",
+  "th": "แสดงรหัสนี้ให้พนักงานเพื่อระบุตัวตนสมาชิก"
+ },
+ {
+  "module": "memberCode",
+  "key": "secondsUnit",
+  "zh": " 秒",
+  "en": " s",
+  "th": " วิ"
+ },
+ {
+  "module": "memberCode",
+  "key": "refresh",
+  "zh": "刷新会员码",
+  "en": "Refresh Code",
+  "th": "รีเฟรชรหัส"
+ },
+ {
+  "module": "memberCode",
+  "key": "refreshFailed",
+  "zh": "刷新失败，请重试",
+  "en": "Refresh failed, please try again",
+  "th": "รีเฟรชไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "memberCode",
+  "key": "dynamicHint",
+  "zh": "动态码 60 秒有效，过期请刷新",
+  "en": "Dynamic code valid for 60 seconds, refresh when expired",
+  "th": "รหัสไดนามิกใช้ได้ 60 วินาที หมดอายุแล้วกรุณารีเฟรช"
+ },
+ {
+  "module": "order",
+  "key": "title",
+  "zh": "我的订单",
+  "en": "My Orders",
+  "th": "คำสั่งซื้อของฉัน"
+ },
+ {
+  "module": "order",
+  "key": "all",
+  "zh": "全部",
+  "en": "All",
+  "th": "ทั้งหมด"
+ },
+ {
+  "module": "order",
+  "key": "hotpot",
+  "zh": "火锅",
+  "en": "Hotpot",
+  "th": "หม้อไฟ"
+ },
+ {
+  "module": "order",
+  "key": "hotpotPerItem",
+  "zh": "火锅计件",
+  "en": "Hotpot A La Carte",
+  "th": "หมํ้ไฟตามรายการ"
+ },
+ {
+  "module": "order",
+  "key": "malatang",
+  "zh": "麻辣烫",
+  "en": "Malatang",
+  "th": "มาลาทัง"
+ },
+ {
+  "module": "order",
+  "key": "seafoodNoodle",
+  "zh": "泰式海鲜面",
+  "en": "Seafood Noodle",
+  "th": "ก๋วยเตี๋ยวทะเล"
+ },
+ {
+  "module": "order",
+  "key": "groupBuy",
+  "zh": "拼团",
+  "en": "Group Buy",
+  "th": "รวม order"
+ },
+ {
+  "module": "order",
+  "key": "standardFood",
+  "zh": "标准餐饮",
+  "en": "Standard Food",
+  "th": "อาหารทั่วไป"
+ },
+ {
+  "module": "order",
+  "key": "hostel",
+  "zh": "民宿",
+  "en": "Hostel",
+  "th": "โฮสเทล"
+ },
+ {
+  "module": "order",
+  "key": "hostelHotpot",
+  "zh": "民宿火锅",
+  "en": "Hostel Hotpot",
+  "th": "หมํ้ไฟโฮสเทล"
+ },
+ {
+  "module": "order",
+  "key": "hostelCoffee",
+  "zh": "民宿咖啡",
+  "en": "Hostel Cafe",
+  "th": "คาเฟ่โฮสเทล"
+ },
+ {
+  "module": "order",
+  "key": "pending",
+  "zh": "待付款",
+  "en": "Pending",
+  "th": "รอชำระเงิน"
+ },
+ {
+  "module": "order",
+  "key": "preparing",
+  "zh": "制作中",
+  "en": "Preparing",
+  "th": "กำลังทำ"
+ },
+ {
+  "module": "order",
+  "key": "ready",
+  "zh": "待取餐",
+  "en": "Ready",
+  "th": "พร้อมรับ"
+ },
+ {
+  "module": "order",
+  "key": "completed",
+  "zh": "已完成",
+  "en": "Completed",
+  "th": "เสร็จสิ้น"
+ },
+ {
+  "module": "order",
+  "key": "cancelled",
+  "zh": "已取消",
+  "en": "Cancelled",
+  "th": "ยกเลิกแล้ว"
+ },
+ {
+  "module": "order",
+  "key": "orderNumber",
+  "zh": "订单号",
+  "en": "Order No.",
+  "th": "หมายเลขคำสั่งซื้อ"
+ },
+ {
+  "module": "order",
+  "key": "orderTime",
+  "zh": "下单时间",
+  "en": "Order Time",
+  "th": "เวลาสั่งซื้อ"
+ },
+ {
+  "module": "order",
+  "key": "cancelOrder",
+  "zh": "取消订单",
+  "en": "Cancel",
+  "th": "ยกเลิก"
+ },
+ {
+  "module": "order",
+  "key": "reorder",
+  "zh": "再来一单",
+  "en": "Reorder",
+  "th": "สั่งอีกครั้ง"
+ },
+ {
+  "module": "order",
+  "key": "cancelSuccess",
+  "zh": "订单已取消",
+  "en": "Order cancelled",
+  "th": "ยกเลิกคำสั่งซื้อแล้ว"
+ },
+ {
+  "module": "order",
+  "key": "noOrders",
+  "zh": "暂无订单",
+  "en": "No orders",
+  "th": "ไม่มีคำสั่งซื้อ"
+ },
+ {
+  "module": "order",
+  "key": "processing",
+  "zh": "进行中",
+  "en": "Processing",
+  "th": "กำลังดำเนินการ"
+ },
+ {
+  "module": "order",
+  "key": "paid",
+  "zh": "已支付",
+  "en": "Paid",
+  "th": "ชำระแล้ว"
+ },
+ {
+  "module": "order",
+  "key": "actualPay",
+  "zh": "实付",
+  "en": "Paid",
+  "th": "ชำระแล้ว"
+ },
+ {
+  "module": "order",
+  "key": "goPay",
+  "zh": "去支付",
+  "en": "Pay Now",
+  "th": "ชำระเงิน"
+ },
+ {
+  "module": "order",
+  "key": "viewDetail",
+  "zh": "查看详情",
+  "en": "Details",
+  "th": "ดูรายละเอียด"
+ },
+ {
+  "module": "order",
+  "key": "noMore",
+  "zh": "没有更多了",
+  "en": "No more",
+  "th": "ไม่มีเพิ่มเติม"
+ },
+ {
+  "module": "order",
+  "key": "paySuccess",
+  "zh": "支付成功",
+  "en": "Payment successful",
+  "th": "ชำระเงินสำเร็จ"
+ },
+ {
+  "module": "order",
+  "key": "payFailed",
+  "zh": "支付失败",
+  "en": "Payment failed",
+  "th": "ชำระเงินไม่สำเร็จ"
+ },
+ {
+  "module": "order",
+  "key": "payRetry",
+  "zh": "支付失败，请重试",
+  "en": "Payment failed, please retry",
+  "th": "ชำระเงินไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "order",
+  "key": "coinsUsed",
+  "zh": "使用{n}个金币",
+  "en": "{n} coins used",
+  "th": "ใช้เหรียญ {n} เหรียญ"
+ },
+ {
+  "module": "order",
+  "key": "loadFailed",
+  "zh": "加载订单失败",
+  "en": "Failed to load orders",
+  "th": "โหลดคำสั่งซื้อไม่สำเร็จ"
+ },
+ {
+  "module": "order",
+  "key": "orderNoLabel",
+  "zh": "订单号",
+  "en": "Order No.",
+  "th": "หมายเลขคำสั่งซื้อ"
+ },
+ {
+  "module": "order",
+  "key": "dineIn",
+  "zh": "堂食",
+  "en": "Dine In",
+  "th": "ทานที่ร้าน"
+ },
+ {
+  "module": "order",
+  "key": "delivery",
+  "zh": "配送",
+  "en": "Delivery",
+  "th": "จัดส่ง"
+ },
+ {
+  "module": "order",
+  "key": "takeaway",
+  "zh": "外卖",
+  "en": "Takeaway",
+  "th": "กลับบ้าน"
+ },
+ {
+  "module": "order",
+  "key": "exchangeOrders",
+  "zh": "兑换订单",
+  "en": "Exchange Orders",
+  "th": "คำสั่งแลก"
+ },
+ {
+  "module": "order",
+  "key": "exchangeOrder",
+  "zh": "兑换单",
+  "en": "Exchange",
+  "th": "แลก"
+ },
+ {
+  "module": "order",
+  "key": "pointExchange",
+  "zh": "积分兑换",
+  "en": "Points Exchange",
+  "th": "แลกคะแนน"
+ },
+ {
+  "module": "order",
+  "key": "coinExchange",
+  "zh": "金币兑换",
+  "en": "Coin Exchange",
+  "th": "แลกเหรียญ"
+ },
+ {
+  "module": "order",
+  "key": "viewCode",
+  "zh": "查看兑换码",
+  "en": "View Code",
+  "th": "ดูรหัส"
+ },
+ {
+  "module": "order",
+  "key": "exchangePending",
+  "zh": "待核销",
+  "en": "Pending",
+  "th": "รอยืนยัน"
+ },
+ {
+  "module": "order",
+  "key": "exchangeRedeemed",
+  "zh": "已核销",
+  "en": "Redeemed",
+  "th": "ยืนยันแล้ว"
+ },
+ {
+  "module": "order",
+  "key": "exchangeExpired",
+  "zh": "已过期",
+  "en": "Expired",
+  "th": "หมดอายุ"
+ },
+ {
+  "module": "order",
+  "key": "exchangeCost",
+  "zh": "兑换花费",
+  "en": "Cost",
+  "th": "ค่าแลก"
+ },
+ {
+  "module": "order",
+  "key": "exchangePoints",
+  "zh": "{n}积分",
+  "en": "{n} points",
+  "th": "{n} คะแนน"
+ },
+ {
+  "module": "order",
+  "key": "exchangeCoins",
+  "zh": "{n}金币",
+  "en": "{n} coins",
+  "th": "{n} เหรียญ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "title",
+  "zh": "订单详情",
+  "en": "Order Details",
+  "th": "รายละเอียดคำสั่งซื้อ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "orderInfo",
+  "zh": "订单信息",
+  "en": "Order Info",
+  "th": "ข้อมูลคำสั่งซื้อ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "storeInfo",
+  "zh": "门店信息",
+  "en": "Store Info",
+  "th": "ข้อมูลร้าน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "paymentInfo",
+  "zh": "支付信息",
+  "en": "Payment Info",
+  "th": "ข้อมูลการชำระเงิน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "orderStatus",
+  "zh": "订单状态",
+  "en": "Status",
+  "th": "สถานะ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "all",
+  "zh": "全部",
+  "en": "【缺失】",
+  "th": "ทั้งหมด"
+ },
+ {
+  "module": "orderDetail",
+  "key": "productList",
+  "zh": "商品列表",
+  "en": "Items",
+  "th": "รายการสินค้า"
+ },
+ {
+  "module": "orderDetail",
+  "key": "loading",
+  "zh": "加载中...",
+  "en": "Loading...",
+  "th": "กำลังโหลด..."
+ },
+ {
+  "module": "orderDetail",
+  "key": "estDelivery",
+  "zh": "预计{time}分钟送达",
+  "en": "Est. {time} min delivery",
+  "th": "คาดว่าจะส่งถึงใน {time} นาที"
+ },
+ {
+  "module": "orderDetail",
+  "key": "tableNo",
+  "zh": "桌号：{no}",
+  "en": "Table: {no}",
+  "th": "โต๊ะ: {no}"
+ },
+ {
+  "module": "orderDetail",
+  "key": "orderTypeLabel",
+  "zh": "订单类型",
+  "en": "Order Type",
+  "th": "ประเภทคำสั่งซื้อ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "productInfo",
+  "zh": "商品信息",
+  "en": "Items",
+  "th": "รายการสินค้า"
+ },
+ {
+  "module": "orderDetail",
+  "key": "feeDetail",
+  "zh": "费用明细",
+  "en": "Fee Details",
+  "th": "รายละเอียดค่าใช้จ่าย"
+ },
+ {
+  "module": "orderDetail",
+  "key": "subtotal",
+  "zh": "商品小计",
+  "en": "Subtotal",
+  "th": "ยอดรวม"
+ },
+ {
+  "module": "orderDetail",
+  "key": "discount",
+  "zh": "优惠减免",
+  "en": "Discount",
+  "th": "ส่วนลด"
+ },
+ {
+  "module": "orderDetail",
+  "key": "coinDeduct",
+  "zh": "金币抵扣",
+  "en": "Coin Deduction",
+  "th": "หักด้วยเหรียญ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "campaignDiscount",
+  "zh": "活动优惠",
+  "en": "Campaign Discount",
+  "th": "ส่วนลดโปรโมชัน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "rounding",
+  "zh": "抹零优惠",
+  "en": "Rounding Off",
+  "th": "ปัดเศษ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "cashier",
+  "zh": "服务收银员",
+  "en": "Served by Cashier",
+  "th": "พนักงานแคชเชียร์"
+ },
+ {
+  "module": "orderDetail",
+  "key": "coinsCount",
+  "zh": "{n}个金币",
+  "en": "{n} coins",
+  "th": "{n} เหรียญ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "coinsEarned",
+  "zh": "获得金币",
+  "en": "Coins Earned",
+  "th": "เหรียญที่ได้รับ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "pointsEarned",
+  "zh": "获得积分",
+  "en": "Points Earned",
+  "th": "คะแนนที่ได้รับ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "coinsUnit",
+  "zh": "{n}个",
+  "en": "{n}",
+  "th": "{n} เหรียญ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "pointsUnit",
+  "zh": "{n}分",
+  "en": "{n} pts",
+  "th": "{n} คะแนน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "actualPay",
+  "zh": "实付金额",
+  "en": "Amount Paid",
+  "th": "ยอดชำระ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "orderNo",
+  "zh": "订单编号",
+  "en": "Order No.",
+  "th": "หมายเลขคำสั่งซื้อ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "orderTime",
+  "zh": "下单时间",
+  "en": "Order Time",
+  "th": "เวลาสั่ง"
+ },
+ {
+  "module": "orderDetail",
+  "key": "orderSource",
+  "zh": "订单类型",
+  "en": "Source",
+  "th": "แหล่งที่มา"
+ },
+ {
+  "module": "orderDetail",
+  "key": "pickupStore",
+  "zh": "提货门店",
+  "en": "Pickup Store",
+  "th": "สาขารับสินค้า"
+ },
+ {
+  "module": "orderDetail",
+  "key": "pickupTime",
+  "zh": "提货时间",
+  "en": "Pickup Time",
+  "th": "เวลารับสินค้า"
+ },
+ {
+  "module": "orderDetail",
+  "key": "remark",
+  "zh": "备注",
+  "en": "Remark",
+  "th": "หมายเหตุ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "payMethod",
+  "zh": "支付方式",
+  "en": "Payment Method",
+  "th": "วิธีชำระเงิน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "payTime",
+  "zh": "支付时间",
+  "en": "Payment Time",
+  "th": "เวลาชำระเงิน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "contactStore",
+  "zh": "联系商家",
+  "en": "Contact Store",
+  "th": "ติดต่อร้าน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "reorder",
+  "zh": "再来一单",
+  "en": "Reorder",
+  "th": "สั่งอีกครั้ง"
+ },
+ {
+  "module": "orderDetail",
+  "key": "loadFailed",
+  "zh": "加载失败",
+  "en": "Load failed",
+  "th": "โหลดไม่สำเร็จ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "callFailed",
+  "zh": "拨打失败",
+  "en": "Call failed",
+  "th": "โทรไม่สำเร็จ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "noStoreContact",
+  "zh": "暂无商家联系方式",
+  "en": "No store contact",
+  "th": "ไม่มีข้อมูลติดต่อร้าน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "unknown",
+  "zh": "未知",
+  "en": "Unknown",
+  "th": "ไม่ทราบ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "sourceDineInScan",
+  "zh": "扫码点餐",
+  "en": "Scan Order",
+  "th": "สแกนสั่ง"
+ },
+ {
+  "module": "orderDetail",
+  "key": "sourceDineInCashier",
+  "zh": "柜台点餐",
+  "en": "Counter Order",
+  "th": "สั่งที่เคาน์เตอร์"
+ },
+ {
+  "module": "orderDetail",
+  "key": "sourceTakeaway",
+  "zh": "自提",
+  "en": "Takeaway",
+  "th": "กลับบ้าน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "sourceDelivery",
+  "zh": "外卖配送",
+  "en": "Delivery",
+  "th": "จัดส่ง"
+ },
+ {
+  "module": "orderDetail",
+  "key": "payCash",
+  "zh": "现金支付",
+  "en": "Cash",
+  "th": "เงินสด"
+ },
+ {
+  "module": "orderDetail",
+  "key": "payVisa",
+  "zh": "信用卡支付",
+  "en": "Credit Card",
+  "th": "บัตรเครดิต"
+ },
+ {
+  "module": "orderDetail",
+  "key": "payPaypal",
+  "zh": "PayPal",
+  "en": "PayPal",
+  "th": "PayPal"
+ },
+ {
+  "module": "orderDetail",
+  "key": "payCoin",
+  "zh": "金币抵扣",
+  "en": "Coins",
+  "th": "เหรียญ"
+ },
+ {
+  "module": "orderDetail",
+  "key": "payCoupon",
+  "zh": "优惠券支付",
+  "en": "Coupon",
+  "th": "คูปอง"
+ },
+ {
+  "module": "orderDetail",
+  "key": "pickupCode",
+  "zh": "取餐码",
+  "en": "Pickup Code",
+  "th": "รหัสรับอาหาร"
+ },
+ {
+  "module": "orderDetail",
+  "key": "roomInfo",
+  "zh": "房间信息",
+  "en": "Room Info",
+  "th": "ข้อมูลห้องพัก"
+ },
+ {
+  "module": "orderDetail",
+  "key": "roomType",
+  "zh": "房型",
+  "en": "Room Type",
+  "th": "ประเภทห้อง"
+ },
+ {
+  "module": "orderDetail",
+  "key": "roomName",
+  "zh": "房间名",
+  "en": "Room Name",
+  "th": "ชื่อห้อง"
+ },
+ {
+  "module": "orderDetail",
+  "key": "checkInDate",
+  "zh": "入住日期",
+  "en": "Check-in",
+  "th": "เช็คอิน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "checkOutDate",
+  "zh": "退房日期",
+  "en": "Check-out",
+  "th": "เช็คเอาท์"
+ },
+ {
+  "module": "orderDetail",
+  "key": "nightsCount",
+  "zh": "{n}晚",
+  "en": "{n} nights",
+  "th": "{n} คืน"
+ },
+ {
+  "module": "orderDetail",
+  "key": "guestsCount",
+  "zh": "{n}人",
+  "en": "{n} guests",
+  "th": "{n} คน"
+ },
+ {
+  "module": "invite",
+  "key": "title",
+  "zh": "收到好友邀请",
+  "en": "You're Invited!",
+  "th": "คุณได้รับเชิญ"
+ },
+ {
+  "module": "invite",
+  "key": "subtitle",
+  "zh": "加入 SiamFeast，和好友一起享受美食优惠",
+  "en": "Join SiamFeast and enjoy great food deals with your friend",
+  "th": "สมัคร SiamFeast รับส่วนลดอาหารไปกับเพื่อนของคุณ"
+ },
+ {
+  "module": "invite",
+  "key": "inviterCode",
+  "zh": "好友邀请码",
+  "en": "Friend's invite code",
+  "th": "รหัสเชิญจากเพื่อน"
+ },
+ {
+  "module": "invite",
+  "key": "rewardDesc",
+  "zh": "注册成功后，你和好友都可获得金币奖励",
+  "en": "Register now — both you and your friend earn coin rewards",
+  "th": "สมัครสำเร็จ คุณและเพื่อนจะได้รับรางวัลเหรียญทั้งคู่"
+ },
+ {
+  "module": "invite",
+  "key": "registerNow",
+  "zh": "立即注册",
+  "en": "Register Now",
+  "th": "สมัครเลย"
+ },
+ {
+  "module": "invite",
+  "key": "hasAccount",
+  "zh": "已有账号？",
+  "en": "Already have an account?",
+  "th": "มีบัญชีอยู่แล้ว?"
+ },
+ {
+  "module": "invite",
+  "key": "goLogin",
+  "zh": "去登录",
+  "en": "Log In",
+  "th": "เข้าสู่ระบบ"
+ },
+ {
+  "module": "campaignCenter",
+  "key": "title",
+  "zh": "活动中心",
+  "en": "Campaigns",
+  "th": "ศูนย์กิจกรรม"
+ },
+ {
+  "module": "campaignCenter",
+  "key": "empty",
+  "zh": "暂无活动，敬请期待",
+  "en": "No campaigns yet, stay tuned",
+  "th": "ยังไม่มีกิจกรรม โปรดติดตาม"
+ },
+ {
+  "module": "campaignCenter",
+  "key": "upcoming",
+  "zh": "即将开始",
+  "en": "Upcoming",
+  "th": "เร็ว ๆ นี้"
+ },
+ {
+  "module": "campaignCenter",
+  "key": "ongoing",
+  "zh": "进行中",
+  "en": "Ongoing",
+  "th": "กำลังดำเนินการ"
+ },
+ {
+  "module": "campaignCenter",
+  "key": "viewAll",
+  "zh": "查看全部",
+  "en": "View All",
+  "th": "ดูทั้งหมด"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "title",
+  "zh": "金币使用确认",
+  "en": "Confirm Coin Usage",
+  "th": "ยืนยันการใช้เหรียญ"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "modalTitle",
+  "zh": "金币使用请求",
+  "en": "Coin Usage Request",
+  "th": "คำขอใช้เหรียญ"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "modalContent",
+  "zh": "收银员请求在【{store}】为您使用 {coins} 金币（抵扣 ฿{amount}），是否确认？",
+  "en": "The cashier at [{store}] requests to use {coins} coins (deduct ฿{amount}). Approve?",
+  "th": "พนักงานแคชเชียร์ที่ [{store}] ขอใช้ {coins} เหรียญ (หัก ฿{amount}) ยืนยันหรือไม่?"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "subtitle",
+  "zh": "收银员请求为您使用金币抵扣，请确认本次使用",
+  "en": "The cashier requests to use your coins for this purchase. Please confirm.",
+  "th": "พนักงานแคชเชียร์ขอใช้เหรียญของคุณเพื่อหักส่วนลด กรุณายืนยัน"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "coinsUnit",
+  "zh": "金币",
+  "en": "coins",
+  "th": "เหรียญ"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "store",
+  "zh": "消费门店",
+  "en": "Store",
+  "th": "ร้านค้า"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "cashier",
+  "zh": "收银员",
+  "en": "Cashier",
+  "th": "พนักงานแคชเชียร์"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "timeLimit",
+  "zh": "有效时间",
+  "en": "Time Limit",
+  "th": "เวลาที่เหลือ"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "countdown",
+  "zh": "剩余 {n} 秒",
+  "en": "{n}s left",
+  "th": "เหลือ {n} วินาที"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "expired",
+  "zh": "已过期",
+  "en": "Expired",
+  "th": "หมดอายุแล้ว"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "approve",
+  "zh": "确认使用",
+  "en": "Approve",
+  "th": "ยืนยันใช้"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "deny",
+  "zh": "拒绝",
+  "en": "Deny",
+  "th": "ปฏิเสธ"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "deductLabel",
+  "zh": "本次抵扣",
+  "en": "Deduction",
+  "th": "ส่วนลดครั้งนี้"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "useCoins",
+  "zh": "使用 {n} 金币",
+  "en": "Using {n} coins",
+  "th": "ใช้ {n} เหรียญ"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "backHome",
+  "zh": "返回首页",
+  "en": "Back to Home",
+  "th": "กลับหน้าหลัก"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "approvedText",
+  "zh": "已确认使用",
+  "en": "Usage Approved",
+  "th": "ยืนยันการใช้แล้ว"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "deniedText",
+  "zh": "已拒绝",
+  "en": "Denied",
+  "th": "ปฏิเสธแล้ว"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "noPending",
+  "zh": "暂无待确认的金币使用请求",
+  "en": "No pending coin usage request",
+  "th": "ไม่มีคำขอใช้เหรียญที่รอยืนยัน"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "statusConflict",
+  "zh": "该请求已处理或已过期，已为您刷新",
+  "en": "This request was already handled or expired. Refreshed.",
+  "th": "คำขอนี้ดำเนินการแล้วหรือหมดอายุ ระบบรีเฟรชให้แล้ว"
+ },
+ {
+  "module": "coinConfirm",
+  "key": "operateFailed",
+  "zh": "操作失败，请重试",
+  "en": "Operation failed, please retry",
+  "th": "ดำเนินการไม่สำเร็จ กรุณาลองใหม่"
+ },
+ {
+  "module": "mine",
+  "key": "title",
+  "zh": "我的",
+  "en": "Me",
+  "th": "ของฉัน"
+ },
+ {
+  "module": "mine",
+  "key": "memberCenter",
+  "zh": "会员中心",
+  "en": "Membership",
+  "th": "ศูนย์สมาชิก"
+ },
+ {
+  "module": "mine",
+  "key": "myCoupons",
+  "zh": "优惠券",
+  "en": "Coupons",
+  "th": "คูปอง"
+ },
+ {
+  "module": "mine",
+  "key": "claimCenter",
+  "zh": "领券中心",
+  "en": "Coupon Center",
+  "th": "ศูนย์รับคูปอง"
+ },
+ {
+  "module": "mine",
+  "key": "myPoints",
+  "zh": "我的积分",
+  "en": "My Points",
+  "th": "คะแนนของฉัน"
+ },
+ {
+  "module": "mine",
+  "key": "myAddress",
+  "zh": "我的地址",
+  "en": "My Address",
+  "th": "ที่อยู่ของฉัน"
+ },
+ {
+  "module": "mine",
+  "key": "language",
+  "zh": "语言设置",
+  "en": "Language",
+  "th": "ภาษา"
+ },
+ {
+  "module": "mine",
+  "key": "settings",
+  "zh": "设置",
+  "en": "Settings",
+  "th": "การตั้งค่า"
+ },
+ {
+  "module": "mine",
+  "key": "feedback",
+  "zh": "意见反馈",
+  "en": "Feedback",
+  "th": "ความคิดเห็น"
+ },
+ {
+  "module": "mine",
+  "key": "aboutUs",
+  "zh": "关于我们",
+  "en": "About Us",
+  "th": "เกี่ยวกับเรา"
+ },
+ {
+  "module": "mine",
+  "key": "logout",
+  "zh": "退出登录",
+  "en": "Logout",
+  "th": "ออกจากระบบ"
+ },
+ {
+  "module": "mine",
+  "key": "logoutConfirm",
+  "zh": "确定要退出登录吗？",
+  "en": "Are you sure you want to logout?",
+  "th": "คุณต้องการออกจากระบบหรือไม่?"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccount",
+  "zh": "删除账号",
+  "en": "Delete Account",
+  "th": "ลบบัญชี"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountWarning",
+  "zh": "删除后您的个人信息将被清除、金币和积分全部作废，且不可恢复。订单等交易记录将依法匿名留存。",
+  "en": "Your personal data will be erased, all coins and points will be voided, and this cannot be undone. Order records will be retained anonymously as required by law.",
+  "th": "ข้อมูลส่วนบุคคลของคุณจะถูกลบ เหรียญและคะแนนทั้งหมดจะสิ้นสุด และไม่สามารถกู้คืนได้ บันทึกคำสั่งซื้อจะเก็บโดยไม่ระบุตัวตนตามกฎหมาย"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountContinue",
+  "zh": "继续删除",
+  "en": "Continue",
+  "th": "ดำเนินการต่อ"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountFinalTitle",
+  "zh": "最终确认",
+  "en": "Final Confirmation",
+  "th": "ยืนยันขั้นสุดท้าย"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountFinalConfirm",
+  "zh": "确定要永久删除账号吗？此操作不可恢复！",
+  "en": "Permanently delete your account? This action cannot be undone!",
+  "th": "ยืนยันการลบบัญชีถาวรหรือไม่? ไม่สามารถกู้คืนได้!"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountConfirmBtn",
+  "zh": "确认删除",
+  "en": "Delete",
+  "th": "ยืนยันลบ"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountDone",
+  "zh": "账号已删除",
+  "en": "Account deleted",
+  "th": "ลบบัญชีแล้ว"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountFailed",
+  "zh": "删除失败，请稍后重试",
+  "en": "Failed to delete, please retry later",
+  "th": "ลบไม่สำเร็จ กรุณาลองใหม่ภายหลัง"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountBlockedTitle",
+  "zh": "无法删除",
+  "en": "Cannot Delete",
+  "th": "ไม่สามารถลบได้"
+ },
+ {
+  "module": "mine",
+  "key": "deleteAccountBlockedOrders",
+  "zh": "您有未完成的订单，请先完成或取消后再删除账号",
+  "en": "You have unfinished orders. Please complete or cancel them first.",
+  "th": "คุณมีคำสั่งซื้อที่ยังไม่เสร็จสิ้น กรุณาดำเนินการให้เสร็จก่อน"
+ },
+ {
+  "module": "mine",
+  "key": "goOrders",
+  "zh": "查看订单",
+  "en": "View Orders",
+  "th": "ดูคำสั่งซื้อ"
+ },
+ {
+  "module": "mine",
+  "key": "myFeatures",
+  "zh": "我的功能",
+  "en": "My Features",
+  "th": "ฟีเจอร์ของฉัน"
+ },
+ {
+  "module": "mine",
+  "key": "footprint",
+  "zh": "足迹",
+  "en": "Footprint",
+  "th": "ประวัติ"
+ },
+ {
+  "module": "mine",
+  "key": "inviteCode",
+  "zh": "邀请码",
+  "en": "Invite Code",
+  "th": "รหัสเชิญ"
+ },
+ {
+  "module": "mine",
+  "key": "inviteCodeTitle",
+  "zh": "邀请码",
+  "en": "Invite Code",
+  "th": "รหัสเชิญ"
+ },
+ {
+  "module": "mine",
+  "key": "guest",
+  "zh": "用户",
+  "en": "User",
+  "th": "ผู้ใช้"
+ },
+ {
+  "module": "mine",
+  "key": "myReferral",
+  "zh": "我的邀请",
+  "en": "My Referrals",
+  "th": "การเชิญของฉัน"
+ },
+ {
+  "module": "mine",
+  "key": "copyCode",
+  "zh": "复制邀请码",
+  "en": "Copy Code",
+  "th": "คัดลอกรหัส"
+ },
+ {
+  "module": "mine",
+  "key": "copied",
+  "zh": "已复制",
+  "en": "Copied",
+  "th": "คัดลอกแล้ว"
+ },
+ {
+  "module": "mine",
+  "key": "shareLink",
+  "zh": "分享链接",
+  "en": "Share Link",
+  "th": "แชร์ลิงก์"
+ },
+ {
+  "module": "mine",
+  "key": "shareToLine",
+  "zh": "分享到 LINE",
+  "en": "Share to LINE",
+  "th": "แชร์ไป LINE"
+ },
+ {
+  "module": "mine",
+  "key": "lineShareText",
+  "zh": "我在用 Siam Feast，邀请你一起来！",
+  "en": "I'm using Siam Feast! Join me:",
+  "th": "ฉันใช้ Siam Feast! มาสมัครด้วยกัน!"
+ },
+ {
+  "module": "mine",
+  "key": "lineNotInstalled",
+  "zh": "未检测到 LINE",
+  "en": "LINE not found",
+  "th": "ไม่พบแอป LINE"
+ },
+ {
+  "module": "mine",
+  "key": "lineCopyAndShare",
+  "zh": "已复制邀请链接，去 LINE 发送给好友吧",
+  "en": "Invite link ready. Paste it in LINE to send to friends",
+  "th": "คัดลอกลิงก์เชิญแล้ว ไปส่งให้เพื่อนผ่าน LINE ได้เลย"
+ },
+ {
+  "module": "mine",
+  "key": "copyLink",
+  "zh": "复制链接",
+  "en": "Copy Link",
+  "th": "คัดลอกลิงก์"
+ },
+ {
+  "module": "mine",
+  "key": "openWebShare",
+  "zh": "网页版分享",
+  "en": "Web Share",
+  "th": "แชร์ผ่านเว็บ"
+ },
+ {
+  "module": "mine",
+  "key": "shareFail",
+  "zh": "链接生成失败，请重试",
+  "en": "Failed to generate link, please retry",
+  "th": "สร้างลิงก์ไม่สำเร็จ กรุณาลองใหม่"
+ },
+ {
+  "module": "mine",
+  "key": "linkCopied",
+  "zh": "邀请链接已复制",
+  "en": "Invite link copied",
+  "th": "คัดลอกลิงก์เชิญแล้ว"
+ },
+ {
+  "module": "mine",
+  "key": "inviteFriends",
+  "zh": "邀请好友，双方得奖励",
+  "en": "Invite friends, both earn rewards",
+  "th": "เชิญเพื่อน รับรางวัลทั้งคู่"
+ },
+ {
+  "module": "mine",
+  "key": "myCode",
+  "zh": "我的邀请码",
+  "en": "My invite code",
+  "th": "รหัสเชิญของฉัน"
+ },
+ {
+  "module": "mine",
+  "key": "copy",
+  "zh": "复制",
+  "en": "Copy",
+  "th": "คัดลอก"
+ },
+ {
+  "module": "mine",
+  "key": "invited",
+  "zh": "已邀请",
+  "en": "Invited",
+  "th": "เชิญแล้ว"
+ },
+ {
+  "module": "mine",
+  "key": "coinsEarned",
+  "zh": "获得金币",
+  "en": "Coins Earned",
+  "th": "เหรียญที่ได้"
+ },
+ {
+  "module": "mine",
+  "key": "pending",
+  "zh": "待激活",
+  "en": "Pending",
+  "th": "รอเปิดใช้"
+ },
+ {
+  "module": "mine",
+  "key": "inviteNow",
+  "zh": "立即邀请好友",
+  "en": "Invite friends now",
+  "th": "เชิญเพื่อนเลย"
+ },
+ {
+  "module": "mine",
+  "key": "shareGuideTitle",
+  "zh": "如何分享给好友",
+  "en": "How to Share with Friends",
+  "th": "วิธีแชร์ให้เพื่อน"
+ },
+ {
+  "module": "mine",
+  "key": "shareGuideContent",
+  "zh": "1. 点击「分享链接」复制专属邀请链接\n2. 粘贴到微信 / LINE / WhatsApp 等聊天窗口发给好友\n3. 好友在浏览器打开链接，会自动跳到注册页并填好你的邀请码\n4. 好友注册成功并完成首单后，你和好友都能获得奖励",
+  "en": "1. Tap \"Share Link\" to copy your personal invite link\n2. Paste it in a chat (WeChat / LINE / WhatsApp) and send to friends\n3. Friends open the link in a browser — it will take them to the signup page with your invite code pre-filled\n4. Once they sign up and place their first order, both of you earn rewards",
+  "th": "1. แตะ \"แชร์ลิงก์\" เพื่อคัดลอกลิงก์เชิญส่วนตัว\n2. วางในแชท (WeChat / LINE / WhatsApp) แล้วส่งให้เพื่อน\n3. เพื่อนเปิดลิงก์ในเบราว์เซอร์ จะเด้งไปหน้าสมัครพร้อมกรอกรหัสเชิญของคุณอัตโนมัติ\n4. เมื่อเพื่อนสมัครสำเร็จและสั่งซื้อครั้งแรก ทั้งคุณและเพื่อนจะได้รับรางวัล"
+ },
+ {
+  "module": "mine",
+  "key": "shareGuideConfirm",
+  "zh": "我知道了",
+  "en": "Got it",
+  "th": "เข้าใจแล้ว"
+ },
+ {
+  "module": "mine",
+  "key": "invitedCount",
+  "zh": "已邀请",
+  "en": "Invited",
+  "th": "เชิญแล้ว"
+ },
+ {
+  "module": "mine",
+  "key": "pendingPoints",
+  "zh": "待激活积分",
+  "en": "Pending Points",
+  "th": "คะแนนรอเปิดใช้"
+ },
+ {
+  "module": "mine",
+  "key": "pendingCountUnit",
+  "zh": "笔",
+  "en": "rewards",
+  "th": "รายการ"
+ },
+ {
+  "module": "mine",
+  "key": "activated",
+  "zh": "已激活",
+  "en": "Activated",
+  "th": "เปิดใช้แล้ว"
+ },
+ {
+  "module": "mine",
+  "key": "pendingActivation",
+  "zh": "待激活",
+  "en": "Pending",
+  "th": "รอเปิดใช้"
+ },
+ {
+  "module": "mine",
+  "key": "taskRecords",
+  "zh": "任务记录",
+  "en": "Tasks",
+  "th": "ภารกิจ"
+ },
+ {
+  "module": "mine",
+  "key": "pointsEarned",
+  "zh": "获得积分",
+  "en": "Points Earned",
+  "th": "คะแนนที่ได้"
+ },
+ {
+  "module": "mine",
+  "key": "invitedUsers",
+  "zh": "已邀请用户",
+  "en": "Invited Users",
+  "th": "ผู้ใช้ที่เชิญ"
+ },
+ {
+  "module": "mine",
+  "key": "rewardRecords",
+  "zh": "奖励记录",
+  "en": "Rewards",
+  "th": "รางวัล"
+ },
+ {
+  "module": "mine",
+  "key": "noReferees",
+  "zh": "还没有邀请记录",
+  "en": "No referrals yet",
+  "th": "ยังไม่มีการเชิญ"
+ },
+ {
+  "module": "mine",
+  "key": "noRewards",
+  "zh": "还没有奖励记录",
+  "en": "No rewards yet",
+  "th": "ยังไม่มีรางวัล"
+ },
+ {
+  "module": "mine",
+  "key": "anonymousUser",
+  "zh": "匿名用户",
+  "en": "Anonymous User",
+  "th": "ผู้ใช้ไม่ระบุตัวตน"
+ },
+ {
+  "module": "mine",
+  "key": "directReferral",
+  "zh": "直邀",
+  "en": "Direct",
+  "th": "โดยตรง"
+ },
+ {
+  "module": "mine",
+  "key": "indirectReferral",
+  "zh": "间邀",
+  "en": "Indirect",
+  "th": "ทางอ้อม"
+ },
+ {
+  "module": "mine",
+  "key": "orderNo",
+  "zh": "订单号",
+  "en": "Order No.",
+  "th": "เลขคำสั่ง"
+ },
+ {
+  "module": "mine",
+  "key": "rewardSignUp",
+  "zh": "注册奖励",
+  "en": "Sign Up Reward",
+  "th": "รางวัลสมัคร"
+ },
+ {
+  "module": "mine",
+  "key": "rewardFirstOrder",
+  "zh": "首单奖励",
+  "en": "First Order Reward",
+  "th": "รางวัญออเดอร์แรก"
+ },
+ {
+  "module": "mine",
+  "key": "rewardCommission",
+  "zh": "订单返利",
+  "en": "Order Commission",
+  "th": "ค่าคอมมิชชั่น"
+ },
+ {
+  "module": "mine",
+  "key": "coinUnit",
+  "zh": "金币",
+  "en": "coins",
+  "th": "เหรียญ"
+ },
+ {
+  "module": "mine",
+  "key": "pointUnit",
+  "zh": "积分",
+  "en": "pts",
+  "th": "คะแนน"
+ },
+ {
+  "module": "mine",
+  "key": "invoice",
+  "zh": "开发票",
+  "en": "Invoice",
+  "th": "ใบเสร็จ"
+ },
+ {
+  "module": "mine",
+  "key": "specialCoupon",
+  "zh": "天降优惠券",
+  "en": "Special Coupon",
+  "th": "คูปองพิเศษ"
+ },
+ {
+  "module": "mine",
+  "key": "coupon",
+  "zh": "优惠券",
+  "en": "Coupon",
+  "th": "คูปอง"
+ },
+ {
+  "module": "mine",
+  "key": "couponCondition",
+  "zh": "满20元可用",
+  "en": "Min. spend ฿20",
+  "th": "ขั้นต่ำ 20 บาท"
+ },
+ {
+  "module": "mine",
+  "key": "receiveNow",
+  "zh": "立即领取",
+  "en": "Get Now",
+  "th": "รับเลย"
+ },
+ {
+  "module": "mine",
+  "key": "recommendedStores",
+  "zh": "好店推荐",
+  "en": "Recommended Stores",
+  "th": "ร้านแนะนำ"
+ },
+ {
+  "module": "mine",
+  "key": "enterStore",
+  "zh": "进店",
+  "en": "Enter",
+  "th": "เข้าร้าน"
+ },
+ {
+  "module": "mine",
+  "key": "monthlySales",
+  "zh": "月售",
+  "en": "Monthly",
+  "th": "ขายต่อเดือน"
+ },
+ {
+  "module": "mine",
+  "key": "score",
+  "zh": "分",
+  "en": "",
+  "th": "คะแนน"
+ },
+ {
+  "module": "mine",
+  "key": "open",
+  "zh": "营业中",
+  "en": "Open",
+  "th": "เปิด"
+ },
+ {
+  "module": "mine",
+  "key": "closed",
+  "zh": "休息中",
+  "en": "Closed",
+  "th": "ปิด"
+ },
+ {
+  "module": "login",
+  "key": "title",
+  "zh": "登录",
+  "en": "Login",
+  "th": "เข้าสู่ระบบ"
+ },
+ {
+  "module": "login",
+  "key": "notLoggedIn",
+  "zh": "未登录",
+  "en": "Not logged in",
+  "th": "ยังไม่ได้เข้าสู่ระบบ"
+ },
+ {
+  "module": "login",
+  "key": "clickToLogin",
+  "zh": "点击登录",
+  "en": "Tap to login",
+  "th": "แตะเพื่อเข้าสู่ระบบ"
+ },
+ {
+  "module": "login",
+  "key": "phonePlaceholder",
+  "zh": "请输入手机号",
+  "en": "Phone number",
+  "th": "หมายเลขโทรศัพท์"
+ },
+ {
+  "module": "login",
+  "key": "codePlaceholder",
+  "zh": "请输入 6 位验证码",
+  "en": "Enter 6-digit code",
+  "th": "กรอกรหัส 6 หลัก"
+ },
+ {
+  "module": "login",
+  "key": "getCode",
+  "zh": "获取验证码",
+  "en": "Get Code",
+  "th": "ขอรหัสยืนยัน"
+ },
+ {
+  "module": "login",
+  "key": "resend",
+  "zh": "重新发送",
+  "en": "Resend",
+  "th": "ส่งอีกครั้ง"
+ },
+ {
+  "module": "login",
+  "key": "login",
+  "zh": "登录",
+  "en": "Login",
+  "th": "เข้าสู่ระบบ"
+ },
+ {
+  "module": "login",
+  "key": "phoneRequired",
+  "zh": "请输入手机号",
+  "en": "Please enter phone number",
+  "th": "กรุณากรอกหมายเลขโทรศัพท์"
+ },
+ {
+  "module": "login",
+  "key": "phoneInvalid",
+  "zh": "手机号格式不正确",
+  "en": "Invalid phone number",
+  "th": "หมายเลขโทรศัพท์ไม่ถูกต้อง"
+ },
+ {
+  "module": "login",
+  "key": "codeRequired",
+  "zh": "请输入验证码",
+  "en": "Please enter code",
+  "th": "กรุณากรอกรหัสยืนยัน"
+ },
+ {
+  "module": "login",
+  "key": "loginSuccess",
+  "zh": "登录成功",
+  "en": "Login successful",
+  "th": "เข้าสู่ระบบสำเร็จ"
+ },
+ {
+  "module": "login",
+  "key": "loginFailed",
+  "zh": "登录失败",
+  "en": "Login failed",
+  "th": "เข้าสู่ระบบไม่สำเร็จ"
+ },
+ {
+  "module": "login",
+  "key": "passwordLogin",
+  "zh": "密码登录",
+  "en": "Password Login",
+  "th": "เข้าสู่ระบบด้วยรหัสผ่าน"
+ },
+ {
+  "module": "login",
+  "key": "passwordLoginDesc",
+  "zh": "使用手机号 + 密码登录",
+  "en": "Login with phone number + password",
+  "th": "เข้าสู่ระบบด้วยเบอร์โทร + รหัสผ่าน"
+ },
+ {
+  "module": "login",
+  "key": "forgotPassword",
+  "zh": "忘记密码?",
+  "en": "Forgot password?",
+  "th": "ลืมรหัสผ่าน?"
+ },
+ {
+  "module": "login",
+  "key": "noPassword",
+  "zh": "没有密码?",
+  "en": "No password?",
+  "th": "ไม่มีรหัสผ่าน?"
+ },
+ {
+  "module": "login",
+  "key": "selectCountry",
+  "zh": "选择国家/地区",
+  "en": "Select Country",
+  "th": "เลือกประเทศ"
+ },
+ {
+  "module": "login",
+  "key": "show",
+  "zh": "隐藏",
+  "en": "Hide",
+  "th": "ซ่อน"
+ },
+ {
+  "module": "login",
+  "key": "hide",
+  "zh": "显示",
+  "en": "Show",
+  "th": "แสดง"
+ },
+ {
+  "module": "login",
+  "key": "invalidCredentials",
+  "zh": "手机号或密码错误",
+  "en": "Invalid phone or password",
+  "th": "เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง"
+ },
+ {
+  "module": "login",
+  "key": "userNotFound",
+  "zh": "用户不存在,请先注册",
+  "en": "User not found, please register first",
+  "th": "ไม่พบผู้ใช้ กรุณาสมัครก่อน"
+ },
+ {
+  "module": "login",
+  "key": "passwordIncorrect",
+  "zh": "手机号或密码错误",
+  "en": "Phone number or password is incorrect",
+  "th": "หมายเลขโทรศัพท์หรือรหัสผ่านไม่ถูกต้อง"
+ },
+ {
+  "module": "login",
+  "key": "codeLogin",
+  "zh": "验证码登录",
+  "en": "SMS Code",
+  "th": "รหัสยืนยัน"
+ },
+ {
+  "module": "login",
+  "key": "emailLogin",
+  "zh": "邮箱登录",
+  "en": "Email Login",
+  "th": "เข้าสู่ระบบด้วยอีเมล"
+ },
+ {
+  "module": "login",
+  "key": "smsLogin",
+  "zh": "短信登录",
+  "en": "SMS Login",
+  "th": "เข้าสู่ระบบด้วย SMS"
+ },
+ {
+  "module": "login",
+  "key": "smsLoginTitle",
+  "zh": "短信验证码登录",
+  "en": "SMS Code Login",
+  "th": "เข้าสู่ระบบด้วยรหัส SMS"
+ },
+ {
+  "module": "login",
+  "key": "smsLoginHint",
+  "zh": "请输入手机号接收验证码",
+  "en": "Enter your phone number to receive a verification code",
+  "th": "กรอกเบอร์โทรเพื่อรับรหัสยืนยัน"
+ },
+ {
+  "module": "login",
+  "key": "emailLoginHint",
+  "zh": "短信额度已用完？请输入手机号和邮箱，使用邮箱接收验证码",
+  "en": "Out of SMS quota? Enter your phone number and email to receive code via email",
+  "th": "ใช้ SMS ครดแล้ว? กรอกเบอร์โทรและอีเมลเพื่อรับรหัสผ่านอีเมล"
+ },
+ {
+  "module": "login",
+  "key": "emailInvalid",
+  "zh": "邮箱格式不正确",
+  "en": "Invalid email format",
+  "th": "รูปแบบอีเมลไม่ถูกต้อง"
+ },
+ {
+  "module": "login",
+  "key": "useEmailLogin",
+  "zh": "使用邮箱验证码登录",
+  "en": "Use email verification code",
+  "th": "ใช้รหัสยืนยันอีเมล"
+ },
+ {
+  "module": "login",
+  "key": "useSmsLogin",
+  "zh": "使用短信验证码登录",
+  "en": "Use SMS verification code",
+  "th": "ใช้รหัสยืนยัน SMS"
+ },
+ {
+  "module": "login",
+  "key": "smsQuotaExceededHint",
+  "zh": "短信接收额度已用完，是否切换到邮箱验证码登录？",
+  "en": "SMS quota exhausted. Switch to email verification?",
+  "th": "ใช้ SMS ครดแล้ว ต้องการสลับไปใช้รหัสยืนยันอีเมลไหม?"
+ },
+ {
+  "module": "login",
+  "key": "smsQuotaExceededAutoSwitch",
+  "zh": "短信额度已用完，已自动切换到邮箱登录，请输入邮箱接收验证码",
+  "en": "SMS quota exhausted. Switched to email login automatically. Please enter your email to receive the code",
+  "th": "โควต้า SMS หมดแล้ว ระบบสลับไปอีเมลอัตโนมัติ กรุณากรอกอีเมลเพื่อรับรหัสยืนยัน"
+ },
+ {
+  "module": "login",
+  "key": "codeSendFailed",
+  "zh": "验证码发送失败",
+  "en": "Failed to send code",
+  "th": "ส่งรหัสไม่สำเร็จ"
+ },
+ {
+  "module": "login",
+  "key": "codeInvalid",
+  "zh": "验证码错误",
+  "en": "Invalid verification code",
+  "th": "รหัสยืนยันไม่ถูกต้อง"
+ },
+ {
+  "module": "login",
+  "key": "tooManyRequests",
+  "zh": "操作过于频繁，请稍后再试",
+  "en": "Too many attempts, please try later",
+  "th": "ดำเนินการบ่อยเกินไป กรุณาลองใหม่ภายหลัง"
+ },
+ {
+  "module": "login",
+  "key": "accountDisabled",
+  "zh": "账号已被禁用，请联系客服",
+  "en": "Account disabled, please contact support",
+  "th": "บัญชีถูกปิดใช้งาน กรุณาติดต่อฝ่ายสนับสนุน"
+ },
+ {
+  "module": "login",
+  "key": "smsNotSupported",
+  "zh": "当前环境暂不支持短信验证码登录",
+  "en": "SMS login is not supported in this environment",
+  "th": "สภาพแวดล้อมนี้ไม่รองรับการเข้าสู่ระบบด้วย SMS"
+ },
+ {
+  "module": "login",
+  "key": "emailPlaceholder",
+  "zh": "邮箱（可选）",
+  "en": "Email (optional)",
+  "th": "อีเมล (ไม่บังคับ)"
+ },
+ {
+  "module": "login",
+  "key": "emailCodeSent",
+  "zh": "验证码已发送至邮箱",
+  "en": "Code sent to email",
+  "th": "ส่งรหัสไปยังอีเมลแล้ว"
+ },
+ {
+  "module": "login",
+  "key": "emailSendFailed",
+  "zh": "验证码发送失败",
+  "en": "Failed to send code",
+  "th": "ส่งรหัสไม่สำเร็จ"
+ },
+ {
+  "module": "login",
+  "key": "codeSentToEmail",
+  "zh": "验证码已发送至邮箱：{email}",
+  "en": "Code sent to email: {email}",
+  "th": "ส่งรหัสไปยังอีเมลแล้ว: {email}"
+ },
+ {
+  "module": "login",
+  "key": "quotaWarning",
+  "zh": "⚠️ {warning}",
+  "en": "⚠️ {warning}",
+  "th": "⚠️ {warning}"
+ },
+ {
+  "module": "login",
+  "key": "quotaExhausted",
+  "zh": "本年度短信额度已用完，请绑定邮箱后重试",
+  "en": "SMS quota exhausted, please bind an email and retry",
+  "th": "โควต้า SMS หมดแล้ว กรุณาผูกอีเมลแล้วลองอีกครั้ง"
+ },
+ {
+  "module": "login",
+  "key": "bindEmailHint",
+  "zh": "您的短信额度已用完，请到设置页绑定邮箱后重试",
+  "en": "Your SMS quota is exhausted. Please bind an email in Settings and retry",
+  "th": "โควต้า SMS ของคุณหมดแล้ว กรุณาผูกอีเมลในหน้าตั้งค่าแล้วลองอีกครั้ง"
+ },
+ {
+  "module": "login",
+  "key": "passwordPlaceholder",
+  "zh": "请输入密码",
+  "en": "Password",
+  "th": "รหัสผ่าน"
+ },
+ {
+  "module": "login",
+  "key": "passwordHint",
+  "zh": "密码至少 6 位",
+  "en": "At least 6 characters",
+  "th": "อย่างน้อย 6 ตัวอักษร"
+ },
+ {
+  "module": "login",
+  "key": "passwordMismatch",
+  "zh": "两次密码不一致",
+  "en": "Passwords do not match",
+  "th": "รหัสผ่านไม่ตรงกัน"
+ },
+ {
+  "module": "login",
+  "key": "agreementPrefix",
+  "zh": "我已阅读并同意",
+  "en": "I agree to the",
+  "th": "ฉันยอมรับ"
+ },
+ {
+  "module": "login",
+  "key": "terms",
+  "zh": "《服务条款》",
+  "en": "Terms of Service",
+  "th": "เงื่อนไขการให้บริการ"
+ },
+ {
+  "module": "login",
+  "key": "and",
+  "zh": "和",
+  "en": "and",
+  "th": "และ"
+ },
+ {
+  "module": "login",
+  "key": "privacy",
+  "zh": "《隐私政策》",
+  "en": "Privacy Policy",
+  "th": "นโยบายความเป็นส่วนตัว"
+ },
+ {
+  "module": "login",
+  "key": "agreementRequired",
+  "zh": "请先同意服务条款和隐私政策",
+  "en": "Please agree to the terms",
+  "th": "กรุณายอมรับเงื่อนไข"
+ },
+ {
+  "module": "login",
+  "key": "goRegister",
+  "zh": "注册账号",
+  "en": "Create Account",
+  "th": "สมัครสมาชิก"
+ },
+ {
+  "module": "login",
+  "key": "welcomeTitle",
+  "zh": "欢迎使用 SiamFeast",
+  "en": "Welcome to SiamFeast",
+  "th": "ยินดีต้อนรับสู่ SiamFeast"
+ },
+ {
+  "module": "login",
+  "key": "welcomeSubtitle",
+  "zh": "泰国美食,轻松下单",
+  "en": "Authentic Thai cuisine, easy ordering",
+  "th": "อาหารไทยแท้ สั่งง่าย สะดวก รวดเร็ว"
+ },
+ {
+  "module": "login",
+  "key": "registerDesc",
+  "zh": "填写信息完成注册",
+  "en": "Fill in your details to register",
+  "th": "กรอกข้อมูลเพื่อสมัครสมาชิก"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodePlaceholder",
+  "zh": "邀请码（选填）",
+  "en": "Invite code (optional)",
+  "th": "รหัสเชิญ (ไม่จำเป็น)"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodeHint",
+  "zh": "填写邀请码,注册成功后你和邀请人都可获得奖励",
+  "en": "Enter an invite code — both you and the referrer earn rewards after signup",
+  "th": "กรอกรหัสเชิญ — คุณและผู้เชิญจะได้รับรางวัลหลังสมัครสำเร็จ"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodeFilled",
+  "zh": "✓ 已填写",
+  "en": "✓ Added",
+  "th": "✓ กรอกแล้ว"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodePromptTitle",
+  "zh": "有邀请码吗?",
+  "en": "Have an invite code?",
+  "th": "มีรหัสเชิญไหม?"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodePromptDesc",
+  "zh": "填写邀请码,你和邀请人都可获得奖励。如果没有,可跳过。",
+  "en": "Enter an invite code to earn rewards for both you and the referrer. Skip if you don't have one.",
+  "th": "กรอกรหัสเชิญเพื่อรับรางวัลทั้งคุณและผู้เชิญ ถ้าไม่มีให้ข้ามได้"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodeSkip",
+  "zh": "跳过",
+  "en": "Skip",
+  "th": "ข้าม"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodeSubmit",
+  "zh": "绑定",
+  "en": "Bind",
+  "th": "ผูก"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodeRequired",
+  "zh": "请输入邀请码",
+  "en": "Please enter invite code",
+  "th": "กรุณากรอกรหัสเชิญ"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodeBound",
+  "zh": "邀请码绑定成功",
+  "en": "Invite code bound successfully",
+  "th": "ผูกรหัสเชิญสำเร็จ"
+ },
+ {
+  "module": "login",
+  "key": "inviteCodeInvalid",
+  "zh": "邀请码无效或已被使用",
+  "en": "Invite code invalid or already used",
+  "th": "รหัสเชิญไม่ถูกต้องหรือถูกใช้แล้ว"
+ },
+ {
+  "module": "login",
+  "key": "confirmPasswordPlaceholder",
+  "zh": "请再次输入密码",
+  "en": "Re-enter password",
+  "th": "กรอกรหัสผ่านอีกครั้ง"
+ },
+ {
+  "module": "login",
+  "key": "enterCode",
+  "zh": "输入验证码",
+  "en": "Enter Code",
+  "th": "กรอกรหัสยืนยัน"
+ },
+ {
+  "module": "login",
+  "key": "codeSent",
+  "zh": "验证码已发送至",
+  "en": "Code sent to",
+  "th": "ส่งรหัสไปที่"
+ },
+ {
+  "module": "login",
+  "key": "resendHint",
+  "zh": "后重新发送",
+  "en": "to resend",
+  "th": "เพื่อส่งอีกครั้ง"
+ },
+ {
+  "module": "login",
+  "key": "codeSentToast",
+  "zh": "验证码已发送",
+  "en": "Code sent",
+  "th": "ส่งรหัสแล้ว"
+ },
+ {
+  "module": "login",
+  "key": "registerFailed",
+  "zh": "注册失败,请稍后重试",
+  "en": "Registration failed, please try again",
+  "th": "สมัครไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "login",
+  "key": "registerSuccess",
+  "zh": "注册成功",
+  "en": "Registration successful",
+  "th": "สมัครสำเร็จ"
+ },
+ {
+  "module": "login",
+  "key": "register",
+  "zh": "注册",
+  "en": "Register",
+  "th": "สมัครสมาชิก"
+ },
+ {
+  "module": "login",
+  "key": "birthdayPlaceholder",
+  "zh": "请选择生日",
+  "en": "Select your birthday",
+  "th": "เลือกวันเกิด"
+ },
+ {
+  "module": "login",
+  "key": "codeInvalidOrExpired",
+  "zh": "验证码错误或已过期",
+  "en": "Verification code incorrect or expired",
+  "th": "รหัสยืนยันไม่ถูกต้องหรือหมดอายุ"
+ },
+ {
+  "module": "login",
+  "key": "codeNotSent",
+  "zh": "请先获取验证码",
+  "en": "Please request a verification code first",
+  "th": "กรุณาขอรหัสยืนยันก่อน"
+ },
+ {
+  "module": "login",
+  "key": "loginRateLimited",
+  "zh": "操作过于频繁，请等待 60 秒后重试",
+  "en": "Too many attempts. Please wait 60 seconds and try again.",
+  "th": "ดำเนินการบ่อยเกินไป กรุณารอ 60 วินาทีแล้วลองอีกครั้ง"
+ },
+ {
+  "module": "login",
+  "key": "emailHint",
+  "zh": "用于接收订单和优惠通知",
+  "en": "For order and promotion notifications",
+  "th": "สำหรับการแจ้งเตือนคำสั่งซื้อและโปรโมชัน"
+ },
+ {
+  "module": "login",
+  "key": "emailAlreadyBound",
+  "zh": "该邮箱已被其他账号占用，请更换或先解绑",
+  "en": "This email is already used by another account. Please use a different one.",
+  "th": "อีเมลนี้ถูกใช้โดยบัญชีอื่นแล้ว กรุณาเปลี่ยนอีเมล"
+ },
+ {
+  "module": "settings",
+  "key": "title",
+  "zh": "设置",
+  "en": "Settings",
+  "th": "การตั้งค่า"
+ },
+ {
+  "module": "settings",
+  "key": "accountSettings",
+  "zh": "账号设置",
+  "en": "Account Settings",
+  "th": "การตั้งค่าบัญชี"
+ },
+ {
+  "module": "settings",
+  "key": "avatarTooLarge",
+  "zh": "头像图片不能超过 5MB",
+  "en": "Avatar image must be 5MB or less",
+  "th": "รูปภาพต้องไม่เกิน 5MB"
+ },
+ {
+  "module": "settings",
+  "key": "generalSettings",
+  "zh": "通用设置",
+  "en": "General Settings",
+  "th": "การตั้งค่าทั่วไป"
+ },
+ {
+  "module": "settings",
+  "key": "aboutSection",
+  "zh": "关于",
+  "en": "About",
+  "th": "เกี่ยวกับ"
+ },
+ {
+  "module": "settings",
+  "key": "nickname",
+  "zh": "用户名称",
+  "en": "Username",
+  "th": "ชื่อผู้ใช้"
+ },
+ {
+  "module": "settings",
+  "key": "editNickname",
+  "zh": "修改用户名称",
+  "en": "Edit Username",
+  "th": "แก้ไขชื่อผู้ใช้"
+ },
+ {
+  "module": "settings",
+  "key": "nicknamePlaceholder",
+  "zh": "请输入用户名称",
+  "en": "Enter username",
+  "th": "กรุณากรอกชื่อผู้ใช้"
+ },
+ {
+  "module": "settings",
+  "key": "avatar",
+  "zh": "头像",
+  "en": "Avatar",
+  "th": "รูปโปรไฟล์"
+ },
+ {
+  "module": "settings",
+  "key": "phone",
+  "zh": "手机号",
+  "en": "Phone",
+  "th": "หมายเลขโทรศัพท์"
+ },
+ {
+  "module": "settings",
+  "key": "email",
+  "zh": "邮箱",
+  "en": "Email",
+  "th": "อีเมล"
+ },
+ {
+  "module": "settings",
+  "key": "editEmail",
+  "zh": "修改邮箱",
+  "en": "Edit Email",
+  "th": "แก้ไขอีเมล"
+ },
+ {
+  "module": "settings",
+  "key": "emailPlaceholder",
+  "zh": "请输入邮箱",
+  "en": "Enter your email",
+  "th": "กรุณากรอกอีเมล"
+ },
+ {
+  "module": "settings",
+  "key": "emailOptional",
+  "zh": "选填",
+  "en": "Optional",
+  "th": "ไม่บังคับ"
+ },
+ {
+  "module": "settings",
+  "key": "emailVerified",
+  "zh": "已验证",
+  "en": "Verified",
+  "th": "ยืนยันแล้ว"
+ },
+ {
+  "module": "settings",
+  "key": "changePassword",
+  "zh": "修改密码",
+  "en": "Change Password",
+  "th": "เปลี่ยนรหัสผ่าน"
+ },
+ {
+  "module": "settings",
+  "key": "notifications",
+  "zh": "消息通知",
+  "en": "Notifications",
+  "th": "การแจ้งเตือน"
+ },
+ {
+  "module": "settings",
+  "key": "language",
+  "zh": "语言",
+  "en": "Language",
+  "th": "ภาษา"
+ },
+ {
+  "module": "settings",
+  "key": "currentLanguage",
+  "zh": "简体中文",
+  "en": "English",
+  "th": "ภาษาไทย"
+ },
+ {
+  "module": "settings",
+  "key": "cache",
+  "zh": "清除缓存",
+  "en": "Clear Cache",
+  "th": "ล้างแคช"
+ },
+ {
+  "module": "settings",
+  "key": "cacheClear",
+  "zh": "缓存已清除",
+  "en": "Cache cleared",
+  "th": "ล้างแคชแล้ว"
+ },
+ {
+  "module": "settings",
+  "key": "cacheClearConfirm",
+  "zh": "确定清除缓存吗？",
+  "en": "Clear cache?",
+  "th": "ล้างแคช?"
+ },
+ {
+  "module": "settings",
+  "key": "oldPassword",
+  "zh": "旧密码",
+  "en": "Old Password",
+  "th": "รหัสผ่านเดิม"
+ },
+ {
+  "module": "settings",
+  "key": "newPassword",
+  "zh": "新密码",
+  "en": "New Password",
+  "th": "รหัสผ่านใหม่"
+ },
+ {
+  "module": "settings",
+  "key": "confirmPassword",
+  "zh": "确认密码",
+  "en": "Confirm Password",
+  "th": "ยืนยันรหัสผ่าน"
+ },
+ {
+  "module": "settings",
+  "key": "oldPasswordPlaceholder",
+  "zh": "请输入旧密码",
+  "en": "Enter old password",
+  "th": "กรุณากรอกรหัสผ่านเดิม"
+ },
+ {
+  "module": "settings",
+  "key": "newPasswordPlaceholder",
+  "zh": "请输入新密码（至少6位）",
+  "en": "Enter new password (min 6 chars)",
+  "th": "กรุณากรอกรหัสผ่านใหม่ (อย่างน้อย 6 ตัว)"
+ },
+ {
+  "module": "settings",
+  "key": "confirmPasswordPlaceholder",
+  "zh": "请再次输入新密码",
+  "en": "Re-enter new password",
+  "th": "กรุณากรอกรหัสผ่านใหม่อีกครั้ง"
+ },
+ {
+  "module": "settings",
+  "key": "passwordMismatch",
+  "zh": "两次密码输入不一致",
+  "en": "Passwords do not match",
+  "th": "รหัสผ่านไม่ตรงกัน"
+ },
+ {
+  "module": "settings",
+  "key": "passwordTooShort",
+  "zh": "密码长度不能少于6位",
+  "en": "Password must be at least 6 characters",
+  "th": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร"
+ },
+ {
+  "module": "settings",
+  "key": "passwordChanged",
+  "zh": "密码修改成功",
+  "en": "Password changed successfully",
+  "th": "เปลี่ยนรหัสผ่านสำเร็จ"
+ },
+ {
+  "module": "settings",
+  "key": "setPassword",
+  "zh": "设置密码",
+  "en": "Set Password",
+  "th": "ตั้งรหัสผ่าน"
+ },
+ {
+  "module": "settings",
+  "key": "oldPasswordRequired",
+  "zh": "请输入旧密码",
+  "en": "Please enter old password",
+  "th": "กรุณากรอกรหัสผ่านเดิม"
+ },
+ {
+  "module": "settings",
+  "key": "notificationEnabled",
+  "zh": "通知已开启",
+  "en": "Notifications enabled",
+  "th": "เปิดการแจ้งเตือนแล้ว"
+ },
+ {
+  "module": "settings",
+  "key": "notificationDisabled",
+  "zh": "通知已关闭",
+  "en": "Notifications disabled",
+  "th": "ปิดการแจ้งเตือนแล้ว"
+ },
+ {
+  "module": "settings",
+  "key": "about",
+  "zh": "关于我们",
+  "en": "About Us",
+  "th": "เกี่ยวกับเรา"
+ },
+ {
+  "module": "settings",
+  "key": "privacy",
+  "zh": "隐私政策",
+  "en": "Privacy Policy",
+  "th": "นโยบายความเป็นส่วนตัว"
+ },
+ {
+  "module": "settings",
+  "key": "agreement",
+  "zh": "用户协议",
+  "en": "User Agreement",
+  "th": "ข้อตกลงผู้ใช้"
+ },
+ {
+  "module": "settings",
+  "key": "version",
+  "zh": "版本",
+  "en": "Version",
+  "th": "เวอร์ชัน"
+ },
+ {
+  "module": "settings",
+  "key": "logout",
+  "zh": "退出登录",
+  "en": "Logout",
+  "th": "ออกจากระบบ"
+ },
+ {
+  "module": "settings",
+  "key": "birthday",
+  "zh": "出生日期",
+  "en": "Birthday",
+  "th": "วันเกิด"
+ },
+ {
+  "module": "settings",
+  "key": "editBirthday",
+  "zh": "修改出生日期",
+  "en": "Edit Birthday",
+  "th": "แก้ไขวันเกิด"
+ },
+ {
+  "module": "settings",
+  "key": "birthdayPlaceholder",
+  "zh": "请选择出生日期",
+  "en": "Select your birthday",
+  "th": "เลือกวันเกิด"
+ },
+ {
+  "module": "settings",
+  "key": "datePickerTitle",
+  "zh": "选择日期",
+  "en": "Select Date",
+  "th": "เลือกวันที่"
+ },
+ {
+  "module": "settings",
+  "key": "year",
+  "zh": "年",
+  "en": "Year",
+  "th": "ปี"
+ },
+ {
+  "module": "settings",
+  "key": "month",
+  "zh": "月",
+  "en": "Month",
+  "th": "เดือน"
+ },
+ {
+  "module": "settings",
+  "key": "day",
+  "zh": "日",
+  "en": "Day",
+  "th": "วัน"
+ },
+ {
+  "module": "settings",
+  "key": "birthdaySaveSuccess",
+  "zh": "出生日期已更新",
+  "en": "Birthday updated",
+  "th": "อัปเดตวันเกิดแล้ว"
+ },
+ {
+  "module": "settings",
+  "key": "notSet",
+  "zh": "未设置",
+  "en": "Not set",
+  "th": "ยังไม่ได้ตั้งค่า"
+ },
+ {
+  "module": "language",
+  "key": "title",
+  "zh": "语言设置",
+  "en": "Language",
+  "th": "การตั้งค่าภาษา"
+ },
+ {
+  "module": "language",
+  "key": "zh",
+  "zh": "中文",
+  "en": "中文",
+  "th": "中文"
+ },
+ {
+  "module": "language",
+  "key": "en",
+  "zh": "English",
+  "en": "English",
+  "th": "English"
+ },
+ {
+  "module": "language",
+  "key": "th",
+  "zh": "ภาษาไทย",
+  "en": "ภาษาไทย",
+  "th": "ภาษาไทย"
+ },
+ {
+  "module": "language",
+  "key": "switchSuccess",
+  "zh": "语言切换成功",
+  "en": "Language changed",
+  "th": "เปลี่ยนภาษาสำเร็จ"
+ },
+ {
+  "module": "message",
+  "key": "title",
+  "zh": "消息",
+  "en": "Messages",
+  "th": "ข้อความ"
+ },
+ {
+  "module": "message",
+  "key": "noMessages",
+  "zh": "暂无消息",
+  "en": "No messages",
+  "th": "ไม่มีข้อความ"
+ },
+ {
+  "module": "message",
+  "key": "system",
+  "zh": "系统通知",
+  "en": "System",
+  "th": "ระบบ"
+ },
+ {
+  "module": "message",
+  "key": "promotion",
+  "zh": "优惠活动",
+  "en": "Promotions",
+  "th": "โปรโมชั่น"
+ },
+ {
+  "module": "message",
+  "key": "order",
+  "zh": "订单消息",
+  "en": "Orders",
+  "th": "คำสั่งซื้อ"
+ },
+ {
+  "module": "message",
+  "key": "markAllRead",
+  "zh": "全部已读",
+  "en": "Mark all read",
+  "th": "อ่านทั้งหมดแล้ว"
+ },
+ {
+  "module": "message",
+  "key": "allRead",
+  "zh": "已全部标记为已读",
+  "en": "All messages marked as read",
+  "th": "ทำเครื่องหมายอ่านแล้วทั้งหมด"
+ },
+ {
+  "module": "message",
+  "key": "markReadFailed",
+  "zh": "标记失败",
+  "en": "Failed to mark",
+  "th": "ทำเครื่องหมายล้มเหลว"
+ },
+ {
+  "module": "coupons",
+  "key": "title",
+  "zh": "优惠券",
+  "en": "Coupons",
+  "th": "คูปอง"
+ },
+ {
+  "module": "coupons",
+  "key": "available",
+  "zh": "可用",
+  "en": "Available",
+  "th": "ใช้ได้"
+ },
+ {
+  "module": "coupons",
+  "key": "used",
+  "zh": "已使用",
+  "en": "Used",
+  "th": "ใช้แล้ว"
+ },
+ {
+  "module": "coupons",
+  "key": "expired",
+  "zh": "已过期",
+  "en": "Expired",
+  "th": "หมดอายุ"
+ },
+ {
+  "module": "coupons",
+  "key": "locked",
+  "zh": "使用中",
+  "en": "In Use",
+  "th": "กำลังใช้"
+ },
+ {
+  "module": "coupons",
+  "key": "receive",
+  "zh": "领取",
+  "en": "Get",
+  "th": "รับ"
+ },
+ {
+  "module": "coupons",
+  "key": "received",
+  "zh": "已领取",
+  "en": "Received",
+  "th": "รับแล้ว"
+ },
+ {
+  "module": "coupons",
+  "key": "immediateUse",
+  "zh": "立即使用",
+  "en": "Use Now",
+  "th": "ใช้เลย"
+ },
+ {
+  "module": "coupons",
+  "key": "noCoupons",
+  "zh": "暂无优惠券",
+  "en": "No coupons",
+  "th": "ไม่มีคูปอง"
+ },
+ {
+  "module": "coupons",
+  "key": "receiveSuccess",
+  "zh": "领取成功",
+  "en": "Coupon received",
+  "th": "รับคูปองสำเร็จ"
+ },
+ {
+  "module": "coupons",
+  "key": "receiveFailed",
+  "zh": "领取失败",
+  "en": "Failed to receive",
+  "th": "รับคูปองไม่สำเร็จ"
+ },
+ {
+  "module": "coupons",
+  "key": "claimCenter",
+  "zh": "领券中心",
+  "en": "Coupon Center",
+  "th": "ศูนย์รับคูปอง"
+ },
+ {
+  "module": "coupons",
+  "key": "claim",
+  "zh": "领取",
+  "en": "Claim",
+  "th": "รับ"
+ },
+ {
+  "module": "coupons",
+  "key": "claimed",
+  "zh": "已领取",
+  "en": "Claimed",
+  "th": "รับแล้ว"
+ },
+ {
+  "module": "coupons",
+  "key": "claimSuccess",
+  "zh": "领取成功",
+  "en": "Claimed successfully",
+  "th": "รับคูปองสำเร็จ"
+ },
+ {
+  "module": "coupons",
+  "key": "claimFailed",
+  "zh": "领取失败",
+  "en": "Claim failed",
+  "th": "รับคูปองไม่สำเร็จ"
+ },
+ {
+  "module": "coupons",
+  "key": "minSpend",
+  "zh": "满{amount}可用",
+  "en": "Min. spend ฿{amount}",
+  "th": "ขั้นต่ำ ฿{amount}"
+ },
+ {
+  "module": "coupons",
+  "key": "validDays",
+  "zh": "领取后{days}天内有效",
+  "en": "Valid for {days} days",
+  "th": "ใช้ได้ {days} วัน"
+ },
+ {
+  "module": "coupons",
+  "key": "dineInOnly",
+  "zh": "仅限堂食",
+  "en": "Dine-in only",
+  "th": "ทานที่ร้านเท่านั้น"
+ },
+ {
+  "module": "coupons",
+  "key": "deliveryOnly",
+  "zh": "仅限外卖",
+  "en": "Delivery only",
+  "th": "จัดส่งเท่านั้น"
+ },
+ {
+  "module": "coupons",
+  "key": "general",
+  "zh": "通用",
+  "en": "General",
+  "th": "ทั่วไป"
+ },
+ {
+  "module": "coupons",
+  "key": "noClaimable",
+  "zh": "暂无可领取的优惠券",
+  "en": "No coupons available",
+  "th": "ไม่มีคูปองให้รับ"
+ },
+ {
+  "module": "coupons",
+  "key": "claimedCount",
+  "zh": "已领 {claimed}/{total}",
+  "en": "{claimed}/{total} claimed",
+  "th": "รับแล้ว {claimed}/{total}"
+ },
+ {
+  "module": "coupons",
+  "key": "myCouponsTitle",
+  "zh": "我的优惠券",
+  "en": "My Coupons",
+  "th": "คูปองของฉัน"
+ },
+ {
+  "module": "coupons",
+  "key": "unit",
+  "zh": "张",
+  "en": "",
+  "th": "ใบ"
+ },
+ {
+  "module": "coupons",
+  "key": "tabAll",
+  "zh": "全部",
+  "en": "All",
+  "th": "ทั้งหมด"
+ },
+ {
+  "module": "coupons",
+  "key": "expireEnd",
+  "zh": "到期",
+  "en": "expires",
+  "th": "หมดอายุ"
+ },
+ {
+  "module": "coupons",
+  "key": "offlineRedeem",
+  "zh": "线下核销",
+  "en": "Redeem In-Store",
+  "th": "รับที่ร้าน"
+ },
+ {
+  "module": "coupons",
+  "key": "offlineRedeemTitle",
+  "zh": "线下核销",
+  "en": "Redeem In-Store",
+  "th": "รับที่ร้าน"
+ },
+ {
+  "module": "coupons",
+  "key": "offlineRedeemHint",
+  "zh": "请到门店收银台出示此二维码进行核销",
+  "en": "Show this code to the cashier to redeem",
+  "th": "แสดงคิวอาร์โค้ดนี้ที่เคาน์เตอร์เพื่อรับสิทธิ์"
+ },
+ {
+  "module": "coupons",
+  "key": "redeemNoScreenshot",
+  "zh": "请当场出示，截图可能无效",
+  "en": "Show in person, screenshots may not work",
+  "th": "กรุณาแสดงที่หน้าร้าน ภาพหน้าจออาชใช้ไม่ได้"
+ },
+ {
+  "module": "coupons",
+  "key": "couponIdLabel",
+  "zh": "券号",
+  "en": "Coupon ID",
+  "th": "รหัสคูปอง"
+ },
+ {
+  "module": "coupons",
+  "key": "itemVoucher",
+  "zh": "菜品券·到店核销",
+  "en": "Item Voucher",
+  "th": "คูปองอาหาร·ใช้ที่หน้าร้าน"
+ },
+ {
+  "module": "address",
+  "key": "title",
+  "zh": "我的地址",
+  "en": "My Address",
+  "th": "ที่อยู่ของฉัน"
+ },
+ {
+  "module": "address",
+  "key": "add",
+  "zh": "添加地址",
+  "en": "Add Address",
+  "th": "เพิ่มที่อยู่"
+ },
+ {
+  "module": "address",
+  "key": "edit",
+  "zh": "编辑地址",
+  "en": "Edit",
+  "th": "แก้ไข"
+ },
+ {
+  "module": "address",
+  "key": "delete",
+  "zh": "删除",
+  "en": "Delete",
+  "th": "ลบ"
+ },
+ {
+  "module": "address",
+  "key": "default",
+  "zh": "默认",
+  "en": "Default",
+  "th": "ค่าเริ่มต้น"
+ },
+ {
+  "module": "address",
+  "key": "setDefault",
+  "zh": "设为默认",
+  "en": "Set as Default",
+  "th": "ตั้งเป็นค่าเริ่มต้น"
+ },
+ {
+  "module": "address",
+  "key": "contact",
+  "zh": "联系人",
+  "en": "Name",
+  "th": "ชื่อ"
+ },
+ {
+  "module": "address",
+  "key": "contactPlaceholder",
+  "zh": "请输入收货人姓名",
+  "en": "Recipient name",
+  "th": "ชื่อผู้รับ"
+ },
+ {
+  "module": "address",
+  "key": "phone",
+  "zh": "电话",
+  "en": "Phone",
+  "th": "โทรศัพท์"
+ },
+ {
+  "module": "address",
+  "key": "phonePlaceholder",
+  "zh": "请输入手机号",
+  "en": "Phone number",
+  "th": "หมายเลขโทรศัพท์"
+ },
+ {
+  "module": "address",
+  "key": "address",
+  "zh": "详细地址",
+  "en": "Address",
+  "th": "ที่อยู่"
+ },
+ {
+  "module": "address",
+  "key": "addressPlaceholder",
+  "zh": "请输入详细地址",
+  "en": "Detailed address",
+  "th": "ที่อยู่โดยละเอียด"
+ },
+ {
+  "module": "address",
+  "key": "pleaseSelectAddress",
+  "zh": "请选择地址",
+  "en": "Select address",
+  "th": "เลือกที่อยู่"
+ },
+ {
+  "module": "address",
+  "key": "save",
+  "zh": "保存",
+  "en": "Save",
+  "th": "บันทึก"
+ },
+ {
+  "module": "address",
+  "key": "deleteConfirm",
+  "zh": "确定要删除这个地址吗？",
+  "en": "Delete this address?",
+  "th": "ลบที่อยู่นี้?"
+ },
+ {
+  "module": "address",
+  "key": "noAddress",
+  "zh": "暂无地址",
+  "en": "No address",
+  "th": "ไม่มีที่อยู่"
+ },
+ {
+  "module": "address",
+  "key": "getLocation",
+  "zh": "获取定位",
+  "en": "Get Location",
+  "th": "รับตำแหน่ง"
+ },
+ {
+  "module": "address",
+  "key": "locating",
+  "zh": "正在定位...",
+  "en": "Locating...",
+  "th": "กำลังระบุตำแหน่ง..."
+ },
+ {
+  "module": "address",
+  "key": "locationSuccess",
+  "zh": "定位成功",
+  "en": "Location found",
+  "th": "ระบุตำแหน่งสำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "locationFailed",
+  "zh": "定位失败",
+  "en": "Location failed",
+  "th": "ระบุตำแหน่งไม่สำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "region",
+  "zh": "所在地区",
+  "en": "Region",
+  "th": "ภูมิภาค"
+ },
+ {
+  "module": "address",
+  "key": "selectRegion",
+  "zh": "选择地区",
+  "en": "Select region",
+  "th": "เลือกภูมิภาค"
+ },
+ {
+  "module": "address",
+  "key": "province",
+  "zh": "省/直辖市",
+  "en": "Province",
+  "th": "จังหวัด"
+ },
+ {
+  "module": "address",
+  "key": "city",
+  "zh": "市",
+  "en": "City",
+  "th": "อำเภอ/เขต"
+ },
+ {
+  "module": "address",
+  "key": "district",
+  "zh": "区/县",
+  "en": "District",
+  "th": "ตำบล/แขวง"
+ },
+ {
+  "module": "address",
+  "key": "houseNumber",
+  "zh": "门牌号",
+  "en": "House No.",
+  "th": "หมายเลขบ้าน"
+ },
+ {
+  "module": "address",
+  "key": "houseNumberPlaceholder",
+  "zh": "例：8号楼2单元1201室",
+  "en": "e.g., Bldg 8, Unit 2, Room 1201",
+  "th": "เช่น อาคาร 8 ห้อง 1201"
+ },
+ {
+  "module": "address",
+  "key": "label",
+  "zh": "标签",
+  "en": "Label",
+  "th": "ป้ายกำกับ"
+ },
+ {
+  "module": "address",
+  "key": "labelHome",
+  "zh": "家",
+  "en": "Home",
+  "th": "บ้าน"
+ },
+ {
+  "module": "address",
+  "key": "labelCompany",
+  "zh": "公司",
+  "en": "Company",
+  "th": "บริษัท"
+ },
+ {
+  "module": "address",
+  "key": "labelSchool",
+  "zh": "学校",
+  "en": "School",
+  "th": "โรงเรียน"
+ },
+ {
+  "module": "address",
+  "key": "labelOther",
+  "zh": "其他",
+  "en": "Other",
+  "th": "อื่นๆ"
+ },
+ {
+  "module": "address",
+  "key": "remark",
+  "zh": "备注",
+  "en": "Remark",
+  "th": "หมายเหตุ"
+ },
+ {
+  "module": "address",
+  "key": "remarkPlaceholder",
+  "zh": "例：放在门口",
+  "en": "e.g., Leave at door",
+  "th": "เช่น วางไว้หน้าประตู"
+ },
+ {
+  "module": "address",
+  "key": "nameRequired",
+  "zh": "请输入收货人姓名",
+  "en": "Please enter name",
+  "th": "กรุณากรอกชื่อ"
+ },
+ {
+  "module": "address",
+  "key": "phoneRequired",
+  "zh": "请输入手机号",
+  "en": "Please enter phone",
+  "th": "กรุณากรอกเบอร์โทร"
+ },
+ {
+  "module": "address",
+  "key": "phoneInvalid",
+  "zh": "手机号格式不正确",
+  "en": "Invalid phone number",
+  "th": "หมายเลขโทรศัพท์ไม่ถูกต้อง"
+ },
+ {
+  "module": "address",
+  "key": "addressRequired",
+  "zh": "请输入详细地址",
+  "en": "Please enter address",
+  "th": "กรุณากรอกที่อยู่"
+ },
+ {
+  "module": "address",
+  "key": "saveSuccess",
+  "zh": "保存成功",
+  "en": "Saved successfully",
+  "th": "บันทึกสำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "saveFailed",
+  "zh": "保存失败",
+  "en": "Save failed",
+  "th": "บันทึกไม่สำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "deleteSuccess",
+  "zh": "删除成功",
+  "en": "Deleted successfully",
+  "th": "ลบสำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "deleteFailed",
+  "zh": "删除失败",
+  "en": "Delete failed",
+  "th": "ลบไม่สำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "setDefaultSuccess",
+  "zh": "设置成功",
+  "en": "Set as default",
+  "th": "ตั้งค่าสำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "setDefaultFailed",
+  "zh": "设置失败",
+  "en": "Failed to set default",
+  "th": "ตั้งค่าไม่สำเร็จ"
+ },
+ {
+  "module": "address",
+  "key": "confirmBack",
+  "zh": "信息未保存，确定返回吗？",
+  "en": "Unsaved changes. Go back?",
+  "th": "ยังไม่ได้บันทึก ย้อนกลับ?"
+ },
+ {
+  "module": "points",
+  "key": "title",
+  "zh": "我的积分",
+  "en": "My Points",
+  "th": "คะแนนของฉัน"
+ },
+ {
+  "module": "points",
+  "key": "currentPoints",
+  "zh": "当前积分",
+  "en": "Current Points",
+  "th": "คะแนนปัจจุบัน"
+ },
+ {
+  "module": "points",
+  "key": "history",
+  "zh": "积分明细",
+  "en": "Points History",
+  "th": "ประวัติคะแนน"
+ },
+ {
+  "module": "points",
+  "key": "earn",
+  "zh": "获得",
+  "en": "Earned",
+  "th": "ได้รับ"
+ },
+ {
+  "module": "points",
+  "key": "spend",
+  "zh": "消费",
+  "en": "Spent",
+  "th": "ใช้"
+ },
+ {
+  "module": "points",
+  "key": "noHistory",
+  "zh": "暂无积分记录",
+  "en": "No history",
+  "th": "ไม่มีประวัติ"
+ },
+ {
+  "module": "mall",
+  "key": "title",
+  "zh": "商城",
+  "en": "Mall",
+  "th": "ห้าง"
+ },
+ {
+  "module": "mall",
+  "key": "categories",
+  "zh": "分类",
+  "en": "Categories",
+  "th": "หมวดหมู่"
+ },
+ {
+  "module": "mall",
+  "key": "hot",
+  "zh": "热销",
+  "en": "Hot",
+  "th": "ขายดี"
+ },
+ {
+  "module": "mall",
+  "key": "new",
+  "zh": "新品",
+  "en": "New",
+  "th": "ใหม่"
+ },
+ {
+  "module": "mall",
+  "key": "all",
+  "zh": "全部",
+  "en": "All",
+  "th": "ทั้งหมด"
+ },
+ {
+  "module": "products",
+  "key": "all",
+  "zh": "全部",
+  "en": "All",
+  "th": "ทั้งหมด"
+ },
+ {
+  "module": "products",
+  "key": "productList",
+  "zh": "商品列表",
+  "en": "Product List",
+  "th": "รายการสินค้า"
+ },
+ {
+  "module": "products",
+  "key": "searchProducts",
+  "zh": "搜索商品",
+  "en": "Search products",
+  "th": "ค้นหาสินค้า"
+ },
+ {
+  "module": "products",
+  "key": "sold",
+  "zh": "已售",
+  "en": "Sold ",
+  "th": "ขายแล้ว "
+ },
+ {
+  "module": "products",
+  "key": "units",
+  "zh": "份",
+  "en": "",
+  "th": "ชิ้น"
+ },
+ {
+  "module": "products",
+  "key": "hotItems",
+  "zh": "招牌菜品",
+  "en": "Featured",
+  "th": "เมนูแนะนำ"
+ },
+ {
+  "module": "products",
+  "key": "items",
+  "zh": "款",
+  "en": " items",
+  "th": " รายการ"
+ },
+ {
+  "module": "newProducts",
+  "key": "title",
+  "zh": "新品上市",
+  "en": "New Arrivals",
+  "th": "สินค้าใหม่"
+ },
+ {
+  "module": "newProducts",
+  "key": "explore",
+  "zh": "即可探索",
+  "en": "Explore Now",
+  "th": "สำรวจตอนนี้"
+ },
+ {
+  "module": "newProducts",
+  "key": "buyNow",
+  "zh": "立即购买",
+  "en": "Buy Now",
+  "th": "ซื้อเลย"
+ },
+ {
+  "module": "newProducts",
+  "key": "sortByDistance",
+  "zh": "按距离排序",
+  "en": "Sort by distance",
+  "th": "เรียงตามระยะทาง"
+ },
+ {
+  "module": "newProducts",
+  "key": "sortByDefault",
+  "zh": "默认排序",
+  "en": "Default",
+  "th": "ค่าเริ่มต้น"
+ },
+ {
+  "module": "hotProducts",
+  "key": "title",
+  "zh": "热销榜单",
+  "en": "Best Sellers",
+  "th": "ขายดี"
+ },
+ {
+  "module": "hotProducts",
+  "key": "subtitle",
+  "zh": "人气必吃榜",
+  "en": "Popular picks",
+  "th": "ยอดนิยม"
+ },
+ {
+  "module": "hotProducts",
+  "key": "grab",
+  "zh": "抢",
+  "en": "Grab",
+  "th": "ซื้อ"
+ },
+ {
+  "module": "hotProducts",
+  "key": "fromStore",
+  "zh": "门店",
+  "en": "Store",
+  "th": "ร้าน"
+ },
+ {
+  "module": "pointsMall",
+  "key": "title",
+  "zh": "兑换商城",
+  "en": "Redeem Mall",
+  "th": "ร้านแลกของ"
+ },
+ {
+  "module": "pointsMall",
+  "key": "exchange",
+  "zh": "兑换",
+  "en": "Redeem",
+  "th": "แลก"
+ },
+ {
+  "module": "pointsMall",
+  "key": "myPoints",
+  "zh": "我的积分",
+  "en": "My Points",
+  "th": "คะแนนของฉัน"
+ },
+ {
+  "module": "pointsMall",
+  "key": "exchangeSuccess",
+  "zh": "兑换成功",
+  "en": "Redeemed successfully",
+  "th": "แลกสำเร็จ"
+ },
+ {
+  "module": "pointsMall",
+  "key": "exchangeFailed",
+  "zh": "兑换失败",
+  "en": "Redemption failed",
+  "th": "แลกไม่สำเร็จ"
+ },
+ {
+  "module": "pointsMall",
+  "key": "pickupTime",
+  "zh": "预约提货时间",
+  "en": "Pickup Time",
+  "th": "เวลารับสินค้า"
+ },
+ {
+  "module": "pointsMall",
+  "key": "pickupTimePlaceholder",
+  "zh": "请选择提货时间",
+  "en": "Select pickup time",
+  "th": "เลือกเวลารับสินค้า"
+ },
+ {
+  "module": "pointsMall",
+  "key": "pickupHint",
+  "zh": "提货时间需提前 24 小时",
+  "en": "Must be at least 24 hours ahead",
+  "th": "ต้องล่วงหน้าอย่างน้อย 24 ชั่วโมง"
+ },
+ {
+  "module": "pointsMall",
+  "key": "pickupTimeRequired",
+  "zh": "请选择提货时间",
+  "en": "Please select pickup time",
+  "th": "กรุณาเลือกเวลารับสินค้า"
+ },
+ {
+  "module": "pointsMall",
+  "key": "pickupTimeTooSoon",
+  "zh": "预约时间必须至少提前 24 小时",
+  "en": "Pickup time must be at least 24 hours ahead",
+  "th": "เวลารับสินค้าต้องล่วงหน้าอย่างน้อย 24 ชั่วโมง"
+ },
+ {
+  "module": "pointsMall",
+  "key": "pickupTimeOk",
+  "zh": "时间有效",
+  "en": "Time is valid",
+  "th": "เวลาที่เลือกใช้ได้"
+ },
+ {
+  "module": "pointsMall",
+  "key": "pointsNotEnough",
+  "zh": "积分不足",
+  "en": "Not enough points",
+  "th": "คะแนนไม่พอ"
+ },
+ {
+  "module": "groupBuy",
+  "key": "title",
+  "zh": "拼团",
+  "en": "Group Buy",
+  "th": "รวม order"
+ },
+ {
+  "module": "groupBuy",
+  "key": "groupPrice",
+  "zh": "拼团价",
+  "en": "Group Price",
+  "th": "ราคารวม"
+ },
+ {
+  "module": "groupBuy",
+  "key": "originalPrice",
+  "zh": "原价",
+  "en": "Original",
+  "th": "ราคาเดิม"
+ },
+ {
+  "module": "groupBuy",
+  "key": "joinGroup",
+  "zh": "参与拼团",
+  "en": "Join Group",
+  "th": "ร่วม order"
+ },
+ {
+  "module": "groupBuy",
+  "key": "buyNow",
+  "zh": "立即拼团",
+  "en": "Buy Now",
+  "th": "ซื้อเลย"
+ },
+ {
+  "module": "groupBuy",
+  "key": "soldOut",
+  "zh": "已售罄",
+  "en": "Sold Out",
+  "th": "หมดแล้ว"
+ },
+ {
+  "module": "groupBuy",
+  "key": "ended",
+  "zh": "活动已结束",
+  "en": "Ended",
+  "th": "สิ้นสุดแล้ว"
+ },
+ {
+  "module": "groupBuy",
+  "key": "personGroup",
+  "zh": "{n}人团",
+  "en": "{n}-Person Group",
+  "th": "{n} คน"
+ },
+ {
+  "module": "groupBuy",
+  "key": "remainCount",
+  "zh": "剩余",
+  "en": "Remaining",
+  "th": "เหลือ"
+ },
+ {
+  "module": "groupBuy",
+  "key": "limitPerUser",
+  "zh": "限购",
+  "en": "Limit",
+  "th": "จำกัด"
+ },
+ {
+  "module": "groupBuy",
+  "key": "shareCode",
+  "zh": "分享码",
+  "en": "Share Code",
+  "th": "รหัสแชร์"
+ },
+ {
+  "module": "groupBuy",
+  "key": "copyLink",
+  "zh": "复制链接",
+  "en": "Copy Link",
+  "th": "คัดลอกลิงก์"
+ },
+ {
+  "module": "groupBuy",
+  "key": "copySuccess",
+  "zh": "链接已复制",
+  "en": "Link copied",
+  "th": "คัดลอกลิงก์แล้ว"
+ },
+ {
+  "module": "groupBuy",
+  "key": "noProducts",
+  "zh": "暂无拼团商品",
+  "en": "No group buy items",
+  "th": "ไม่มีสินค้าสำหรับรวม order"
+ },
+ {
+  "module": "groupBuy",
+  "key": "quantityLabel",
+  "zh": "数量",
+  "en": "Quantity",
+  "th": "จำนวน"
+ },
+ {
+  "module": "groupBuy",
+  "key": "totalLabel",
+  "zh": "合计",
+  "en": "Total",
+  "th": "รวม"
+ },
+ {
+  "module": "groupBuy",
+  "key": "discountRate",
+  "zh": "{rate}折",
+  "en": "{rate}% off",
+  "th": "ลด {rate}%"
+ },
+ {
+  "module": "groupBuy",
+  "key": "progressSold",
+  "zh": "已售{sold}/{total}",
+  "en": "{sold}/{total} sold",
+  "th": "ขายแล้ว {sold}/{total}"
+ },
+ {
+  "module": "discount",
+  "key": "searchPlaceholder",
+  "zh": "搜索优惠菜品",
+  "en": "Search discount items",
+  "th": "ค้นหาสินค้าลดราคา"
+ },
+ {
+  "module": "discount",
+  "key": "noProducts",
+  "zh": "暂无优惠菜品",
+  "en": "No discount items",
+  "th": "ไม่มีสินค้าลดราคา"
+ },
+ {
+  "module": "discount",
+  "key": "noProductsDesc",
+  "zh": "当前没有优惠活动",
+  "en": "No discounts available right now",
+  "th": "ไม่มีสินค้าลดราคาในขณะนี้"
+ },
+ {
+  "module": "discount",
+  "key": "off",
+  "zh": "折",
+  "en": "% off",
+  "th": "ส่วนลด"
+ },
+ {
+  "module": "error",
+  "key": "unauthenticated",
+  "zh": "请重新登录",
+  "en": "Please login again",
+  "th": "กรุณาเข้าสู่ระบบอีกครั้ง"
+ },
+ {
+  "module": "error",
+  "key": "tokenInvalid",
+  "zh": "登录已过期",
+  "en": "Session expired",
+  "th": "การเข้าสู่ระบบหมดอายุ"
+ },
+ {
+  "module": "error",
+  "key": "permissionDenied",
+  "zh": "无权限操作",
+  "en": "Permission denied",
+  "th": "ไม่มีสิทธิ์"
+ },
+ {
+  "module": "error",
+  "key": "invalidParam",
+  "zh": "参数错误",
+  "en": "Invalid parameters",
+  "th": "พารามิเตอร์ไม่ถูกต้อง"
+ },
+ {
+  "module": "error",
+  "key": "notFound",
+  "zh": "资源不存在",
+  "en": "Not found",
+  "th": "ไม่พบข้อมูล"
+ },
+ {
+  "module": "error",
+  "key": "statusConflict",
+  "zh": "状态冲突，请刷新重试",
+  "en": "Status conflict, please refresh",
+  "th": "สถานะขัดแย้ง กรุณารีเฟรช"
+ },
+ {
+  "module": "error",
+  "key": "groupBuyNotSupported",
+  "zh": "该门店不支持拼团",
+  "en": "Group buy not supported by this store",
+  "th": "ร้านนี้ไม่รองรับการรวม order"
+ },
+ {
+  "module": "error",
+  "key": "soldOut",
+  "zh": "已售罄",
+  "en": "Sold out",
+  "th": "หมดแล้ว"
+ },
+ {
+  "module": "error",
+  "key": "limitExceeded",
+  "zh": "超出限购数量",
+  "en": "Quantity limit exceeded",
+  "th": "เกินจำนวนจำกัด"
+ },
+ {
+  "module": "error",
+  "key": "expired",
+  "zh": "活动已结束",
+  "en": "Campaign ended",
+  "th": "กิจกรรมสิ้นสุดแล้ว"
+ },
+ {
+  "module": "error",
+  "key": "notActive",
+  "zh": "活动未开始",
+  "en": "Campaign not started",
+  "th": "กิจกรรมยังไม่เริ่ม"
+ },
+ {
+  "module": "error",
+  "key": "roomBooked",
+  "zh": "该日期已被预订",
+  "en": "Date already booked",
+  "th": "วันนี้ถูกจองแล้ว"
+ },
+ {
+  "module": "error",
+  "key": "noPricing",
+  "zh": "该日期暂无定价数据",
+  "en": "No pricing data for this date",
+  "th": "ไม่มีข้อมูลราคาสำหรับวันนี้"
+ },
+ {
+  "module": "error",
+  "key": "invalidPricing",
+  "zh": "该日期定价异常",
+  "en": "Pricing error for this date",
+  "th": "ราคาวันนี้ผิดปกติ"
+ },
+ {
+  "module": "error",
+  "key": "invalidDateRange",
+  "zh": "结束日期不能早于开始日期",
+  "en": "End date cannot be before start date",
+  "th": "วันสิ้นสุดต้องไม่ก่อนวันเริ่มต้น"
+ },
+ {
+  "module": "error",
+  "key": "capabilityDenied",
+  "zh": "该功能未开通",
+  "en": "Feature not available",
+  "th": "ฟีเจอร์นี้ไม่พร้อมใช้งาน"
+ },
+ {
+  "module": "error",
+  "key": "capabilityDisabled",
+  "zh": "该功能已被禁用",
+  "en": "Feature disabled",
+  "th": "ฟีเจอร์นี้ถูกปิดใช้งาน"
+ },
+ {
+  "module": "error",
+  "key": "invalidCredentials",
+  "zh": "账号或密码错误",
+  "en": "Invalid account or password",
+  "th": "บัญชีหรือรหัสผ่านไม่ถูกต้อง"
+ },
+ {
+  "module": "error",
+  "key": "invalidVerifyCode",
+  "zh": "验证码错误",
+  "en": "Invalid verification code",
+  "th": "รหัสยืนยันไม่ถูกต้อง"
+ },
+ {
+  "module": "error",
+  "key": "passwordSameAsOld",
+  "zh": "新密码不能与旧密码相同",
+  "en": "New password cannot be the same as the old password",
+  "th": "รหัสผ่านใหม่ต้องไม่ซ้ำกับรหัสผ่านเดิม"
+ },
+ {
+  "module": "error",
+  "key": "passwordTooShort",
+  "zh": "密码长度不能少于 6 位",
+  "en": "Password must be at least 6 characters",
+  "th": "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร"
+ },
+ {
+  "module": "error",
+  "key": "invalidOldPassword",
+  "zh": "旧密码错误",
+  "en": "Old password is incorrect",
+  "th": "รหัสผ่านเดิมไม่ถูกต้อง"
+ },
+ {
+  "module": "error",
+  "key": "userNotFound",
+  "zh": "用户不存在",
+  "en": "User not found",
+  "th": "ไม่พบผู้ใช้"
+ },
+ {
+  "module": "error",
+  "key": "rateLimited",
+  "zh": "操作过于频繁，请稍后再试",
+  "en": "Too many attempts, please try later",
+  "th": "ดำเนินการบ่อยเกินไป กรุณาลองใหม่ภายหลัง"
+ },
+ {
+  "module": "error",
+  "key": "coinInsufficient",
+  "zh": "金币余额不足",
+  "en": "Insufficient coins",
+  "th": "เหรียญไม่เพียงพอ"
+ },
+ {
+  "module": "error",
+  "key": "pointsInsufficient",
+  "zh": "积分余额不足",
+  "en": "Insufficient points",
+  "th": "คะแนนไม่เพียงพอ"
+ },
+ {
+  "module": "error",
+  "key": "phoneFormatInvalid",
+  "zh": "手机号格式不正确",
+  "en": "Invalid phone number format",
+  "th": "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง"
+ },
+ {
+  "module": "error",
+  "key": "phoneInvalid",
+  "zh": "手机号格式不正确",
+  "en": "Invalid phone number format",
+  "th": "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง"
+ },
+ {
+  "module": "error",
+  "key": "codeInvalid",
+  "zh": "验证码错误",
+  "en": "Invalid verification code",
+  "th": "รหัสยืนยันไม่ถูกต้อง"
+ },
+ {
+  "module": "error",
+  "key": "codeExpired",
+  "zh": "验证码已过期，请重新发送",
+  "en": "Verification code expired, please resend",
+  "th": "รหัสยืนยันหมดอายุ กรุณาขอรหัสใหม่"
+ },
+ {
+  "module": "error",
+  "key": "codeNotSent",
+  "zh": "请先获取验证码",
+  "en": "Please request a verification code first",
+  "th": "กรุณาขอรหัสยืนยันก่อน"
+ },
+ {
+  "module": "error",
+  "key": "codeTooManyAttempts",
+  "zh": "尝试次数过多，请重新发送",
+  "en": "Too many attempts, please resend",
+  "th": "พยายามหลายครั้งเกินไป กรุณาขอรหัสใหม่"
+ },
+ {
+  "module": "error",
+  "key": "accountDisabled",
+  "zh": "账号已被禁用，请联系客服",
+  "en": "Account disabled, please contact support",
+  "th": "บัญชีถูกระงับ กรุณาติดต่อเจ้าหน้าที่"
+ },
+ {
+  "module": "error",
+  "key": "smsNotConfigured",
+  "zh": "短信服务暂不可用",
+  "en": "SMS service is temporarily unavailable",
+  "th": "บริการ SMS ไม่พร้อมใช้งานชั่วคราว"
+ },
+ {
+  "module": "error",
+  "key": "smsSendFailed",
+  "zh": "短信发送失败，请稍后重试",
+  "en": "Failed to send SMS, please try again later",
+  "th": "ส่ง SMS ไม่สำเร็จ กรุณาลองใหม่ภายหลัง"
+ },
+ {
+  "module": "error",
+  "key": "smsQuotaExhausted",
+  "zh": "本年度短信额度已用完",
+  "en": "SMS quota exhausted for this year",
+  "th": "โควต้า SMS หมดแล้วสำหรับปีนี้"
+ },
+ {
+  "module": "error",
+  "key": "smsQuotaNoEmail",
+  "zh": "短信额度已用完，请绑定邮箱后重试",
+  "en": "SMS quota exhausted, please bind an email and try again",
+  "th": "โควต้า SMS หมดแล้ว กรุณาผูกอีเมลแล้วลองใหม่"
+ },
+ {
+  "module": "error",
+  "key": "orderingDisabled",
+  "zh": "本店暂未开通线上点餐，请到店点餐",
+  "en": "Online ordering is not available at this store, please order in-store",
+  "th": "ร้านนี้ยังไม่เปิดสั่งออนไลน์ กรุณาสั่งที่ร้าน"
+ },
+ {
+  "module": "error",
+  "key": "couponStoreNotMatch",
+  "zh": "优惠券不属于本门店，请在对应门店使用",
+  "en": "This coupon does not belong to this store, please use it at the corresponding store",
+  "th": "คูปองนี้ไม่ได้ใช้กับร้านนี้ กรุณาใช้ที่ร้านที่กำหนด"
+ },
+ {
+  "module": "error",
+  "key": "openingCouponNotStoreBound",
+  "zh": "开业券配置有误，暂无法领取",
+  "en": "Opening coupon configuration error, cannot claim for now",
+  "th": "การตั้งค่าคูปองเปิดร้านผิดพลาด ยังรับไม่ได้ชั่วคราว"
+ },
+ {
+  "module": "error",
+  "key": "smsLoginFailed",
+  "zh": "登录失败，请重试",
+  "en": "Login failed, please try again",
+  "th": "เข้าสู่ระบบไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "error",
+  "key": "registerFailed",
+  "zh": "注册失败，请重试",
+  "en": "Registration failed, please try again",
+  "th": "ลงทะเบียนไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "error",
+  "key": "phoneAlreadyRegistered",
+  "zh": "该手机号已注册，请直接登录",
+  "en": "This phone number is already registered, please log in directly",
+  "th": "เบอร์นี้ลงทะเบียนแล้ว กรุณาเข้าสู่ระบบโดยตรง"
+ },
+ {
+  "module": "error",
+  "key": "phoneNotRegistered",
+  "zh": "该手机号未注册，是否前往注册？",
+  "en": "This phone number is not registered. Register now?",
+  "th": "เบอร์นี้ยังไม่ลงทะเบียน ลงทะเบียนเลยไหม?"
+ },
+ {
+  "module": "agreement",
+  "key": "terms",
+  "zh": "服务条款",
+  "en": "Terms of Service",
+  "th": "เงื่อนไขการให้บริการ"
+ },
+ {
+  "module": "agreement",
+  "key": "privacy",
+  "zh": "隐私政策",
+  "en": "Privacy Policy",
+  "th": "นโยบายความเป็นส่วนตัว"
+ },
+ {
+  "module": "agreement",
+  "key": "about",
+  "zh": "关于我们",
+  "en": "About Us",
+  "th": "เกี่ยวกับเรา"
+ },
+ {
+  "module": "footprint",
+  "key": "title",
+  "zh": "我的足迹",
+  "en": "My Footprints",
+  "th": "ประวัติการเข้าชม"
+ },
+ {
+  "module": "footprint",
+  "key": "products",
+  "zh": "商品",
+  "en": "Products",
+  "th": "สินค้า"
+ },
+ {
+  "module": "footprint",
+  "key": "stores",
+  "zh": "门店",
+  "en": "Stores",
+  "th": "ร้านค้า"
+ },
+ {
+  "module": "footprint",
+  "key": "searches",
+  "zh": "搜索",
+  "en": "Searches",
+  "th": "ค้นหา"
+ },
+ {
+  "module": "footprint",
+  "key": "noProducts",
+  "zh": "暂无商品浏览记录",
+  "en": "No product browsing history",
+  "th": "ไม่มีประวัติการดูสินค้า"
+ },
+ {
+  "module": "footprint",
+  "key": "noStores",
+  "zh": "暂无门店浏览记录",
+  "en": "No store browsing history",
+  "th": "ไม่มีประวัติการดูร้านค้า"
+ },
+ {
+  "module": "footprint",
+  "key": "noSearches",
+  "zh": "暂无搜索记录",
+  "en": "No search history",
+  "th": "ไม่มีประวัติการค้นหา"
+ },
+ {
+  "module": "footprint",
+  "key": "goBrowse",
+  "zh": "去逛逛",
+  "en": "Browse Now",
+  "th": "เลือกซื้อเลย"
+ },
+ {
+  "module": "footprint",
+  "key": "confirmClear",
+  "zh": "确定要清空当前记录吗？",
+  "en": "Clear current records?",
+  "th": "ล้างประวัติทั้งหมด?"
+ },
+ {
+  "module": "footprint",
+  "key": "clearSuccess",
+  "zh": "清空成功",
+  "en": "Cleared successfully",
+  "th": "ล้างสำเร็จ"
+ },
+ {
+  "module": "footprint",
+  "key": "justNow",
+  "zh": "刚刚",
+  "en": "Just now",
+  "th": "เมื่อสักครู่"
+ },
+ {
+  "module": "footprint",
+  "key": "minutesAgo",
+  "zh": "{n}分钟前",
+  "en": "{n} min ago",
+  "th": "{n} นาทีที่แล้ว"
+ },
+ {
+  "module": "footprint",
+  "key": "hoursAgo",
+  "zh": "{n}小时前",
+  "en": "{n} h ago",
+  "th": "{n} ชั่วโมงที่แล้ว"
+ },
+ {
+  "module": "footprint",
+  "key": "daysAgo",
+  "zh": "{n}天前",
+  "en": "{n} d ago",
+  "th": "{n} วันที่แล้ว"
+ },
+ {
+  "module": "footprint",
+  "key": "monthDay",
+  "zh": "{m}月{d}日",
+  "en": "{m}/{d}",
+  "th": "{d}/{m}"
+ },
+ {
+  "module": "member",
+  "key": "normal",
+  "zh": "普通",
+  "en": "Normal",
+  "th": "ทั่วไป"
+ },
+ {
+  "module": "member",
+  "key": "platinum",
+  "zh": "铂金",
+  "en": "Platinum",
+  "th": "แพลทินัม"
+ },
+ {
+  "module": "member",
+  "key": "highestTier",
+  "zh": "已达最高档",
+  "en": "Highest tier",
+  "th": "ระดับสูงสุด"
+ },
+ {
+  "module": "member",
+  "key": "totalSpent",
+  "zh": "累计消费",
+  "en": "Total spent",
+  "th": "ยอดสะสม"
+ },
+ {
+  "module": "member",
+  "key": "normalMember",
+  "zh": "普通会员",
+  "en": "Normal Member",
+  "th": "สมาชิกทั่วไป"
+ },
+ {
+  "module": "member",
+  "key": "platinumMember",
+  "zh": "铂金会员",
+  "en": "Platinum Member",
+  "th": "สมาชิกแพลทินัม"
+ },
+ {
+  "module": "member",
+  "key": "platinumBenefit",
+  "zh": "升级铂金后可享生日礼物",
+  "en": "Birthday gift for Platinum",
+  "th": "ของขวัญวันเกิดสำหรับแพลทินัม"
+ },
+ {
+  "module": "member",
+  "key": "consumption",
+  "zh": "消费",
+  "en": "Spent",
+  "th": "ใช้จ่าย"
+ },
+ {
+  "module": "member",
+  "key": "upgrade",
+  "zh": "升级",
+  "en": "Upgrade",
+  "th": "อัปเกรด"
+ },
+ {
+  "module": "member",
+  "key": "upgradeTip",
+  "zh": "继续消费升级铂金会员",
+  "en": "Keep spending to upgrade to Platinum",
+  "th": "ใช้จ่ายต่อเพื่ออัปเกรดเป็นแพลทินัม"
+ },
+ {
+  "module": "member",
+  "key": "balance",
+  "zh": "金币",
+  "en": "Coins",
+  "th": "เหรียญ"
+ },
+ {
+  "module": "member",
+  "key": "points",
+  "zh": "积分",
+  "en": "Points",
+  "th": "คะแนน"
+ },
+ {
+  "module": "member",
+  "key": "newUserPack",
+  "zh": "新人券包",
+  "en": "New User Pack",
+  "th": "แพ็คใหม่"
+ },
+ {
+  "module": "member",
+  "key": "pointsExchange",
+  "zh": "积分兑换",
+  "en": "Points Redeem",
+  "th": "แลกคะแนน"
+ },
+ {
+  "module": "member",
+  "key": "balanceExchange",
+  "zh": "金币兑换",
+  "en": "Coin Redeem",
+  "th": "แลกเหรียญ"
+ },
+ {
+  "module": "member",
+  "key": "exchange",
+  "zh": "兑换",
+  "en": "Redeem",
+  "th": "แลก"
+ },
+ {
+  "module": "member",
+  "key": "exchangeConfirm",
+  "zh": "确认兑换",
+  "en": "Confirm Redeem",
+  "th": "ยืนยันการแลก"
+ },
+ {
+  "module": "member",
+  "key": "exchangeSuccess",
+  "zh": "兑换成功",
+  "en": "Redeemed successfully",
+  "th": "แลกสำเร็จ"
+ },
+ {
+  "module": "member",
+  "key": "exchangeFor",
+  "zh": "兑换",
+  "en": "for",
+  "th": "เพื่อ"
+ },
+ {
+  "module": "member",
+  "key": "use",
+  "zh": "使用",
+  "en": "Use",
+  "th": "ใช้"
+ },
+ {
+  "module": "member",
+  "key": "pointsNotEnough",
+  "zh": "积分不足",
+  "en": "Not enough points",
+  "th": "คะแนนไม่พอ"
+ },
+ {
+  "module": "member",
+  "key": "balanceDetail",
+  "zh": "金币明细",
+  "en": "Coin Details",
+  "th": "รายละเอียดเหรียญ"
+ },
+ {
+  "module": "upgrade",
+  "key": "congratulations",
+  "zh": "恭喜升级",
+  "en": "Congratulations",
+  "th": "ยินดีด้วย"
+ },
+ {
+  "module": "upgrade",
+  "key": "congratsTitle",
+  "zh": "恭喜升级",
+  "en": "Upgraded",
+  "th": "เลื่อนระดับแล้ว"
+ },
+ {
+  "module": "upgrade",
+  "key": "gotIt",
+  "zh": "知道了",
+  "en": "Got it",
+  "th": "รับทราบ"
+ },
+ {
+  "module": "upgrade",
+  "key": "rewardAutoGranted",
+  "zh": "奖励已自动到账",
+  "en": "Rewards have been granted automatically",
+  "th": "รางวัลถูกมอบให้อัตโนมัติแล้ว"
+ },
+ {
+  "module": "upgrade",
+  "key": "becomePlatinum",
+  "zh": "您已成功升级为铂金会员",
+  "en": "You have been upgraded to Platinum",
+  "th": "คุณได้อัปเกรดเป็นสมาชิกแพลทินัม"
+ },
+ {
+  "module": "upgrade",
+  "key": "from",
+  "zh": "原等级",
+  "en": "From",
+  "th": "จากระดับ"
+ },
+ {
+  "module": "upgrade",
+  "key": "to",
+  "zh": "新等级",
+  "en": "To",
+  "th": "สู่ระดับ"
+ },
+ {
+  "module": "upgrade",
+  "key": "enjoyNow",
+  "zh": "立即享受",
+  "en": "Enjoy Now",
+  "th": "เพลิดเพลินเลย"
+ },
+ {
+  "module": "upgrade",
+  "key": "benefitBirthday",
+  "zh": "生日专属礼物",
+  "en": "Birthday Special Gift",
+  "th": "ของขวัญวันเกิดพิเศษ"
+ },
+ {
+  "module": "upgrade",
+  "key": "benefitDiscount",
+  "zh": "专属折扣优惠",
+  "en": "Exclusive Discount",
+  "th": "ส่วนลดพิเศษ"
+ },
+ {
+  "module": "upgrade",
+  "key": "benefitPriority",
+  "zh": "优先预订特权",
+  "en": "Priority Booking",
+  "th": "สิทธิพิเศษจองล่วงหน้า"
+ },
+ {
+  "module": "upgrade",
+  "key": "animationShown",
+  "zh": "shown",
+  "en": "【缺失】",
+  "th": "【缺失】"
+ },
+ {
+  "module": "campaign",
+  "key": "rules",
+  "zh": "活动规则",
+  "en": "Campaign Rules",
+  "th": "กฎกติกาโปรโมชัน"
+ },
+ {
+  "module": "campaign",
+  "key": "notStackable",
+  "zh": "不与其他活动叠加",
+  "en": "Cannot be combined with other campaigns",
+  "th": "ใช้ร่วมกับโปรโมชันอื่นไม่ได้"
+ },
+ {
+  "module": "campaign",
+  "key": "autoApply",
+  "zh": "下单时自动应用,无需操作",
+  "en": "Auto-applied at checkout, no action needed",
+  "th": "ใช้อัตโนมัติเมื่อสั่งซื้อ ไม่ต้องทำอะไร"
+ },
+ {
+  "module": "campaign",
+  "key": "datePattern",
+  "zh": "适用日期",
+  "en": "Applicable dates",
+  "th": "วันที่ใช้ได้"
+ },
+ {
+  "module": "campaign",
+  "key": "doubleDay",
+  "zh": "双号日（7/7、8/8…）",
+  "en": "Same month-day (7/7, 8/8…)",
+  "th": "วันที่เดือนตรงกัน (7/7, 8/8…)"
+ },
+ {
+  "module": "campaign",
+  "key": "crossYear",
+  "zh": "跨年",
+  "en": "spans year-end",
+  "th": "ข้ามปี"
+ },
+ {
+  "module": "campaign",
+  "key": "specialDateNotToday",
+  "zh": "仅限活动指定日期可领",
+  "en": "Only claimable on campaign dates",
+  "th": "รับคูปองได้เฉพาะวันที่กำหนดเท่านั้น"
+ },
+ {
+  "module": "campaign",
+  "key": "claimableToday",
+  "zh": "今日可领",
+  "en": "Claimable today",
+  "th": "รับได้วันนี้"
+ },
+ {
+  "module": "campaign",
+  "key": "extraPoints",
+  "zh": "额外 +{n} 积分",
+  "en": "+{n} bonus points",
+  "th": "+{n} แต้มพิเศษ"
+ },
+ {
+  "module": "campaign",
+  "key": "extraCoins",
+  "zh": "额外 +{n} 金币",
+  "en": "+{n} bonus coins",
+  "th": "+{n} เหรียญพิเศษ"
+ },
+ {
+  "module": "campaign",
+  "key": "claimableCoupons",
+  "zh": "可领优惠券",
+  "en": "Claimable Coupons",
+  "th": "คูปองที่รับได้"
+ },
+ {
+  "module": "campaign",
+  "key": "itemVoucher",
+  "zh": "菜品券",
+  "en": "Item Voucher",
+  "th": "คูปองอาหาร"
+ },
+ {
+  "module": "campaign",
+  "key": "noCoupons",
+  "zh": "暂无可领优惠券",
+  "en": "No claimable coupons",
+  "th": "ยังไม่มีคูปองที่รับได้"
+ },
+ {
+  "module": "campaign",
+  "key": "spendThreshold",
+  "zh": "满 {amount} 元可用",
+  "en": "Min spend {amount}",
+  "th": "ใช้เมื่อสั่งครบ {amount} บาท"
+ },
+ {
+  "module": "campaign",
+  "key": "noThreshold",
+  "zh": "无门槛",
+  "en": "No minimum",
+  "th": "ไม่มีขั้นต่ำ"
+ },
+ {
+  "module": "campaign",
+  "key": "remaining",
+  "zh": "剩余 {n}/{total} 张",
+  "en": "{n}/{total} left",
+  "th": "เหลือ {n}/{total} ใบ"
+ },
+ {
+  "module": "campaign",
+  "key": "remainingUnlimited",
+  "zh": "已领 {claimed} 张(无限量)",
+  "en": "{claimed} claimed (unlimited)",
+  "th": "รับแล้ว {claimed} ใบ (ไม่จำกัด)"
+ },
+ {
+  "module": "campaign",
+  "key": "claimed",
+  "zh": "已领取",
+  "en": "Claimed",
+  "th": "รับแล้ว"
+ },
+ {
+  "module": "campaign",
+  "key": "soldOut",
+  "zh": "已抢光",
+  "en": "Sold Out",
+  "th": "หมดแล้ว"
+ },
+ {
+  "module": "campaign",
+  "key": "cannotClaim",
+  "zh": "不可领取",
+  "en": "Cannot Claim",
+  "th": "รับไม่ได้"
+ },
+ {
+  "module": "campaign",
+  "key": "claimNow",
+  "zh": "立即抢券",
+  "en": "Claim Now",
+  "th": "รับคูปอง"
+ },
+ {
+  "module": "campaign",
+  "key": "claimSuccess",
+  "zh": "领取成功",
+  "en": "Claimed successfully",
+  "th": "รับคูปองสำเร็จ"
+ },
+ {
+  "module": "campaign",
+  "key": "orderNow",
+  "zh": "立即下单",
+  "en": "Order Now",
+  "th": "สั่งเลย"
+ },
+ {
+  "module": "campaign",
+  "key": "myCoupons",
+  "zh": "我的优惠券",
+  "en": "My Coupons",
+  "th": "คูปองของฉัน"
+ },
+ {
+  "module": "campaign",
+  "key": "allStoresScope",
+  "zh": "全部门店",
+  "en": "All stores",
+  "th": "ทุกสาขา"
+ },
+ {
+  "module": "campaign",
+  "key": "specificStoresScope",
+  "zh": "指定门店",
+  "en": "Selected stores",
+  "th": "สาขาที่กำหนด"
+ },
+ {
+  "module": "campaign",
+  "key": "applicableStores",
+  "zh": "适用 {n} 家门店",
+  "en": "{n} stores",
+  "th": "{n} สาขา"
+ },
+ {
+  "module": "campaign",
+  "key": "minSpendLabel",
+  "zh": "满 ฿{amount} 可用",
+  "en": "Min. spend ฿{amount}",
+  "th": "ขั้นต่ำ ฿{amount}"
+ },
+ {
+  "module": "campaign",
+  "key": "fullReductionRule",
+  "zh": "满 ฿{threshold} 减 ฿{reduction}",
+  "en": "฿{threshold} off every ฿{reduction}",
+  "th": "ลด ฿{reduction} เมื่อครบ ฿{threshold}"
+ },
+ {
+  "module": "campaign",
+  "key": "discountRule",
+  "zh": "全场 {percent}% off",
+  "en": "{percent}% off everything",
+  "th": "ลด {percent}% ทุกรายการ"
+ },
+ {
+  "module": "campaign",
+  "key": "applicableStoresLabel",
+  "zh": "适用门店",
+  "en": "Applicable stores",
+  "th": "สาขาที่ใช้ได้"
+ },
+ {
+  "module": "campaign",
+  "key": "noApplicableStores",
+  "zh": "未指定",
+  "en": "Not specified",
+  "th": "ยังไม่ระบุ"
+ },
+ {
+  "module": "exchange",
+  "key": "title",
+  "zh": "金币换积分",
+  "en": "Coins to Points",
+  "th": "แลกเหรียญเป็นแต้ม"
+ },
+ {
+  "module": "exchange",
+  "key": "coinBalance",
+  "zh": "金币余额",
+  "en": "Coin Balance",
+  "th": "เหรียญคงเหลือ"
+ },
+ {
+  "module": "exchange",
+  "key": "pointBalance",
+  "zh": "积分余额",
+  "en": "Point Balance",
+  "th": "แต้มคงเหลือ"
+ },
+ {
+  "module": "exchange",
+  "key": "rate",
+  "zh": "兑换比例",
+  "en": "Exchange Rate",
+  "th": "อัตราแลก"
+ },
+ {
+  "module": "exchange",
+  "key": "minExchange",
+  "zh": "最少兑换",
+  "en": "Minimum",
+  "th": "ขั้นต่ำ"
+ },
+ {
+  "module": "exchange",
+  "key": "dailyLimit",
+  "zh": "每日上限",
+  "en": "Daily Limit",
+  "th": "จำกัด/วัน"
+ },
+ {
+  "module": "exchange",
+  "key": "coinsToSpend",
+  "zh": "消耗金币",
+  "en": "Coins to Spend",
+  "th": "เหรียญที่ใช้"
+ },
+ {
+  "module": "exchange",
+  "key": "coinsInputPlaceholder",
+  "zh": "最少 {min} 个金币",
+  "en": "Minimum {min} coins",
+  "th": "ขั้นต่ำ {min} เหรียญ"
+ },
+ {
+  "module": "exchange",
+  "key": "coins",
+  "zh": "金币",
+  "en": "coins",
+  "th": "เหรียญ"
+ },
+ {
+  "module": "exchange",
+  "key": "points",
+  "zh": "积分",
+  "en": "points",
+  "th": "แต้ม"
+ },
+ {
+  "module": "exchange",
+  "key": "pointsToReceive",
+  "zh": "预计获得",
+  "en": "You Will Get",
+  "th": "จะได้รับ"
+ },
+ {
+  "module": "exchange",
+  "key": "hint1",
+  "zh": "兑换后立即到账",
+  "en": "Points arrive instantly after exchange",
+  "th": "แต้มจะเข้าบัญชีทันทีหลังแลก"
+ },
+ {
+  "module": "exchange",
+  "key": "hint2",
+  "zh": "兑换比例由后台配置,可能有变化",
+  "en": "Rate is configured by admin and may change",
+  "th": "อัตราแลกกำหนดโดยระบบ อาจเปลี่ยนแปลง"
+ },
+ {
+  "module": "exchange",
+  "key": "confirm",
+  "zh": "确认兑换",
+  "en": "Confirm Exchange",
+  "th": "ยืนยันแลก"
+ },
+ {
+  "module": "exchange",
+  "key": "confirmTitle",
+  "zh": "确认兑换",
+  "en": "Confirm",
+  "th": "ยืนยัน"
+ },
+ {
+  "module": "exchange",
+  "key": "confirmContent",
+  "zh": "消耗 {coins} 金币,获得 {points} 积分?",
+  "en": "Spend {coins} coins to get {points} points?",
+  "th": "ใช้ {coins} เหรียญ แลก {points} แต้ม?"
+ },
+ {
+  "module": "exchange",
+  "key": "success",
+  "zh": "兑换成功,获得 {points} 积分",
+  "en": "Success! Got {points} points",
+  "th": "สำเร็จ! ได้รับ {points} แต้ม"
+ },
+ {
+  "module": "exchange",
+  "key": "successSimple",
+  "zh": "兑换成功",
+  "en": "Exchange successful",
+  "th": "แลกสำเร็จ"
+ },
+ {
+  "module": "exchange",
+  "key": "insufficientCoins",
+  "zh": "金币余额不足",
+  "en": "Insufficient coin balance",
+  "th": "เหรียญไม่เพียงพอ"
+ },
+ {
+  "module": "exchange",
+  "key": "errors.INVALID_AMOUNT",
+  "zh": "兑换数量太少,最少 {min} 金币",
+  "en": "Amount too small, minimum {min} coins",
+  "th": "จำนวนน้อยเกินไป ขั้นต่ำ {min} เหรียญ"
+ },
+ {
+  "module": "exchange",
+  "key": "errors.INSUFFICIENT_COINS",
+  "zh": "金币余额不足",
+  "en": "Insufficient coin balance",
+  "th": "เหรียญไม่เพียงพอ"
+ },
+ {
+  "module": "exchange",
+  "key": "errors.EXCHANGE_DISABLED",
+  "zh": "金币换积分功能未启用",
+  "en": "Exchange feature is disabled",
+  "th": "ฟังก์ชันแลกเหรียญปิดอยู่"
+ },
+ {
+  "module": "exchange",
+  "key": "errors.DAILY_LIMIT_EXCEEDED",
+  "zh": "今日已达兑换上限",
+  "en": "Daily limit reached",
+  "th": "ถึงขีดจำกัดรายวันแล้ว"
+ },
+ {
+  "module": "exchange",
+  "key": "errors.DEFAULT",
+  "zh": "兑换失败,请稍后重试",
+  "en": "Exchange failed, please try again",
+  "th": "แลกไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "changePhone",
+  "key": "title",
+  "zh": "更改绑定手机号",
+  "en": "Change Phone Number",
+  "th": "เปลี่ยนเบอร์โทรศัพท์"
+ },
+ {
+  "module": "changePhone",
+  "key": "currentPhone",
+  "zh": "当前绑定",
+  "en": "Current",
+  "th": "เบอร์ปัจจุบัน"
+ },
+ {
+  "module": "changePhone",
+  "key": "step1Title",
+  "zh": "验证旧手机号",
+  "en": "Verify Old Number",
+  "th": "ยืนยันเบอร์เดิม"
+ },
+ {
+  "module": "changePhone",
+  "key": "step2Title",
+  "zh": "绑定新手机号",
+  "en": "Bind New Number",
+  "th": "ผูกเบอร์ใหม่"
+ },
+ {
+  "module": "changePhone",
+  "key": "next",
+  "zh": "下一步",
+  "en": "Next",
+  "th": "ถัดไป"
+ },
+ {
+  "module": "changePhone",
+  "key": "verified",
+  "zh": "已验证",
+  "en": "Verified",
+  "th": "ยืนยันแล้ว"
+ },
+ {
+  "module": "changePhone",
+  "key": "fillOldCodeFirst",
+  "zh": "请先填写旧手机号和验证码",
+  "en": "Please enter old phone and code first",
+  "th": "กรุณากรอกเบอร์เดิมและรหัสยืนยันก่อน"
+ },
+ {
+  "module": "changePhone",
+  "key": "oldPhonePlaceholder",
+  "zh": "请输入当前绑定的手机号",
+  "en": "Enter current phone number",
+  "th": "กรอกเบอร์โทรปัจจุบัน"
+ },
+ {
+  "module": "changePhone",
+  "key": "oldCodePlaceholder",
+  "zh": "请输入旧手机号验证码",
+  "en": "Enter old number code",
+  "th": "กรอกรหัสยืนยันเบอร์เดิม"
+ },
+ {
+  "module": "changePhone",
+  "key": "newPhonePlaceholder",
+  "zh": "请输入新手机号",
+  "en": "Enter new phone number",
+  "th": "กรอกเบอร์โทรใหม่"
+ },
+ {
+  "module": "changePhone",
+  "key": "newCodePlaceholder",
+  "zh": "请输入新手机号验证码",
+  "en": "Enter new number code",
+  "th": "กรอกรหัสยืนยันเบอร์ใหม่"
+ },
+ {
+  "module": "changePhone",
+  "key": "getOldCode",
+  "zh": "获取验证码",
+  "en": "Get Code",
+  "th": "ขอรหัส"
+ },
+ {
+  "module": "changePhone",
+  "key": "getNewCode",
+  "zh": "获取验证码",
+  "en": "Get Code",
+  "th": "ขอรหัส"
+ },
+ {
+  "module": "changePhone",
+  "key": "codeSent",
+  "zh": "验证码已发送",
+  "en": "Code sent",
+  "th": "ส่งรหัสแล้ว"
+ },
+ {
+  "module": "changePhone",
+  "key": "confirm",
+  "zh": "确认更改",
+  "en": "Confirm Change",
+  "th": "ยืนยันเปลี่ยน"
+ },
+ {
+  "module": "changePhone",
+  "key": "hint1",
+  "zh": "每月只能更改 1 次手机号",
+  "en": "You can change phone number once per month",
+  "th": "เปลี่ยนเบอร์ได้เดือนละ 1 ครั้ง"
+ },
+ {
+  "module": "changePhone",
+  "key": "hint2",
+  "zh": "新手机号不能与旧号相同,且不能已被其他账号使用",
+  "en": "New number cannot be the same as old, nor used by another account",
+  "th": "เบอร์ใหม่ต้องไม่ซ้ำเบอร์เดิม และต้องไม่ถูกใช้โดยบัญชีอื่น"
+ },
+ {
+  "module": "changePhone",
+  "key": "success",
+  "zh": "手机号更改成功",
+  "en": "Phone number changed successfully",
+  "th": "เปลี่ยนเบอร์สำเร็จ"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.OLD_PHONE_MISMATCH",
+  "zh": "旧手机号与当前账号绑定不符",
+  "en": "Old phone does not match the bound number",
+  "th": "เบอร์เดิมไม่ตรงกับเบอร์ที่ผูกไว้"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.NEW_PHONE_SAME_AS_OLD",
+  "zh": "新手机号不能与旧手机号相同",
+  "en": "New number cannot be the same as old",
+  "th": "เบอร์ใหม่ต้องไม่ซ้ำเบอร์เดิม"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.OLD_CODE_INVALID",
+  "zh": "旧手机号验证码错误或已失效",
+  "en": "Old number code is incorrect or expired",
+  "th": "รหัสยืนยันเบอร์เดิมไม่ถูกต้องหรือหมดอายุ"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.NEW_CODE_INVALID",
+  "zh": "新手机号验证码错误或已失效",
+  "en": "New number code is incorrect or expired",
+  "th": "รหัสยืนยันเบอร์ใหม่ไม่ถูกต้องหรือหมดอายุ"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.NO_PHONE_BOUND",
+  "zh": "当前账号未绑定手机号",
+  "en": "No phone bound to this account",
+  "th": "บัญชีนี้ยังไม่มีเบอร์โทรที่ผูกไว้"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.PHONE_ALREADY_BOUND",
+  "zh": "该手机号已被其他账号使用",
+  "en": "This phone is already used by another account",
+  "th": "เบอร์นี้ถูกใช้โดยบัญชีอื่นแล้ว"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.PHONE_CHANGE_LIMIT",
+  "zh": "本月已更改过手机号,每月只能更改一次",
+  "en": "Already changed this month, only once per month",
+  "th": "เปลี่ยนเบอร์เดือนนี้แล้ว เดือนละ 1 ครั้ง"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.RATE_LIMITED",
+  "zh": "请求过于频繁,请稍后再试",
+  "en": "Too many requests, please try later",
+  "th": "คำขอถี่เกินไป กรุณาลองภายหลัง"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.INVALID_PHONE",
+  "zh": "手机号格式不正确",
+  "en": "Invalid phone format",
+  "th": "รูปแบบเบอร์โทรไม่ถูกต้อง"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.INVALID_TYPE",
+  "zh": "参数错误",
+  "en": "Invalid parameter",
+  "th": "พารามิเตอร์ผิดพลาด"
+ },
+ {
+  "module": "changePhone",
+  "key": "errors.DEFAULT",
+  "zh": "更改失败,请稍后重试",
+  "en": "Change failed, please try again",
+  "th": "เปลี่ยนไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "tasks",
+  "key": "title",
+  "zh": "任务中心",
+  "en": "Tasks",
+  "th": "ภารกิจ"
+ },
+ {
+  "module": "tasks",
+  "key": "headerTitle",
+  "zh": "做任务,赚奖励",
+  "en": "Complete tasks, earn rewards",
+  "th": "ทำภารกิจ รับรางวัล"
+ },
+ {
+  "module": "tasks",
+  "key": "headerSubtitle",
+  "zh": "完成任务可获得积分、金币或优惠券",
+  "en": "Finish tasks to get points, coins or coupons",
+  "th": "ทำภารกิจให้ครบเพื่อรับแต้ม เหรียญ หรือคูปอง"
+ },
+ {
+  "module": "tasks",
+  "key": "inviteProgressRules",
+  "zh": "每档进度独立计算：完成一档后，下一档从 0 开始重新计数；进度每年随积分清零重算",
+  "en": "Each tier counts separately: once a tier is completed, the next one starts from 0. Progress resets annually with the points reset",
+  "th": "ความคืบหน้าของแต่ละขั้นนับแยกกัน หลังจบขั้นหนึ่งจะเริ่มนับขั้นถัดไปใหม่ และจะรีเซ็ตพร้อมแต้มทุกปี"
+ },
+ {
+  "module": "tasks",
+  "key": "inviteLocked",
+  "zh": "完成上一档后开始计数",
+  "en": "Complete the previous tier to start counting",
+  "th": "เชิญครบตามขั้นก่อนหน้าเพื่อเริ่มนับ"
+ },
+ {
+  "module": "tasks",
+  "key": "locked",
+  "zh": "未解锁",
+  "en": "Locked",
+  "th": "ยังไม่ปลดล็อก"
+ },
+ {
+  "module": "tasks",
+  "key": "sectionAll",
+  "zh": "全部任务",
+  "en": "All Tasks",
+  "th": "ภารกิจทั้งหมด"
+ },
+ {
+  "module": "tasks",
+  "key": "inProgress",
+  "zh": "进行中",
+  "en": "In Progress",
+  "th": "กำลังดำเนินการ"
+ },
+ {
+  "module": "tasks",
+  "key": "claim",
+  "zh": "领取",
+  "en": "Claim",
+  "th": "รับ"
+ },
+ {
+  "module": "tasks",
+  "key": "claimed",
+  "zh": "已领取",
+  "en": "Claimed",
+  "th": "รับแล้ว"
+ },
+ {
+  "module": "tasks",
+  "key": "claimSuccess",
+  "zh": "领取成功",
+  "en": "Claimed Successfully",
+  "th": "รับรางวัลสำเร็จ"
+ },
+ {
+  "module": "tasks",
+  "key": "empty",
+  "zh": "暂无任务,敬请期待",
+  "en": "No tasks yet, stay tuned",
+  "th": "ยังไม่มีภารกิจ โปรดติดตาม"
+ },
+ {
+  "module": "tasks",
+  "key": "errors.TASK_NOT_CLAIMABLE",
+  "zh": "任务未完成或已领取",
+  "en": "Task not completed or already claimed",
+  "th": "ภารกิจยัไม่สำเร็จ หรือรับแล้ว"
+ },
+ {
+  "module": "tasks",
+  "key": "errors.DEFAULT",
+  "zh": "领取失败,请稍后重试",
+  "en": "Claim failed, please try again",
+  "th": "รับไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "birthday",
+  "key": "happyBirthday",
+  "zh": "生日快乐!",
+  "en": "Happy Birthday!",
+  "th": "สุขสันต์วันเกิด!"
+ },
+ {
+  "module": "birthday",
+  "key": "claimable",
+  "zh": "您有一份生日奖励可领取",
+  "en": "You have a birthday reward to claim",
+  "th": "คุณมีรางวัลวันเกิดรอรับ"
+ },
+ {
+  "module": "birthday",
+  "key": "claim",
+  "zh": "立即领取",
+  "en": "Claim Now",
+  "th": "รับเลย"
+ },
+ {
+  "module": "birthday",
+  "key": "claimSuccess",
+  "zh": "领取成功",
+  "en": "Claimed Successfully",
+  "th": "รับรางวัลสำเร็จ"
+ },
+ {
+  "module": "birthday",
+  "key": "validUntil",
+  "zh": "有效期至",
+  "en": "Valid until",
+  "th": "ใช้ได้ถึง"
+ },
+ {
+  "module": "birthday",
+  "key": "hint",
+  "zh": "每年仅可领取 1 次",
+  "en": "Can be claimed once per year",
+  "th": "รับได้ปีละ 1 ครั้ง"
+ },
+ {
+  "module": "birthday",
+  "key": "errors.not_birthday_today",
+  "zh": "今天不是您的生日",
+  "en": "Today is not your birthday",
+  "th": "วันนี้ไม่ใช่วันเกิดของคุณ"
+ },
+ {
+  "module": "birthday",
+  "key": "errors.already_claimed",
+  "zh": "您已领取过今年的生日奖励",
+  "en": "You already claimed this year",
+  "th": "คุณรับรางวัลปีนี้แล้ว"
+ },
+ {
+  "module": "birthday",
+  "key": "errors.disabled",
+  "zh": "生日奖励暂未开启",
+  "en": "Birthday reward is not enabled",
+  "th": "รางวัลวันเกิดยังไม่เปิด"
+ },
+ {
+  "module": "birthday",
+  "key": "errors.no_birthday",
+  "zh": "请先设置生日",
+  "en": "Please set your birthday first",
+  "th": "กรุณาตั้งค่าวันเกิดก่อน"
+ },
+ {
+  "module": "birthday",
+  "key": "errors.BIRTHDAY_COUPON_UNAVAILABLE",
+  "zh": "生日券暂不可用",
+  "en": "Birthday coupon is unavailable",
+  "th": "คูปองวันเกิดไม่พร้อมใช้งาน"
+ },
+ {
+  "module": "birthday",
+  "key": "errors.DEFAULT",
+  "zh": "领取失败,请稍后重试",
+  "en": "Claim failed, please try again",
+  "th": "รับไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "hostel",
+  "key": "extendErrors.noPricing",
+  "zh": "【缺失】",
+  "en": "No pricing data for this date",
+  "th": "ไม่มีข้อมูลราคาสำหรับวันนี้"
+ },
+ {
+  "module": "hostel",
+  "key": "extendErrors.roomBooked",
+  "zh": "【缺失】",
+  "en": "Date already booked",
+  "th": "วันนี้ถูกจองแล้ว"
+ },
+ {
+  "module": "hostel",
+  "key": "extendErrors.invalidPricing",
+  "zh": "【缺失】",
+  "en": "Pricing error for this date",
+  "th": "ราคาวันนี้ผิดปกติ"
+ },
+ {
+  "module": "hostel",
+  "key": "extendErrors.fallback",
+  "zh": "【缺失】",
+  "en": "Extend stay failed, please try again",
+  "th": "ต่อเวลาพักไม่สำเร็จ กรุณาลองอีกครั้ง"
+ },
+ {
+  "module": "dinein",
+  "key": "rating",
+  "zh": "【缺失】",
+  "en": "Rating",
+  "th": "คะแนน"
+ },
+ {
+  "module": "dinein",
+  "key": "categories.selectStoreTitle",
+  "zh": "【缺失】",
+  "en": "Select Store",
+  "th": "【缺失】"
+ },
+ {
+  "module": "dinein",
+  "key": "categories.selectStoreMsg",
+  "zh": "【缺失】",
+  "en": "Please select a store first",
+  "th": "【缺失】"
+ },
+ {
+  "module": "dinein",
+  "key": "categories.dishes",
+  "zh": "【缺失】",
+  "en": "【缺失】",
+  "th": "เมนู"
+ }
+]

@@ -810,7 +810,7 @@ export default {
 			if (!t) return ''
 			if (t._locked) return i18n.t('opening.locked') || '未解锁'
 			if (t.progress >= t.task.target_count) {
-				if (t.status === 'CLAIMED') return i18n.t('mine.claimed') || '已领取'
+				if (t.status === 'CLAIMED') return i18n.t('campaign.claimed')
 				return i18n.t('opening.claimable') || '可领取'
 			}
 			return t.progress + '/' + t.task.target_count
