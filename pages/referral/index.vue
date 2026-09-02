@@ -95,12 +95,8 @@
 							<text class="item-earned" v-if="item.total_coins_earned > 0">+{{ item.total_coins_earned }} {{ t('mine.coinUnit') }}</text>
 						</view>
 					</view>
-					<view class="item-level">
-						<text class="level-text" :class="{ 'level-direct': item.level === 1, 'level-indirect': item.level === 2 }">
-							{{ item.level === 1 ? 'L1' : 'L2' }}
-						</text>
+						<!-- L1/L2 等级标签按产品要求移除，不再展示 -->
 					</view>
-				</view>
 				<view class="empty-tip" v-if="!loading && referees.length === 0">
 					<text class="empty-text">{{ t('mine.noReferees') }}</text>
 				</view>
