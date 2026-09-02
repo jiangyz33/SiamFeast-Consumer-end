@@ -254,7 +254,7 @@
 import store from '@/store/index.js'
 import { showToast, fixMinioUrl } from '@/utils/index.js'
 import i18n from '@/i18n/index.js'
-import { getUserInfo, updateUserInfo, uploadAvatar, deleteAccount } from '@/api/services/auth.js'
+import { getUserInfo, updateUserInfo, uploadAvatar, deleteAccount, checkPhone } from '@/api/services/auth.js'
 import { getMembershipTiers } from '@/api/services/member.js'
 import { unregisterPush } from '@/utils/push.js'
 import BirthdayModal from '@/components/birthday-modal.vue'
@@ -301,6 +301,8 @@ export default {
 			showTestBirthdayModal: false,
 			testBirthdayType: 'COIN',
 			testBirthdayAmount: 100,
+			// 是否已设置密码（/users/me 不返回该字段，进页面时调 check-phone 补查）
+			hasPwd: false,
 			passwordForm: {
 				oldPassword: '',
 				newPassword: '',
@@ -318,7 +320,8 @@ export default {
 		},
 		// 是否已设置密码（决定修改密码弹窗显示"旧密码"输入框）
 		hasPassword() {
-			return !!(this.userInfo && this.userInfo.has_password)
+			// /users/me 不返回 has_password，用 check-phone 接口补查（存 this.hasPwd）
+			return !!(this.hasPwd || (this.userInfo && this.userInfo.has_password))
 		},
 		// 测试升级动画用的档位（直接从后端配置按 index 取，跟 member 页真实动画完全一致）
 		testUpgradeTier() {
@@ -399,6 +402,12 @@ export default {
 					this.userInfo = data
 					store.setUserInfo(data)
 					this.userBirthday = data.birthday || ''
+					// /users/me 不含 has_password，用 check-phone 补查（修改密码弹窗的旧密码框依赖它）
+					if (data.phone) {
+						checkPhone(data.phone).then(r => {
+							if (r && r.code === 0 && r.data) this.hasPwd = !!r.data.has_password
+						}).catch(() => {})
+					}
 				}
 			} catch (e) {
 				console.error('loadLatestUserInfo error:', e)
