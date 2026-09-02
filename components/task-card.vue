@@ -14,7 +14,8 @@
 				</view>
 			</view>
 
-			<text class="task-desc" v-if="task.description && !locked">{{ task.description }}</text>
+			<!-- 描述行：INVITE 类不显示（后端 description 仅英文且与任务名重复） -->
+			<text class="task-desc" v-if="task.description && !locked && !isInviteType">{{ task.description }}</text>
 
 			<!-- 进度（锁定时不显示进度条，显示锁定提示） -->
 			<view v-if="locked" class="locked-tip">
@@ -97,6 +98,9 @@ export default {
 		},
 		taskName() {
 			return resolveTaskName(this.task)
+		},
+		isInviteType() {
+			return String(this.task.task_type || '').toUpperCase() === 'INVITE'
 		},
 		typeIcon() {
 			return TYPE_ICON[this.task.task_type] || '📋'
