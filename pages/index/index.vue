@@ -557,8 +557,9 @@ export default {
 			const c = banner.campaign
 			// 纯图 banner（无关联活动）→ 始终展示
 			if (!banner.campaign_id) return true
-			// 关联了活动但 campaign 为 null（活动已 PAUSED/过期/窗口外）→ 隐藏
-			if (!c) return false
+			// 关联活动但 campaign 为 null（活动已 PAUSED/过期/窗口外）→ 退回纯图展示
+			// （运营要彻底下线应停用 banner 本身；活动失效不该让首页轮播整个消失）
+			if (!c) return true
 			// SPECIAL_DATE → 必须命中 date_patterns（不依赖 coupon_ids）
 			const type = c.type || c.campaign_type
 			if (type === 'SPECIAL_DATE') {
@@ -588,9 +589,10 @@ export default {
 			const mm = String(bangkokDate.getUTCMonth() + 1).padStart(2, '0')
 			const dd = String(bangkokDate.getUTCDate()).padStart(2, '0')
 			const today = `${mm}-${dd}`
-			// 命中条件：patterns 包含 today，或包含 "**-**" 且 mm === dd（双号日）
+			// 命中条件：patterns 包含 today，或包含 "**-**" 且当日为偶数（双号日）
+			// 注意：双号日 = 日期 dd 为偶数（2/4/6…），不是 mm===dd 的"月日重数"（如 8.8）
 			if (patterns.includes(today)) return true
-			if (patterns.includes('**-**') && mm === dd) return true
+			if (patterns.includes('**-**') && parseInt(dd, 10) % 2 === 0) return true
 			// 区间模式：MM-DD~MM-DD（含跨年，开始>结束）
 			const ord = (m, d) => m * 32 + d
 			const curM = parseInt(mm, 10)
