@@ -312,7 +312,7 @@
 </template>
 
 <script>
-import { showToast, fixMinioUrl } from '@/utils/index.js'
+import { showToast, fixMinioUrl, resolveTaskName } from '@/utils/index.js'
 import { parseShareLink, clearShareParams, ShareType } from '@/utils/share.js'
 import CustomTabbar from '@/components/custom-tabbar.vue'
 import ShareModal from '@/components/share-modal.vue'
@@ -826,8 +826,7 @@ export default {
 
 		getTaskName(t) {
 			if (!t || !t.task) return ''
-			const lang = i18n.getLanguage()
-			return t.task['name_' + lang] || t.task.name || ''
+			return resolveTaskName(t.task, t.task.target_count)
 		},
 
 		// 加载活动列表（首页小条展示）

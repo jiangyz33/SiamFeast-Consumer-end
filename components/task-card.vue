@@ -60,6 +60,7 @@
 
 <script>
 import i18n from '@/i18n/index.js'
+import { resolveTaskName } from '@/utils/index.js'
 
 const TYPE_ICON = {
 	INVITE: '🎯',
@@ -95,9 +96,7 @@ export default {
 			return Math.min(100, Math.round((cur / target) * 100))
 		},
 		taskName() {
-			const lang = i18n.getLanguage?.() || 'zh'
-			const langKey = `name_${lang}`
-			return this.task[langKey] || this.task.name || ''
+			return resolveTaskName(this.task)
 		},
 		typeIcon() {
 			return TYPE_ICON[this.task.task_type] || '📋'

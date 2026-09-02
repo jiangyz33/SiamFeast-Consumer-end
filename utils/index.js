@@ -440,3 +440,26 @@ export function getErrorMessage(error) {
 	}
 	return error?.message || '请求失败'
 }
+
+/**
+ * 解析任务展示名（多语言兜底链）
+ * 后端任务配置可能只有默认英文 name（如 "invite 3 friends"），
+ * INVITE 类任务用本地三语模板兜底（甲方 PDF 定稿文案）：
+ *   邀请 {n} 位好友 / Invite {n} Friends / เชิญเพื่อน {n} คน
+ * 兜底顺序：name_<lang>（后端多语言）→ INVITE 本地模板 → task.name
+ * @param {Object} task 任务对象（task.task 传入前已展平或直接传 task）
+ * @param {number} [targetCount] 目标人数（不传则取 task.target_count）
+ * @returns {string}
+ */
+export function resolveTaskName(task, targetCount) {
+	if (!task) return ''
+	const lang = i18n.getLanguage()
+	const localized = task['name_' + lang]
+	if (localized) return localized
+	const type = String(task.task_type || '').toUpperCase()
+	if (type === 'INVITE') {
+		const n = targetCount || task.target_count
+		if (n) return i18n.t('mine.inviteTaskName', { n })
+	}
+	return task.name || ''
+}
