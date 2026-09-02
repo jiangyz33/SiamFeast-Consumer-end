@@ -53,7 +53,7 @@
 					<view class="setting-item" @click="showBirthdayPicker = true">
 						<text class="setting-label">{{ t('settings.birthday') }}</text>
 						<view class="setting-right">
-							<text class="setting-value">{{ userBirthday || i18n.t('settings.notSet') }}</text>
+							<text class="setting-value">{{ userBirthday ? userBirthday.slice(-5) : i18n.t('settings.notSet') }}</text>
 							<image class="arrow-icon" src="/static/icons/arrow-right.svg" mode="aspectFit"></image>
 						</view>
 					</view>
@@ -240,6 +240,7 @@
 
 		<!-- 自定义日期选择弹窗（跟随 App 语言） -->
 		<date-picker-modal
+			:hide-year="true"
 			:visible="showBirthdayPicker"
 			:value="userBirthday"
 			:min-date="minBirthdayDate"

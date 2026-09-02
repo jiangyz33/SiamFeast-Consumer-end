@@ -103,7 +103,7 @@
 						@click="showBirthdayPicker = true"
 					>
 						<view class="birthday-picker">
-							<text v-if="birthday" class="birthday-text">{{ birthday }}</text>
+							<text v-if="birthday" class="birthday-text">{{ birthday.slice(-5) }}</text>
 							<text v-else class="birthday-placeholder">{{ t('login.birthdayPlaceholder') }}</text>
 							<text class="birthday-suffix">🎂</text>
 						</view>
@@ -131,6 +131,7 @@
 
 				<!-- 自定义日期选择弹窗（跟随 App 语言） -->
 				<date-picker-modal
+					:hide-year="true"
 					:visible="showBirthdayPicker"
 					:value="birthday"
 					:min-date="minBirthdayDate"

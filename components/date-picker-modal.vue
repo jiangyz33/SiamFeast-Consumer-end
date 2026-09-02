@@ -7,7 +7,7 @@
 				<text class="dpm-confirm" @click="handleConfirm">{{ t('common.confirm') }}</text>
 			</view>
 			<view class="dpm-indicator">
-				<text class="dpm-ind-suffix">{{ t('settings.year') }}</text>
+				<text v-if="!hideYear" class="dpm-ind-suffix">{{ t('settings.year') }}</text>
 				<text class="dpm-ind-suffix">{{ t('settings.month') }}</text>
 				<text class="dpm-ind-suffix">{{ t('settings.day') }}</text>
 			</view>
@@ -17,7 +17,7 @@
 				:indicator-style="indicatorStyle"
 				@change="onPickerChange"
 			>
-				<picker-view-column class="dpm-pcol">
+				<picker-view-column v-if="!hideYear" class="dpm-pcol">
 					<view class="dpm-cell" v-for="(y, i) in yearList" :key="'y' + i">
 						<text class="dpm-cell-text">{{ y }}</text>
 					</view>
@@ -49,7 +49,9 @@ export default {
 		value: { type: String, default: '' },          // YYYY-MM-DD
 		minDate: { type: String, default: `${MIN_YEAR}-01-01` },
 		maxDate: { type: String, default: '' },         // 默认今天
-		title: { type: String, default: '' }
+		title: { type: String, default: '' },
+		// 隐藏年份选择（生日场景：只选月/日，年固定 2000 提交，后端仍收 YYYY-MM-DD）
+		hideYear: { type: Boolean, default: false }
 	},
 	data() {
 		return {
@@ -83,7 +85,8 @@ export default {
 			return Array.from({ length: this.daysInMonth }, (_, i) => i + 1)
 		},
 		pickerValue() {
-			return [this.yIdx, this.mIdx, this.dIdx]
+			// hideYear 时列只剩 月/日，索引数组必须同步去首项，否则首列错位
+			return this.hideYear ? [this.mIdx, this.dIdx] : [this.yIdx, this.mIdx, this.dIdx]
 		}
 	},
 	watch: {
@@ -129,9 +132,10 @@ export default {
 		},
 		onPickerChange(e) {
 			const vals = (e && e.detail && e.detail.value) || []
-			const ny = Number(vals[0])
-			const nm = Number(vals[1])
-			const nd = Number(vals[2])
+			// hideYear 两列（月/日）；完整三列（年/月/日）
+			const ny = this.hideYear ? this.yIdx : Number(vals[0])
+			const nm = Number(vals[this.hideYear ? 0 : 1])
+			const nd = Number(vals[this.hideYear ? 1 : 2])
 			// 月份/年份变化 → 钳制日期
 			if (ny === this.yIdx && nm === this.mIdx) {
 				// 只是日期变化
@@ -150,7 +154,7 @@ export default {
 			})
 		},
 		handleConfirm() {
-			const y = this.yearList[this.yIdx]
+			const y = this.hideYear ? 2000 : this.yearList[this.yIdx]
 			const m = this.monthList[this.mIdx]
 			const d = this.dayList[this.dIdx]
 			if (!y || !m || !d) return
