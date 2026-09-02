@@ -1,0 +1,230 @@
+[
+ {
+  "p": "coupons.receiveFailed",
+  "en": "Failed to claim",
+  "th": "รับสิทธิ์ไม่สำเร็จ",
+  "text": "领取失败"
+ },
+ {
+  "p": "storeSelect.businessTypes.seafoodNoodle",
+  "en": "Seafood Noodles",
+  "th": "บะหมี่ซีฟู้ด",
+  "text": "海鲜面"
+ },
+ {
+  "p": "index.memberLevel",
+  "en": "Regular Member",
+  "th": "สมาชิกทั่วไป",
+  "text": "普通会员"
+ },
+ {
+  "p": "dinein.selectStoreTitle",
+  "en": "Please select a store",
+  "th": "กรุณาเลือกสาขา",
+  "text": "请选择门店"
+ },
+ {
+  "p": "products.items",
+  "en": "items",
+  "th": "รายการ",
+  "text": "款"
+ },
+ {
+  "p": "opening.claimSuccess",
+  "en": "Claimed successfully",
+  "th": "รับสิทธิ์สำเร็จ",
+  "text": "领取成功"
+ },
+ {
+  "p": "storeSelect.businessTypes.barbecue",
+  "en": "BBQ",
+  "th": "ปิ้งย่าง",
+  "text": "烧烤"
+ },
+ {
+  "p": "storeSelect.businessTypes.malaTang",
+  "en": "Malatang",
+  "th": "หม่าล่าทัง",
+  "text": "麻辣烫"
+ },
+ {
+  "p": "storeSelect.locationReady",
+  "en": "Location detected",
+  "th": "ระบุตำแหน่งแล้ว",
+  "text": "已定位"
+ },
+ {
+  "p": "login.phoneInvalid",
+  "en": "Invalid phone number f",
+  "th": "กรุณากรอกเบอร์โทรศัพท์",
+  "text": "手机号格式不正确"
+ },
+ {
+  "p": "coupons.available",
+  "en": "Available",
+  "th": "พร้อมใช้งาน",
+  "text": "可用"
+ },
+ {
+  "p": "checkout.itemNotFound",
+  "en": "Some products are unav",
+  "th": "สินค้าบางรายการไม่มีจำ",
+  "text": "部分商品不存在或已下架"
+ },
+ {
+  "p": "dinein.selectStoreMsg",
+  "en": "Please select a store ",
+  "th": "กรุณาเลือกสาขาก่อนเริ่",
+  "text": "请先选择一个门店再开始点餐"
+ },
+ {
+  "p": "campaign.orderNow",
+  "en": "Order Now",
+  "th": "สั่งเลย",
+  "text": "立即下单"
+ },
+ {
+  "p": "opening.claimable",
+  "en": "Available to claim",
+  "th": "รับสิทธิ์ได้",
+  "text": "可领取"
+ },
+ {
+  "p": "language.zh",
+  "en": "Chinese",
+  "th": "ภาษาจีน",
+  "text": "中文"
+ },
+ {
+  "p": "login.invalidCredentials",
+  "en": "Incorrect phone number",
+  "th": "หมายเลขโทรศัพท์หรือรหั",
+  "text": "手机号或密码错误"
+ },
+ {
+  "p": "login.userNotFound",
+  "en": "User does not exist. P",
+  "th": "ไม่พบบัญชีผู้ใช้ กรุณา",
+  "text": "用户不存在,请先注册"
+ },
+ {
+  "p": "memberCode.refreshFailed",
+  "en": "Refresh failed. Please",
+  "th": "รีเฟรชไม่สำเร็จ กรุณาล",
+  "text": "刷新失败，请重试"
+ },
+ {
+  "p": "mine.receiveNow",
+  "en": "Claim Now",
+  "th": "รับสิทธิ์ทันที",
+  "text": "立即领取"
+ },
+ {
+  "p": "checkout.loadFailed",
+  "en": "Failed to load",
+  "th": "โหลดไม่สำเร็จ",
+  "text": "加载失败"
+ },
+ {
+  "p": "mine.enterStore",
+  "en": "Enter Store",
+  "th": "เข้าร้าน",
+  "text": "进店"
+ },
+ {
+  "p": "dinein.soldOut",
+  "en": "Sold Out",
+  "th": "สินค้าหมด",
+  "text": "商品已售罄"
+ },
+ {
+  "p": "productDetail.hot",
+  "en": "Popular",
+  "th": "ยอดนิยม",
+  "text": "热销"
+ },
+ {
+  "p": "checkout.discount",
+  "en": "Deals",
+  "th": "โปรโมชั่น",
+  "text": "优惠"
+ },
+ {
+  "p": "storeSelect.businessTypes.hotpot",
+  "en": "Hot Pot",
+  "th": "หม้อไฟ",
+  "text": "火锅"
+ },
+ {
+  "p": "storeSelect.businessTypes.hotpotPerItem",
+  "en": "Hot Pot by Weight",
+  "th": "หม้อไฟคิดราคารายการ",
+  "text": "火锅计件"
+ },
+ {
+  "p": "storeSelect.businessTypes.beverage",
+  "en": "Beverages",
+  "th": "เครื่องดื่ม",
+  "text": "饮品"
+ },
+ {
+  "p": "storeSelect.businessTypes.standardFood",
+  "en": "Standard Dining",
+  "th": "ร้านอาหารทั่วไป",
+  "text": "标准餐饮"
+ },
+ {
+  "p": "storeSelect.businessTypes.hostelHotpot",
+  "en": "Homestay Hot Pot",
+  "th": "หม้อไฟโฮมสเตย์",
+  "text": "民宿火锅"
+ },
+ {
+  "p": "storeSelect.businessTypes.hostelCoffee",
+  "en": "Homestay Coffee",
+  "th": "กาแฟโฮมสเตย์",
+  "text": "民宿咖啡"
+ },
+ {
+  "p": "storeSelect.loadFailed",
+  "en": "Failed to load stores",
+  "th": "โหลดสาขาไม่สำเร็จ",
+  "text": "加载门店失败"
+ },
+ {
+  "p": "points.spend",
+  "en": "Purchase",
+  "th": "ยอดใช้จ่าย",
+  "text": "消费"
+ },
+ {
+  "p": "campaign.specialDateNotToday",
+  "en": "Available to claim onl",
+  "th": "รับสิทธิ์ได้เฉพาะวันที",
+  "text": "仅限活动指定日期可领"
+ },
+ {
+  "p": "error.userNotFound",
+  "en": "User Not Found",
+  "th": "ไม่พบผู้ใช้",
+  "text": "用户不存在"
+ },
+ {
+  "p": "error.coinInsufficient",
+  "en": "Insufficient Coin Bala",
+  "th": "เหรียญไม่เพียงพอ",
+  "text": "金币余额不足"
+ },
+ {
+  "p": "error.pointsInsufficient",
+  "en": "Insufficient Points Ba",
+  "th": "คะแนนไม่เพียงพอ",
+  "text": "积分余额不足"
+ },
+ {
+  "p": "mine.shareGuideConfirm",
+  "en": "Got it",
+  "th": "รับทราบ",
+  "text": "我知道了"
+ }
+]
