@@ -589,10 +589,10 @@ export default {
 			const mm = String(bangkokDate.getUTCMonth() + 1).padStart(2, '0')
 			const dd = String(bangkokDate.getUTCDate()).padStart(2, '0')
 			const today = `${mm}-${dd}`
-			// 命中条件：patterns 包含 today，或包含 "**-**" 且当日为偶数（双号日）
-			// 注意：双号日 = 日期 dd 为偶数（2/4/6…），不是 mm===dd 的"月日重数"（如 8.8）
+			// 命中条件：patterns 包含 today，或包含 "**-**" 且 mm === dd
+			// 注：双号日 = 重号日（月与日相同，如 8.8、9.9），产品确认的语义
 			if (patterns.includes(today)) return true
-			if (patterns.includes('**-**') && parseInt(dd, 10) % 2 === 0) return true
+			if (patterns.includes('**-**') && mm === dd) return true
 			// 区间模式：MM-DD~MM-DD（含跨年，开始>结束）
 			const ord = (m, d) => m * 32 + d
 			const curM = parseInt(mm, 10)
