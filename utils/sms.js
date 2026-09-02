@@ -138,13 +138,13 @@ export function verifyCode(phoneNumber, code, scene = 'login') {
 	if (!isValidE164Phone(phoneNumber)) {
 		return Promise.reject({
 			code: 'INVALID_PHONE',
-			message: '手机号格式不正确'
+			message: i18n.t('error.phoneFormatInvalid')
 		})
 	}
 	if (!code || !/^\d{4,8}$/.test(code)) {
 		return Promise.reject({
 			code: 'CODE_INVALID',
-			message: '验证码必须是 4-8 位数字'
+			message: i18n.t('error.codeInvalid')
 		})
 	}
 	return post('/auth/verify-code/verify', {
@@ -195,13 +195,13 @@ export function smsLogin(phoneNumber, code, scene = 'login', options = {}) {
 	if (!isValidE164Phone(phoneNumber)) {
 		return Promise.reject({
 			code: 'INVALID_PHONE',
-			message: '手机号格式不正确'
+			message: i18n.t('error.phoneFormatInvalid')
 		})
 	}
 	if (!code || !/^\d{4,8}$/.test(code)) {
 		return Promise.reject({
 			code: 'CODE_INVALID',
-			message: '验证码必须是 4-8 位数字'
+			message: i18n.t('error.codeInvalid')
 		})
 	}
 	const body = {

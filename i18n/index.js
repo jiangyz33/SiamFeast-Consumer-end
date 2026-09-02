@@ -3361,7 +3361,7 @@ const messages = {
 				claimed: 'รับแล้ว',
 				soldOut: 'หมดแล้ว',
 				cannotClaim: 'รับไม่ได้',
-				claimNow: 'รับคูปองเลย',
+				claimNow: 'รับรางวัล',
 				claimSuccess: 'รับคูปองสำเร็จ',
 				orderNow: 'สั่งซื้อเลย',
 				myCoupons: 'คูปองของฉัน',

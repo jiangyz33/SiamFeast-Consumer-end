@@ -13,6 +13,7 @@
  */
 
 import { post } from '@/api/request.js'
+import i18n from '@/i18n/index.js'
 
 // Firebase UTS 插件暂时禁用(试用版 aar 是空壳,需要付费购买正式版才能用)
 // 启用步骤:
@@ -166,14 +167,14 @@ export function getCurrentFirebaseUser() {
 export function sendPhoneVerificationCode() {
 	return Promise.reject({
 		code: 'FIREBASE_NOT_AVAILABLE',
-		message: '当前环境不支持 Firebase 短信验证'
+		message: i18n.t('error.smsNotConfigured')
 	})
 }
 
 export function verifyPhoneCode() {
 	return Promise.reject({
 		code: 'FIREBASE_NOT_AVAILABLE',
-		message: '当前环境不支持 Firebase 短信验证'
+		message: i18n.t('error.smsNotConfigured')
 	})
 }
 

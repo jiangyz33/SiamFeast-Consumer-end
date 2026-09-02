@@ -14,7 +14,7 @@
 
 		<!-- 加载状态 -->
 		<view class="loading-state" v-if="loading">
-			<text class="loading-text">加载中...</text>
+			<text class="loading-text">{{ t('common.loading') }}</text>
 		</view>
 
 		<!-- 内容区域 -->
@@ -57,7 +57,7 @@
 							<text class="coupon-desc">有效期{{ item.validity_days }}天</text>
 						</view>
 						<view class="coupon-btn" @click="handleClaim(item, index)">
-							<text class="coupon-btn-text">{{ item.claimed ? '已领取' : '立即领取' }}</text>
+							<text class="coupon-btn-text">{{ item.claimed ? t('campaign.claimed') : t('campaign.claimNow') }}</text>
 						</view>
 					</view>
 				</view>
@@ -162,7 +162,7 @@ export default {
 
 		async handleClaim(item, index) {
 			if (item.claimed) {
-				showToast('该优惠券已领取')
+				showToast(i18n.t('campaign.claimed'))
 				return
 			}
 

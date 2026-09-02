@@ -1,0 +1,120 @@
+普通会员                           ← pages/index/index.vue:488 , pages/member-code/index.vue:118 , pages/member-code/index.vue:122
+VIP 会员                         ← pages/member-code/index.vue:120 , pages/member-code/index.vue:121 , pages/member-code/index.vue:123
+加载中...                         ← pages/newbie-gift/index.vue:17 , pages/settings/index.vue:332 , utils/index.js:141
+积分                             ← pages/tasks/index.vue:111 , components/birthday-modal.vue:105 , components/task-card.vue:122
+金币                             ← pages/tasks/index.vue:112 , components/birthday-modal.vue:104 , components/task-card.vue:123
+抢券失败                           ← utils/campaign.js:142 , utils/campaign.js:165 , utils/campaign.js:167
+操作失败                           ← utils/sms.js:242 , utils/sms.js:242 , utils/sms.js:250
+已领取                            ← pages/index/index.vue:811 , pages/newbie-gift/index.vue:60
+活动                             ← pages/index/index.vue:875 , pages/index/index.vue:876
+检测到分享链接:                       ← pages/index/index.vue:1048 , App.vue:135
+已定位                            ← pages/store-select/index.vue:269 , pages/store-select/index.vue:272
+券                              ← pages/tasks/index.vue:113 , components/task-card.vue:124
+当前环境不支持 Firebase 短信验证          ← utils/firebase.js:169 , utils/firebase.js:176
+手机号格式不正确                       ← utils/sms.js:141 , utils/sms.js:198
+验证码必须是 4-8 位数字                 ← utils/sms.js:147 , utils/sms.js:204
+加载会员数据失败:                      ← pages/index/index.vue:757
+未解锁                            ← pages/index/index.vue:809
+可领取                            ← pages/index/index.vue:812
+折扣                             ← pages/index/index.vue:872
+满减                             ← pages/index/index.vue:873
+领券                             ← pages/index/index.vue:874
+加载首页数据失败:                      ← pages/index/index.vue:980
+获取未读消息数失败:                     ← pages/index/index.vue:1179
+,      // 如                    ← pages/member/index.vue:262
+金卡会员                           ← pages/member-code/index.vue:119
+刷新失败，请重试                       ← pages/member-code/index.vue:202
+进店                             ← pages/payment-success/index.vue:72
+取消                             ← pages/points-mall/index.vue:294
+{{ t('common.cancel') || '取消   ← pages/points-mall/index.vue:294
+档位配置加载中，请稍候                    ← pages/settings/index.vue:746
+已切换到                           ← pages/settings/index.vue:767
+定位失败，使用默认位置:                   ← pages/store-select/index.vue:276
+加载附近门店失败:                      ← pages/store-select/index.vue:402
+加载门店失败                         ← pages/store-select/index.vue:403
+张券                             ← components/birthday-modal.vue:106
+仅限特定日期可领                       ← components/campaign-detail-modal.vue:90
+|| /已经|already|claimed|领过/i.   ← components/campaign-detail-modal.vue:601
+继续                             ← components/CButton.vue:22
+隐藏                             ← components/CInput.vue:16
+显示                             ← components/CInput.vue:16
+{{ showPassword ? '隐藏' : '显示   ← components/CInput.vue:16
+请输入                            ← components/CInput.vue:34
+邀请                             ← components/task-card.vue:108
+消费                             ← components/task-card.vue:109
+签到                             ← components/task-card.vue:110
+任务                             ← components/task-card.vue:111
+折扣活动                           ← utils/campaign.js:106
+满减活动                           ← utils/campaign.js:107
+领券活动                           ← utils/campaign.js:108
+特别日期活动                         ← utils/campaign.js:109
+开业活动                           ← utils/campaign.js:110
+专题活动                           ← utils/campaign.js:111
+日期                             ← utils/campaign.js:160
+指定日期                           ← utils/campaign.js:160
+仅限活动指定日期可领                     ← utils/campaign.js:161
+满 200 减 30                     ← utils/campaign.js:185
+满 500 减 100                    ← utils/campaign.js:200
+海鲜火锅 5 折券                      ← utils/campaign.js:215
+已抢光                            ← utils/campaign.js:240
+Mock 券                         ← utils/campaign.js:245
+海鲜火锅 8 折                       ← utils/campaign.js:259
+全场海鲜火锅享 8 折优惠                  ← utils/campaign.js:268
+满 200 减 20                     ← utils/campaign.js:278
+消费满 200 元立减 20                 ← utils/campaign.js:287
+国庆抢券节                          ← utils/campaign.js:297
+活动期间可领取多张优惠券                   ← utils/campaign.js:304
+Firebase 登录失败                  ← utils/firebase.js:60
+当前环境不支持 Firebase 登录            ← utils/firebase.js:71
+加载足迹数据失败:                      ← utils/footprint.js:80
+保存足迹数据失败:                      ← utils/footprint.js:92
+新密码不能与旧密码相同                    ← utils/index.js:364
+密码长度                           ← utils/index.js:365
+密码太短                           ← utils/index.js:366
+旧密码                            ← utils/index.js:367
+验证码                            ← utils/index.js:368
+账号或密码                          ← utils/index.js:369
+密码错误                           ← utils/index.js:370
+用户不存在                          ← utils/index.js:371
+频繁                             ← utils/index.js:372
+金币余额不足                         ← utils/index.js:373
+积分余额不足                         ← utils/index.js:374
+暂未开通线上点餐                       ← utils/index.js:375
+不属于本门店                         ← utils/index.js:376
+开业券配置有误                        ← utils/index.js:377
+请求失败                           ← utils/index.js:441
+定位失败:                          ← utils/location.js:68
+定位权限                           ← utils/location.js:126
+需要定位权限以获取附近门店，是否前往设置开启？        ← utils/location.js:127
+去设置                            ← utils/location.js:128
+暂不                             ← utils/location.js:129
+请在系统设置中开启定位权限                  ← utils/location.js:156
+请在浏览器地址栏允许定位权限                 ← utils/location.js:161
+位置监听错误:                        ← utils/location.js:182
+当前环境不支持 OAuth 登录               ← utils/oauth.js:41
+Google 授权未返回有效 token           ← utils/oauth.js:87
+Google 登录失败                    ← utils/oauth.js:98
+Facebook 授权未返回有效 token         ← utils/oauth.js:118
+Facebook 登录失败                  ← utils/oauth.js:127
+[push] 用户未登录,延迟上报 cid(等登录后再报   ← utils/push.js:80
+[push] cid 上报成功 locale=        ← utils/push.js:113
+[push] cid 上报失败:               ← utils/push.js:115
+收银员正在为您下单，如非本人操作请联系客服          ← utils/push.js:279
+操作提醒                           ← utils/push.js:285
+我知道了                           ← utils/push.js:288
+[push] 通知权限已授权:                ← utils/push.js:338
+[push] 通知权限被拒绝:                ← utils/push.js:341
+分享链接生成失败：缺少ID参数                ← utils/share.js:74
+分享菜品链接生成失败：缺少门店ID参数            ← utils/share.js:80
+分享链接类型无效                       ← utils/share.js:157
+分享链接缺少ID参数                     ← utils/share.js:164
+分享菜品链接缺少门店ID参数                 ← utils/share.js:182
+解析分享链接失败:                      ← utils/share.js:188
+清除分享参数失败:                      ← utils/share.js:215
+分享门店失败：缺少门店ID                  ← utils/share.js:246
+分享菜品失败：缺少菜品ID                  ← utils/share.js:279
+分享菜品失败：缺少门店ID                  ← utils/share.js:284
+无法跳转：缺少门店ID                    ← utils/share.js:322
+手机号格式不正确,必须是 E.164 格式(+66812   ← utils/sms.js:109
+登录失败                           ← utils/sms.js:227
+[App] 捕获到邀请码:                  ← App.vue:152
