@@ -107,7 +107,7 @@
 							<text class="summary-text">{{ t('order.exchangeOrder') }} #{{ order.id }}</text>
 						</view>
 						<view class="order-actions">
-							<view v-if="order.status === 'PENDING' || order.status === 'PENDING_REDEEM'" class="action-btn action-primary" @click.stop="showExchangeQR(order)">
+							<view v-if="['PENDING', 'PENDING_REDEEM', 'DELIVERED'].includes(order.status)" class="action-btn action-primary" @click.stop="showExchangeQR(order)">
 								<text class="action-text primary">{{ t('order.viewCode') }}</text>
 							</view>
 							<view class="action-btn" @click.stop="handleExchangeDetail(order)">
@@ -470,7 +470,7 @@ export default {
 		},
 
 		exchangeStatusColor(status) {
-			const map = { PENDING: '#F2B131', PENDING_REDEEM: '#F2B131', REDEEMED: '#52C41A', EXPIRED: '#999', CANCELLED: '#999' }
+			const map = { PENDING: '#F2B131', PENDING_REDEEM: '#F2B131', SHIPPED: '#1890FF', DELIVERED: '#F2B131', REDEEMED: '#52C41A', EXPIRED: '#999', CANCELLED: '#999' }
 			return map[status] || '#999'
 		},
 

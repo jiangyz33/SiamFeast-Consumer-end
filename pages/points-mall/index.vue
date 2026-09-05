@@ -723,6 +723,13 @@ export default {
 				return
 			}
 
+			// 券类/虚拟商品：免选门店与提货时间，兑换即到账（M1-M4 文档）
+			const pType = String(item.product_type || '').toUpperCase()
+			if (pType === 'VIRTUAL' || pType === 'COUPON') {
+				this.confirmExchange(item, true)
+				return
+			}
+
 			this.pendingExchangeItem = item
 			this.selectedStoreId = null
 			// 防呆:自动设为 24 小时后(用户可选更晚的时间,但不能选更早的)
@@ -777,31 +784,37 @@ export default {
 			return `${this.pickupTime.replace(' ', 'T')}:00+07:00`
 		},
 
-		async confirmExchange() {
-			if (!this.selectedStoreId) {
-				showToast(this.i18n.t('dinein.selectStoreTitle'))
-				return
-			}
-			if (!this.pickupTime) {
-				showToast(this.t('pointsMall.pickupTimeRequired'))
-				return
-			}
-			if (!this.validatePickupTime()) {
-				showToast(this.t('pointsMall.pickupTimeTooSoon'))
-				return
-			}
-
-			const item = this.pendingExchangeItem
+		async confirmExchange(directItem, isDirect) {
+			// direct 模式（券类/虚拟）：无门店/提货时间（兑换即到账）
+			const direct = isDirect === true
+			const item = direct ? directItem : this.pendingExchangeItem
 			if (!item) return
+
+			if (!direct) {
+				if (!this.selectedStoreId) {
+					showToast(this.i18n.t('dinein.selectStoreTitle'))
+					return
+				}
+				if (!this.pickupTime) {
+					showToast(this.t('pointsMall.pickupTimeRequired'))
+					return
+				}
+				if (!this.validatePickupTime()) {
+					showToast(this.t('pointsMall.pickupTimeTooSoon'))
+					return
+				}
+			}
 
 			this.showStoreModal = false
 			try {
 				const exchangeParams = {
 					product_id: item.id,
 					exchange_type: this.activeTab === 0 ? 'points' : 'balance',
-					quantity: 1,
-					store_id: this.selectedStoreId,
-					pickup_time: this.formatPickupTimeForBackend()
+					quantity: 1
+				}
+				if (!direct) {
+					exchangeParams.store_id = this.selectedStoreId
+					exchangeParams.pickup_time = this.formatPickupTimeForBackend()
 				}
 				if (this.activeTab === 0 && item.point_price) {
 					exchangeParams.points_amount = item.point_price

@@ -164,6 +164,7 @@ export default {
 				const lang = i18n.getLanguage()
 				const iconMap = {
 					ORDER_STATUS: { icon: '/static/icons/order.svg', bg: '#FFF3E0' },
+				MALL_ORDER: { icon: '/static/icons/order.svg', bg: '#FFF3E0' },
 					ORDER: { icon: '/static/icons/order.svg', bg: '#FFF3E0' },
 					PROMOTION: { icon: '/static/icons/coupon.svg', bg: '#FCE4EC' },
 					COUPON: { icon: '/static/icons/coupon.svg', bg: '#FCE4EC' },
@@ -177,6 +178,7 @@ export default {
 					'system': 'message.system',
 					'order': 'message.order',
 					'order_status': 'message.order',
+				'mall_order': 'message.order',
 					'promotion': 'message.promotion',
 					'coupon': 'message.promotion',
 					'coin': 'message.promotion',

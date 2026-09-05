@@ -426,6 +426,8 @@ export function getErrorMessage(error) {
 		// 登录/注册场景识别相关 bizCode
 		'USER_NOT_FOUND': 'error.userNotFound',
 		'PHONE_ALREADY_REGISTERED': 'error.phoneAlreadyRegistered',
+		// 兑换防重（M1-M4 文档：5 秒内重复点击兑换）
+		'DUPLICATE_REDEEM': 'error.duplicateRedeem',
 		// 活动领券相关 bizCode
 		'SPECIAL_DATE_NOT_TODAY': 'campaign.specialDateNotToday',
 		// 门店 C 端点餐开关 / 用券门店校验（迁移 000100+）
