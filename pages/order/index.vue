@@ -459,9 +459,12 @@ export default {
 		},
 
 		exchangeStatusText(status) {
+			// M1-M4：PENDING=待配货 / SHIPPED=发货中 / DELIVERED=已到货 / REDEEMED=已核销（PENDING_REDEEM 为旧状态兼容=待核销）
 			const map = {
-				PENDING: this.i18n.t('order.exchangePending'),
+				PENDING: this.i18n.t('order.exchangePendingShip'),
 				PENDING_REDEEM: this.i18n.t('order.exchangePending'),
+				SHIPPED: this.i18n.t('order.exchangeShipped'),
+				DELIVERED: this.i18n.t('order.exchangeDelivered'),
 				REDEEMED: this.i18n.t('order.exchangeRedeemed'),
 				EXPIRED: this.i18n.t('order.exchangeExpired'),
 				CANCELLED: this.i18n.t('order.cancelled')
