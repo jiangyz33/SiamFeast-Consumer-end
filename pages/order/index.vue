@@ -96,7 +96,7 @@
 							<text class="shop-name">{{ exchangeProductName(order) }}</text>
 							<text class="order-type-tag" v-if="order.exchange_type">{{ exchangeTypeText(order.exchange_type) }}</text>
 						</view>
-						<text class="order-status" :style="{ color: exchangeStatusColor(order.status) }">{{ exchangeStatusText(order.status) }}</text>
+						<text class="order-status" :style="{ color: exchangeStatusColor(order.status) }">{{ exchangeStatusText(order.status, order.product_type) }}</text>
 					</view>
 					<view class="order-summary">
 						<text class="summary-text">{{ t('order.exchangeCost') }}：{{ exchangeCostText(order) }}</text>
@@ -458,10 +458,19 @@ export default {
 			})
 		},
 
-		exchangeStatusText(status) {
-			// M1-M4：PENDING=待配货 / SHIPPED=发货中 / DELIVERED=已到货 / REDEEMED=已核销（PENDING_REDEEM 为旧状态兼容=待核销）
+		exchangeStatusText(status, productType) {
+			// M1-M4：PENDING 状态二义性——实体=待配货（发货流），券类/虚拟=待核销（到店扫码）。
+			// C 端 /mall/my-orders 暂未返回 product_type：有类型精确区分，无类型时 PENDING 显示中性「待处理」
+			// （等后端在每单补 product_type 字段后自动精确显示）
+			const pType = String(productType || '').toUpperCase()
+			const hasType = pType === 'VIRTUAL' || pType === 'COUPON' || pType === 'PHYSICAL'
+			const pendingText = !hasType
+				? this.i18n.t('order.exchangePendingNeutral')
+				: (pType === 'VIRTUAL' || pType === 'COUPON'
+					? this.i18n.t('order.exchangePending')
+					: this.i18n.t('order.exchangePendingShip'))
 			const map = {
-				PENDING: this.i18n.t('order.exchangePendingShip'),
+				PENDING: pendingText,
 				PENDING_REDEEM: this.i18n.t('order.exchangePending'),
 				SHIPPED: this.i18n.t('order.exchangeShipped'),
 				DELIVERED: this.i18n.t('order.exchangeDelivered'),
