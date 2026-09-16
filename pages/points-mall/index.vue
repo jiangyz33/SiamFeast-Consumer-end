@@ -428,7 +428,8 @@ export default {
 		dateSelectorArray() {
 			const days = []
 			const now = new Date()
-			for (let i = 1; i <= 7; i++) {
+			// 从 2 天后开始（48 小时校验下，明天整点必不满足；保留 6 天可选范围）
+			for (let i = 2; i <= 8; i++) {
 				const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000)
 				const yyyy = d.getFullYear()
 				const mm = String(d.getMonth() + 1).padStart(2, '0')
@@ -436,7 +437,8 @@ export default {
 				days.push(`${yyyy}-${mm}-${dd}`)
 			}
 			const hours = []
-			for (let h = 9; h <= 21; h++) {
+			// 提货时段限定 16:00-22:00（产品要求）
+			for (let h = 16; h <= 22; h++) {
 				hours.push(`${String(h).padStart(2, '0')}:00`)
 			}
 			return [days, hours]
@@ -743,14 +745,14 @@ export default {
 
 		// 默认提货时间:24 小时后,取最近的整点
 		getDefaultPickupTime() {
-			const future = new Date(Date.now() + 24 * 60 * 60 * 1000)
+			const future = new Date(Date.now() + 48 * 60 * 60 * 1000)
 			const yyyy = future.getFullYear()
 			const mm = String(future.getMonth() + 1).padStart(2, '0')
 			const dd = String(future.getDate()).padStart(2, '0')
-			// 取最近整点(9:00-21:00 营业时间内)
+			// 兑换 48 小时后，取 16:00-22:00 提货时段内的最近整点
 			let hour = future.getHours()
-			if (hour < 9) hour = 9
-			if (hour > 21) hour = 21
+			if (hour < 16) hour = 16
+			if (hour > 22) hour = 22
 			return `${yyyy}-${mm}-${dd} ${String(hour).padStart(2, '0')}:00`
 		},
 
@@ -766,14 +768,14 @@ export default {
 			// 预留:如果想根据日期联动时间段,可在此调整 dateSelectorArray[1]
 		},
 
-		// 校验提货时间是否大于当前时间 + 24 小时
+		// 校验提货时间是否大于当前时间 + 48 小时
 		validatePickupTime() {
 			if (!this.pickupTime) return false
 			// 拼成 ISO 格式带时区(泰国 +07:00)
 			const isoStr = `${this.pickupTime}:00+07:00`
 			const target = new Date(isoStr).getTime()
 			if (isNaN(target)) return false
-			const minTime = Date.now() + 24 * 60 * 60 * 1000
+			const minTime = Date.now() + 48 * 60 * 60 * 1000
 			return target >= minTime
 		},
 
