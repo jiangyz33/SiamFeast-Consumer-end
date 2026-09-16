@@ -277,7 +277,7 @@
 					<view class="pickup-section">
 						<text class="pickup-label">{{ t('pointsMall.pickupTime') }}</text>
 						<view class="pickup-picker-row">
-							<picker mode="multiSelector" :range="dateSelectorArray" @change="onDateChange" @columnchange="onDateColumnChange">
+							<picker mode="multiSelector" :range="selectorRange" :value="selectorIdx" @change="onDateChange" @columnchange="onDateColumnChange">
 								<view class="pickup-picker-box">
 									<text class="pickup-picker-text" v-if="pickupTime">{{ pickupTime }}</text>
 									<text class="pickup-picker-placeholder" v-else>{{ t('pointsMall.pickupTimePlaceholder') }}</text>
@@ -362,9 +362,13 @@ export default {
 			coinsInput: '',
 			exchanging: false,
 			quickAmounts: [50, 100, 200, 500],
-			pickupTime: '',          // 用户选的提货时间(YYYY-MM-DDTHH:mm)
+			pickupTime: '',          // 用户选的提货时间(YYYY-MM-DD HH:mm)
 			minPickupDate: '',       // picker 最早可选日期(今天 + 1 天)
-			minPickupTime: ''        // picker 最早可选时间戳(ms)
+			minPickupTime: '',       // picker 最早可选时间戳(ms)
+			// 提货选择器（联动）：日期列 + 当前日期对应的时段列 + 选中索引
+			selectorDates: [],
+			selectorHours: [],
+			selectorIdx: [0, 0]
 		}
 	},
 	computed: {
@@ -424,24 +428,10 @@ export default {
 			if (this.pointsWillGet <= 0) return false
 			return this.exchangeConfig.is_enabled !== false
 		},
-		// 时间选择器:第一列日期(未来 7 天),第二列时间(09:00 - 21:00)
-		dateSelectorArray() {
-			const days = []
-			const now = new Date()
-			// 从 2 天后开始（48 小时校验下，明天整点必不满足；保留 6 天可选范围）
-			for (let i = 2; i <= 8; i++) {
-				const d = new Date(now.getTime() + i * 24 * 60 * 60 * 1000)
-				const yyyy = d.getFullYear()
-				const mm = String(d.getMonth() + 1).padStart(2, '0')
-				const dd = String(d.getDate()).padStart(2, '0')
-				days.push(`${yyyy}-${mm}-${dd}`)
-			}
-			const hours = []
-			// 提货时段限定 16:00-22:00（产品要求）
-			for (let h = 16; h <= 22; h++) {
-				hours.push(`${String(h).padStart(2, '0')}:00`)
-			}
-			return [days, hours]
+		// 提货选择器联动数据（只提供有效组合：≥48h 且 16:00-22:00）
+		selectorRange() {
+			void this.langVersion
+			return [this.selectorDates, this.selectorHours]
 		}
 	},
 	onLoad(options) {
@@ -734,8 +724,8 @@ export default {
 
 			this.pendingExchangeItem = item
 			this.selectedStoreId = null
-			// 防呆:自动设为 24 小时后(用户可选更晚的时间,但不能选更早的)
-			this.pickupTime = this.getDefaultPickupTime()
+			// 构建只含有效组合的选择器（≥48h 且 16:00-22:00），默认选中首个有效时点
+			this.buildPickupSelector()
 
 			if (this.storeList.length === 0) {
 				await this.loadStores()
@@ -743,29 +733,79 @@ export default {
 			this.showStoreModal = true
 		},
 
-		// 默认提货时间:24 小时后,取最近的整点
-		getDefaultPickupTime() {
+		/**
+		 * 计算首个有效提货时点：now+48h 起算，取 16:00-22:00 内的最近整点。
+		 * - now+48h 落在 16-22 点 → 取该整点（同日）
+		 * - 早于 16 点 → 当日 16:00
+		 * - 晚于 22 点 → 次日 16:00
+		 * 返回 {date: 'YYYY-MM-DD', hour: 16-22, label: 'HH:00'}
+		 */
+		computeFirstValidSlot() {
 			const future = new Date(Date.now() + 48 * 60 * 60 * 1000)
-			const yyyy = future.getFullYear()
-			const mm = String(future.getMonth() + 1).padStart(2, '0')
-			const dd = String(future.getDate()).padStart(2, '0')
-			// 兑换 48 小时后，取 16:00-22:00 提货时段内的最近整点
-			let hour = future.getHours()
-			if (hour < 16) hour = 16
-			if (hour > 22) hour = 22
-			return `${yyyy}-${mm}-${dd} ${String(hour).padStart(2, '0')}:00`
-		},
-
-		// 时间选择器值变化
-		onDateChange(e) {
-			const arr = e.detail.value
-			if (arr && arr.length === 2) {
-				this.pickupTime = `${this.dateSelectorArray[0][arr[0]]} ${this.dateSelectorArray[1][arr[1]]}`
+			let y = future.getFullYear()
+			let mo = future.getMonth()
+			let d = future.getDate()
+			let h = future.getHours()
+			if (h < 16) h = 16
+			else if (h > 22) {
+				// 超过 22 点 → 次日 16:00
+				const next = new Date(future.getTime() + 24 * 60 * 60 * 1000)
+				y = next.getFullYear(); mo = next.getMonth(); d = next.getDate()
+				h = 16
+			}
+			const pad = (n) => String(n).padStart(2, '0')
+			return {
+				date: `${y}-${pad(mo + 1)}-${pad(d)}`,
+				hour: h,
+				label: `${pad(h)}:00`
 			}
 		},
-		// 时间选择器列变化(占位,目前不需要联动)
+
+		/**
+		 * 构建提货选择器（只提供有效组合，用户选不到无效时间）：
+		 * - 日期列：首个有效日期起 7 天
+		 * - 时段列：16:00-22:00；首日只给"首个有效时点"起的时段，其余日全量
+		 * - 默认选中：首个有效日期 + 首个有效时点
+		 */
+		buildPickupSelector() {
+			const first = this.computeFirstValidSlot()
+			const pad = (n) => String(n).padStart(2, '0')
+			const allHours = []
+			for (let h = 16; h <= 22; h++) allHours.push(`${pad(h)}:00`)
+
+			const dates = [first.date]
+			const base = new Date(first.date + 'T00:00:00')
+			for (let i = 1; i < 7; i++) {
+				const d = new Date(base.getTime() + i * 24 * 60 * 60 * 1000)
+				dates.push(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`)
+			}
+			this.selectorDates = dates
+			// 首日时段：从首个有效整点起；后续日期全量
+			this.selectorHours = allHours.filter(hh => parseInt(hh, 10) >= first.hour)
+			this._allHours = allHours
+			this._firstHour = first.hour
+			this.selectorIdx = [0, 0]
+			// 默认提货时间 = 首个有效组合
+			this.pickupTime = `${first.date} ${first.label}`
+		},
+
+		// 时间选择器确认
+		onDateChange(e) {
+			const arr = e.detail.value
+			if (arr && arr.length === 2 && this.selectorDates[arr[0]] && this.selectorHours[arr[1]]) {
+				this.pickupTime = `${this.selectorDates[arr[0]]} ${this.selectorHours[arr[1]]}`
+			}
+		},
+
+		// 日期列切换 → 时段列联动（首日只给有效起时段，其余日 16-22 全量）
 		onDateColumnChange(e) {
-			// 预留:如果想根据日期联动时间段,可在此调整 dateSelectorArray[1]
+			const { column, value } = e.detail || {}
+			if (column !== 0) return
+			this.selectorIdx = [value, 0]
+			// 首个日期（index 0）用受限时段，其余用全量
+			this.selectorHours = value === 0
+				? this._allHours.filter(hh => parseInt(hh, 10) >= this._firstHour)
+				: [...this._allHours]
 		},
 
 		// 校验提货时间是否大于当前时间 + 48 小时
