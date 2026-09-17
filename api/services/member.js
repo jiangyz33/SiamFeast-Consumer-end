@@ -132,9 +132,12 @@ export function exchangeBenefit(data) {
 	if (data.pickup_time) payload.pickup_time = data.pickup_time
 	if (data.coin_amount) payload.coin_amount = data.coin_amount
 	if (data.points_amount) payload.points_amount = data.points_amount
-	// 防双击幂等头（M1-M4 文档）：同一次点击重试不会重复兑换；后端另有 5 秒重复兜底 409 DUPLICATE_REDEEM
-	const idemKey = 'sf-redeem-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10)
-	return post('/mall/redeem', payload, { header: { 'X-Idempotency-Key': idemKey } })
+	// 幂等头 X-Idempotency-Key 暂不发送：后端 CORS 白名单未放行该头（H5 预检失败兑换中断）。
+	// 防双击由后端 5 秒重复兜底（409 DUPLICATE_REDEEM）保障。
+	// 待后端 CORS Allow-Headers 加 X-Idempotency-Key 后可恢复：
+	// const idemKey = 'sf-redeem-' + Date.now() + '-' + Math.random().toString(36).substring(2, 10)
+	// return post('/mall/redeem', payload, { header: { 'X-Idempotency-Key': idemKey } })
+	return post('/mall/redeem', payload)
 }
 
 /**
