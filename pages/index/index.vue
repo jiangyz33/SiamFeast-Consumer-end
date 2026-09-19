@@ -35,6 +35,7 @@
 			<swiper
 				v-if="banners.length > 0"
 				class="top-banner"
+				:style="{ height: bannerHeight + 'px' }"
 				:indicator-dots="banners.length > 1"
 				indicator-color="rgba(255,255,255,0.5)"
 				indicator-active-color="#FFD23D"
@@ -67,7 +68,7 @@
 					</view>
 				</swiper-item>
 			</swiper>
-			<view v-else class="top-banner">
+			<view v-else class="top-banner" :style="{ height: bannerHeight + 'px' }">
 				<image class="banner-image" src="/static/images/banner-placeholder.svg" mode="aspectFill"></image>
 			</view>
 
@@ -369,6 +370,8 @@ export default {
 			birthdayRewardType: 'COIN',
 			birthdayRewardAmount: 0,
 			banners: [],
+			// 轮播高度（随屏宽等比：内容宽 / 2.2，与 banner 图 750×340 比例一致，保证不裁切）
+			bannerHeight: 170,
 				langVersion: 0,
 				memberInfo: {},
 			membershipTiers: [],       // 动态档位配置
@@ -445,6 +448,11 @@ export default {
 		uni.$off('storeSelected', this.handleStoreSelected)
 			uni.$off("languageChanged")
 		uni.$off('showBirthdayModal', this.onBirthdayShow)
+	},
+	// 窗口尺寸变化（iPad 分屏/旋转）→ 重算轮播等比高度
+	onResize(e) {
+		const w = (e && e.size && e.size.windowWidth) || (uni.getSystemInfoSync().windowWidth)
+		this.updateBannerHeight(w)
 	},
 	onShow() {
 		// #ifdef APP-PLUS
@@ -1020,12 +1028,22 @@ export default {
 		initPage() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.statusBarHeight = systemInfo.statusBarHeight || 20
+			this.updateBannerHeight(systemInfo.windowWidth)
 
 			// 计算内容区域高度
 			const navBarHeight = 44
 			const tabBarHeight = 63
 			const safeAreaBottom = systemInfo.safeAreaInsets?.bottom || 0
 			this.contentHeight = systemInfo.windowHeight - navBarHeight - tabBarHeight - safeAreaBottom - this.statusBarHeight
+		},
+
+		/**
+		 * 轮播高度等比计算：内容宽（屏宽 - 32 边距）按 2.2:1（与 banner 图 750×340 一致）。
+		 * 手机/iPad 全部完整显示不裁切；限高 320 防超宽屏过高。
+		 */
+		updateBannerHeight(windowWidth) {
+			const w = (windowWidth || 375) - 32
+			this.bannerHeight = Math.min(320, Math.round(w / 2.2))
 		},
 
 		/**
@@ -1361,10 +1379,11 @@ export default {
 /* 顶部轮播图区域 */
 .top-banner {
 	width: 100%;
-	height: 200px;
+	/* 高度由 JS 计算（bannerHeight，与图一致的 2.2:1 等比），不同屏宽下图片完整显示不裁切 */
 	background-color: #F3F3F3;
 	padding: 0 16px;
 	box-sizing: border-box;
+	overflow: hidden;
 }
 
 .top-banner swiper {
